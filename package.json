@@ -1,0 +1,13 @@
+{
+  "name": "anotherexample-com",
+  "version": "1.0.0",
+  "description": "The permanent second domain for cross-origin and dev testing.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
