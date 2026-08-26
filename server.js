@@ -16,16 +16,41 @@ function noStore(res) {
   res.set('Cache-Control', 'no-store');
 }
 
+function publicHeaders(req) {
+  const hiddenExact = new Set([
+    'authorization',
+    'proxy-authorization',
+    'cookie',
+    'forwarded',
+    'x-real-ip',
+    'x-invocation-id',
+  ]);
+  const hiddenPrefixes = ['x-vercel-', 'x-forwarded-', 'x-middleware-'];
+
+  return Object.fromEntries(
+    Object.entries(req.headers).filter(([name]) => {
+      const lower = name.toLowerCase();
+      return !hiddenExact.has(lower) && !hiddenPrefixes.some(prefix => lower.startsWith(prefix));
+    })
+  );
+}
+
 function requestSnapshot(req) {
   return {
     method: req.method,
     path: req.originalUrl,
     query: req.query,
-    headers: req.headers,
+    headers: publicHeaders(req),
     body: req.body ?? null,
     ip: req.ip,
     timestamp: new Date().toISOString(),
+    note: 'Sensitive and hosting-provider headers are omitted.',
   };
+}
+
+function hasTestCookie(req) {
+  const raw = req.get('Cookie') || '';
+  return raw.split(';').some(part => part.trim().startsWith('anotherexample_test='));
 }
 
 // Open CORS: useful for basic cross-origin fetches without credentials.
@@ -157,7 +182,7 @@ app.get('/api/cookie/set', (req, res) => {
 
 app.get('/api/cookie/check', (req, res) => {
   noStore(res);
-  res.json({ cookieHeader: req.get('Cookie') || null, received: Boolean(req.get('Cookie')) });
+  res.json({ cookie: 'anotherexample_test', received: hasTestCookie(req) });
 });
 
 app.get('/api/cookie/clear', (req, res) => {

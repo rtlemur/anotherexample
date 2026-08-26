@@ -35,3 +35,7 @@ Then open `http://localhost:3000`.
 ## Analytics
 
 Vercel Web Analytics is enabled in the HTML shell using the official `/_vercel/insights/script.js` integration. No React or Next.js conversion is required. Analytics must also be enabled for the Vercel project in the Vercel dashboard.
+
+## Privacy / security
+
+Request inspection intentionally omits Authorization, Cookie, Vercel/internal proxy, forwarding, and middleware headers so platform credentials and session cookies are never reflected to callers. Test request bodies may still be echoed; never send production secrets.
