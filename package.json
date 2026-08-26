@@ -1,13 +1,10 @@
 {
-  "name": "anotherexample-com",
-  "version": "1.0.0",
-  "description": "The permanent second domain for cross-origin and dev testing.",
+  "name": "anotherexample",
+  "version": "1.1.0",
+  "private": true,
+  "description": "A permanent second origin for browser and integration testing.",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
-  }
+  "scripts": {"start":"node server.js","test":"node --test"},
+  "dependencies": {"express":"^5.1.0","express-rate-limit":"^8.1.0"},
+  "devDependencies": {"supertest":"^7.1.4"}
 }

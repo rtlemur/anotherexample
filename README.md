@@ -2,40 +2,32 @@
 
 A permanent second origin for browser, CORS, cookie, redirect, and integration testing.
 
-## Endpoints
-
-- `ANY /api/echo` — reflect request details as JSON.
-- `ANY /api/cors` — backwards-compatible permissive CORS endpoint.
-- `ANY /api/cors/open` — permissive `Access-Control-Allow-Origin: *` endpoint.
-- `ANY /api/cors/credentials` — reflects `Origin` and permits credentials.
-- `ANY /api/status/:code` — intentional HTTP status (200–599).
-- `ANY /api/delay/:ms` — intentional delay (0–10,000 ms).
-- `GET /api/redirect?target=health|home|example&status=302` — safe redirect testing.
-- `GET /api/cookie/set?sameSite=Lax|Strict|None` — set a test cookie.
-- `GET /api/cookie/check` — report the incoming Cookie header.
-- `GET /api/cookie/clear` — clear the test cookie.
-- `GET /api/health` — health check.
-
-## Safety
-
-Use test data only. Do not send production credentials, API keys, session tokens, personal data, or other secrets to public testing endpoints.
-
-Request bodies are limited to 64 KB. Delay tests are capped at 10 seconds. Redirect targets are predefined so the service cannot be used as a general-purpose open redirector.
-
-## Local development
-
+## Run locally
 ```bash
 npm install
 npm start
 ```
 
-Then open `http://localhost:3000`.
+## Test
+```bash
+npm test
+```
 
+## Main endpoints
+- `ANY /api/echo`
+- `ANY /api/cors/open`
+- `ANY /api/cors/credentials`
+- `ANY /api/cors/lab` — configurable CORS response for the playground
+- `ANY /api/status/:code`
+- `ANY /api/delay/:ms`
+- `GET /api/redirect`
+- `GET /api/cookie/set|check|clear`
+- `GET /api/health`
 
-## Analytics
+## CORS playground
+Visit `/cors`. The current V1.1 playground configures and inspects CORS responses. Because the page and lab endpoint share an origin, it explains the browser behavior that a real cross-origin caller should expect. V1.2 will add a deliberately separate host so the browser can enforce the scenarios live inside the playground.
 
-Vercel Web Analytics is enabled in the HTML shell using the official `/_vercel/insights/script.js` integration. No React or Next.js conversion is required. Analytics must also be enabled for the Vercel project in the Vercel dashboard.
+## Safety
+Public API requests are rate limited. Reflected request data omits authorization, cookies, Vercel/internal proxy headers, and related infrastructure metadata. Use test data only.
 
-## Privacy / security
-
-Request inspection intentionally omits Authorization, Cookie, Vercel/internal proxy, forwarding, and middleware headers so platform credentials and session cookies are never reflected to callers. Test request bodies may still be echoed; never send production secrets.
+See `ROADMAP.md` for product direction.

@@ -10,13 +10,18 @@
 </style>
 </head>
 <body><main class="wrap">
-<span class="badge">Hi! and Welcome</span>
+<span class="badge">Hi and Welcome</span>
 <h1>anotherexample.com</h1>
 <p class="tagline">A permanent second origin for developers.</p>
 <p class="lead"><code>example.com</code> and <code>example.org</code> are reserved by IANA for documentation, and their HTTP services aren't intended to be relied on for application testing. AnotherExample gives you a stable, real HTTPS origin for CORS, cookies, redirects, and integration tests.</p>
 
 <section>
-<h2>Try it now</h2>
+<h2>Featured tool</h2>
+<div class="card" style="margin-bottom:18px"><h3 style="margin:0 0 8px">CORS Playground</h3><p>Explore successful and broken CORS configurations, generate working examples, and understand what the browser expects.</p><div class="actions"><a class="button" href="/cors">Open CORS Playground →</a></div></div>
+</section>
+
+<section>
+<h2>Try the endpoints</h2>
 <p class="muted">Run a real cross-origin request from this page and inspect the result.</p>
 <div class="actions"><button id="corsTest">Test open CORS</button><button class="secondary" id="healthTest">Health check</button></div>
 <div class="result" id="result">Ready.</div>
@@ -59,9 +64,9 @@ curl -i 'https://anotherexample.com/api/redirect?target=example&amp;status=302'<
 /api/cookie/clear</pre>
 </section>
 
-<div class="notice"><strong>Use test data only.</strong> Request-inspection endpoints may reflect headers and bodies. Never send production passwords, API keys, session tokens, personal data, or other secrets.</div>
+<div id="acceptable-use" class="notice"><strong>Use test data only.</strong> Request-inspection endpoints may reflect headers and bodies. Never send production passwords, API keys, session tokens, personal data, or other secrets.</div>
 
-<footer>Contact info coming soon</footer>
+<footer>Contact info coming soon.</footer>
 </main>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
