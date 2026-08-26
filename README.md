@@ -1,36 +1,37 @@
 # anotherexample.com
 
-The permanent "second domain" for cross-origin and integration testing.
+A permanent second origin for browser, CORS, cookie, redirect, and integration testing.
 
-## Run locally
+## Endpoints
+
+- `ANY /api/echo` — reflect request details as JSON.
+- `ANY /api/cors` — backwards-compatible permissive CORS endpoint.
+- `ANY /api/cors/open` — permissive `Access-Control-Allow-Origin: *` endpoint.
+- `ANY /api/cors/credentials` — reflects `Origin` and permits credentials.
+- `ANY /api/status/:code` — intentional HTTP status (200–599).
+- `ANY /api/delay/:ms` — intentional delay (0–10,000 ms).
+- `GET /api/redirect?target=health|home|example&status=302` — safe redirect testing.
+- `GET /api/cookie/set?sameSite=Lax|Strict|None` — set a test cookie.
+- `GET /api/cookie/check` — report the incoming Cookie header.
+- `GET /api/cookie/clear` — clear the test cookie.
+- `GET /api/health` — health check.
+
+## Safety
+
+Use test data only. Do not send production credentials, API keys, session tokens, personal data, or other secrets to public testing endpoints.
+
+Request bodies are limited to 64 KB. Delay tests are capped at 10 seconds. Redirect targets are predefined so the service cannot be used as a general-purpose open redirector.
+
+## Local development
 
 ```bash
 npm install
 npm start
 ```
 
-Then visit `http://localhost:3000`.
+Then open `http://localhost:3000`.
 
-## Endpoints
 
-- `GET/POST /api/echo` — echoes back method, headers, query, body, IP
-- `GET/POST /api/cors` — same, but with permissive CORS headers so you can fetch it from any origin
-- `GET /api/health` — health check
+## Analytics
 
-## Deploying
-
-**Vercel (recommended, free tier)**
-1. Push this folder to a GitHub repo.
-2. Import the repo at vercel.com — it auto-detects the Express app.
-   (If you want serverless functions instead of a long-running server, the
-   `api/` folder convention works too — ask if you want it restructured that way.)
-3. Point `anotherexample.com`'s DNS at Vercel (they'll give you the exact A/CNAME records).
-
-**Cloudflare Pages / Workers** works similarly and is also free at this scale.
-
-## Next endpoints to add (from the original plan)
-- `/api/redirect?to=` — controlled redirect chain testing
-- `/api/cookie/set` + `/api/cookie/check` — cross-origin cookie testing
-- `/api/status/:code` — force arbitrary HTTP status codes
-- `/api/delay/:seconds` — artificial latency for timeout testing
-- `/api/iframe-test` — a page meant to be embedded cross-origin
+Vercel Web Analytics is enabled in the HTML shell using the official `/_vercel/insights/script.js` integration. No React or Next.js conversion is required. Analytics must also be enabled for the Vercel project in the Vercel dashboard.
