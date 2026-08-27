@@ -22,19 +22,24 @@ Make `anotherexample.com` the simplest, most trustworthy permanent second origin
 - Dedicated `/cors` interactive tool
 - Preset success/failure scenarios
 - Configurable CORS laboratory endpoint
+- Real two-origin browser enforcement using a separate CORS hostname
 - Generated fetch and curl examples
-- Plain-English explanation of expected browser behavior
+- Plain-English expected result plus the browser's actual success/blocked result
 - Basic API rate limiting
 - Automated API tests
 - Privacy/acceptable-use notes and security contact path
 
-## V1.2 — True two-origin demonstration
-- Add a deliberately separate hostname/origin for the playground
-- Let visitors observe real browser CORS enforcement without bringing their own app
-- Verify credentialed requests and preflight behavior across the two origins
+## V1.2 — Visual Request Debugger
+- Turn raw echo output into a readable request inspector
+- Highlight method, Origin, relevant CORS/cookie headers, body, and timing
+- Explain what the browser sent versus what the server received
+- Keep sensitive credentials and hosting-provider headers filtered
 
 ## Future tools
 Build only if usage/search data supports them:
+- OpenAPI mock-data generator
+- Live OpenAPI mock APIs on persistent/shareable URLs
+- Saved request history and shareable test configurations
 - Cookie / SameSite playground
 - iframe / CSP / framing playground
 - Redirect tester
@@ -57,7 +62,7 @@ Keep public utility endpoints free. Possible paid features after adoption:
 - CAPTCHA unless abuse requires it
 - Heavy observability stacks
 - Generic JSON/JWT/regex/formatter tools
-- OpenAPI and enterprise features until demand exists
+- Accounts, billing, and enterprise controls until demand exists
 
 ## Success signals
 - Repeat visitors

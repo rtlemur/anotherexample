@@ -31,3 +31,7 @@ Visit `/cors`. The current V1.1 playground configures and inspects CORS response
 Public API requests are rate limited. Reflected request data omits authorization, cookies, Vercel/internal proxy headers, and related infrastructure metadata. Use test data only.
 
 See `ROADMAP.md` for product direction.
+
+
+## V1.1 preview second origin
+The preview CORS Playground runs real browser-enforced cross-origin tests against `https://cors-preview.anotherexample.com`, which is mapped in Vercel to the `v1.1-preview` branch. Production should use a permanent second-origin hostname such as `cors.anotherexample.com` before merging the playground live.
