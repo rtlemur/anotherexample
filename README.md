@@ -52,3 +52,6 @@ Development paused August 27, 2026 on the V1.1 preview. The diagnostic front doo
 
 ## CORS Debugger iteration
 Diagnosis-first flow: Test A and Test B appear immediately after starting; request configuration is under Advanced options. Product naming changed from CORS Playground to CORS Debugger.
+
+## Diagnostic workflow refinement
+Generated JavaScript is now secondary to the diagnostic workflow. Test A/Test B show concise summaries first, with code available on demand and explicit instructions to run both from the actual page origin in DevTools.

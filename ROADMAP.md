@@ -175,3 +175,13 @@ When work resumes, start with the **post-click diagnostic UX**. Do not reopen th
 - Request configuration moved into collapsed **Advanced options**.
 - Next validation: desktop workflow, GET, POST/preflight, credentials, then production-readiness review.
 - SEO/discovery remains planned around real CORS failure-language queries and focused problem pages; avoid thin keyword variants.
+
+
+## V1.1 — Diagnostic workflow refinement
+- Use **Request origin / page URL** language so beginners can enter a URL while experienced developers see the origin model immediately.
+- Replace **known-good** wording with **controlled second origin** and use **narrow down** rather than overclaiming certainty.
+- Make the post-click task explicit: open DevTools on the real page and run Test A and Test B from that browser origin.
+- Keep generated JavaScript available but secondary. Default UI shows concise request summaries rather than long query-string URLs.
+- Preserve technical honesty: typing an external URL does not let AnotherExample execute code from that origin.
+- State explicitly that A/B comparison narrows likely causes but does not prove a unique root cause.
+- Future opportunity: structured result paste/import or a lightweight helper, only if it preserves true page-origin execution and does not introduce unsafe proxy behavior.

@@ -25,14 +25,14 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <main class="wrap">
 <a class="back" href="/">← anotherexample.com</a>
 <h1>CORS Debugger</h1>
-<p class="tag">Why won’t my CORS work? Compare your failing request with a known-good second origin and see where the problem is.</p>
+<p class="tag">Why won’t my CORS work? Compare your failing request with a controlled second origin to narrow down where the problem is.</p>
 
 <section class="panel hero">
 <h2>Find out why your CORS request is failing</h2>
-<p>Tell us where the request starts and what API it is trying to reach. AnotherExample will build two browser tests: your real API request and a known-good comparison against our second origin.</p>
+<p>Tell us where the request starts and what API it is trying to reach. AnotherExample will build two browser tests: your real API request and a controlled comparison against our second origin.</p>
 <div class="two">
 <section>
-<label for="siteUrl">Your page URL</label>
+<label for="siteUrl">Request origin / page URL</label>
 <input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
 <div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
 </section>
@@ -49,24 +49,39 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <div id="diagnostic" style="display:none">
 <div class="panel" style="border-color:#65e6b8">
 <p class="eyebrow" style="margin-top:0">DIAGNOSTIC READY</p>
-<h2 style="margin-top:6px">Your two-test CORS check</h2>
-<p>Run both tests from the page URL you entered. The comparison helps separate a target-API CORS problem from a broader request or browser-environment problem.</p>
+<h2 style="margin-top:6px">Run the check from your page</h2>
+<p>Open Developer Tools on the page URL you entered, switch to the Console, then run Test A and Test B there. CORS is enforced in that page's browser origin, so where you run the tests matters.</p>
+
 <div class="two">
-<section><h3>Test A — Your real API</h3><p class="small">This reproduces the request to the target API you entered.</p><pre id="targetFetch"></pre><div class="actions"><button id="copyTarget">Copy Test A</button></div></section>
-<section><h3>Test B — Known-good control</h3><p class="small">This makes the same kind of request to AnotherExample's controlled second origin.</p><pre id="controlFetch"></pre><div class="actions"><button id="copyControl">Copy Test B</button></div></section>
+<section>
+<h3>Test A — Your real API</h3>
+<p class="small">Your target request.</p>
+<div class="status"><strong id="targetSummary">Target API</strong></div>
+<div class="actions"><button id="copyTarget">Copy Test A</button><button class="secondary" id="toggleTarget">View generated code</button></div>
+<pre id="targetFetch" style="display:none"></pre>
+</section>
+
+<section>
+<h3>Test B — Controlled origin</h3>
+<p class="small">The same request shape against AnotherExample's controlled CORS endpoint.</p>
+<div class="status"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
+<div class="actions"><button id="copyControl">Copy Test B</button><button class="secondary" id="toggleControl">View generated code</button></div>
+<pre id="controlFetch" style="display:none"></pre>
+</section>
 </div>
+
 <hr>
-<h3>How to read the result</h3>
-<p><strong>A fails, B works:</strong> focus on the target API's CORS configuration or response.</p>
+<h3>How to interpret the comparison</h3>
+<p><strong>A fails, B works:</strong> investigate the target API's CORS configuration or response first. The controlled endpoint accepted the same request shape.</p>
 <p><strong>A works, B works:</strong> basic cross-origin access works. Reproduce the exact failing method, headers, body, and credentials.</p>
-<p><strong>A fails, B fails:</strong> compare the browser Console errors and verify the request shape, credentials, and environment.</p>
-<p class="small">Run these from your own page's browser context. AnotherExample does not crawl, proxy, or modify your target URL.</p>
+<p><strong>A fails, B fails:</strong> compare the browser Console errors and verify the request shape, credentials, browser policy, extensions, and environment.</p>
+<p class="small">This comparison narrows the investigation; it does not prove a single root cause. AnotherExample does not crawl, proxy, or modify your target URL.</p>
 </div>
 </div>
 <p class="small"><strong>Preview environment:</strong> control requests use <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</p>
 
 <details id="advancedOptions" style="margin-top:28px">
-<summary class="section" style="cursor:pointer">Advanced options</summary>
+<summary class="section" style="cursor:pointer">Advanced request options</summary>
 <p class="small">Change the request only when you need to reproduce a specific CORS failure. Start with the default GET test first.</p>
 
 <div class="panel">
@@ -88,9 +103,6 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </section>
 </div>
 </div>
-</strong>
-
-
 </details>
 
 <h2 class="section">AnotherExample lab endpoint</h2>
@@ -150,15 +162,23 @@ function requestSnippet(destination){
   if($('credentials').checked) opts.push("credentials: 'include'");
   return `fetch('${destination}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(async r => ({ status:r.status, headers:Object.fromEntries(r.headers), body:await r.text() }))\n  .then(console.log)\n  .catch(console.error);`;
 }
+function requestShapeSummary(){
+  const method=$('method').value;
+  const creds=$('credentials').checked ? 'credentials included' : 'no credentials';
+  return `${method} · ${creds}`;
+}
 function updateDiagnostic(){
   enteredOrigin();
   const target=targetUrl();
+  const control=url();
   $('targetFetch').textContent=requestSnippet(target);
-  $('controlFetch').textContent=requestSnippet(url());
+  $('controlFetch').textContent=requestSnippet(control);
+  if($('targetSummary')) $('targetSummary').textContent=`${new URL(target).origin} · ${requestShapeSummary()}`;
+  if($('controlSummary')) $('controlSummary').textContent=`${new URL(control).origin}/api/cors/lab · ${requestShapeSummary()}`;
 }
 function enteredOrigin(){
   const value=$('siteUrl').value.trim();
-  if(!value){$('originResult').textContent='Your origin will appear here.';return 'https://your-site.example';}
+  if(!value){$('originResult').textContent='Example: https://app.example.com/page → origin https://app.example.com';return 'https://your-site.example';}
   try{
     const u=new URL(value);
     if(!['http:','https:'].includes(u.protocol)) throw new Error();
@@ -245,6 +265,16 @@ $('startDiagnosis').onclick=()=>{
 };
 $('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
 $('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};
+$('toggleTarget').onclick=()=>{
+  const pre=$('targetFetch'), show=pre.style.display==='none';
+  pre.style.display=show?'block':'none';
+  $('toggleTarget').textContent=show?'Hide generated code':'View generated code';
+};
+$('toggleControl').onclick=()=>{
+  const pre=$('controlFetch'), show=pre.style.display==='none';
+  pre.style.display=show?'block':'none';
+  $('toggleControl').textContent=show?'Hide generated code':'View generated code';
+};
 $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
