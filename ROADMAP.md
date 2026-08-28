@@ -70,3 +70,10 @@ Keep public utility endpoints free. Possible paid features after adoption:
 - Developers linking to or bookmarking AnotherExample
 - Organic search traffic to specific testing problems
 - Requests for persistence, privacy, higher limits, or team features
+
+
+### V1.1 UX direction
+- Lead with **Test your URL** rather than a generic app/demo framing.
+- Generate code developers can run from their own site against a known second origin.
+- Keep real browser scenarios as supporting diagnostics and education.
+- Explain likely causes for expected CORS failures while preserving the browser's actual fetch result.

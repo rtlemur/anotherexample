@@ -35,3 +35,8 @@ See `ROADMAP.md` for product direction.
 
 ## V1.1 preview second origin
 The preview CORS Playground runs real browser-enforced cross-origin tests against `https://cors-preview.anotherexample.com`, which is mapped in Vercel to the `v1.1-preview` branch. Production should use a permanent second-origin hostname such as `cors.anotherexample.com` before merging the playground live.
+
+
+## V1.1 URL-first CORS preview
+
+The CORS Playground now leads with a developer's own URL, derives the browser origin for generated examples, and keeps the seven real-browser scenarios as a learning/debugging section. Client IP addresses are no longer included in public request snapshots. The page selects `cors-preview.anotherexample.com` outside production and `cors.anotherexample.com` on the production hostname.

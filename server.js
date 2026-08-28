@@ -41,7 +41,7 @@ function publicHeaders(req) {
 }
 function requestSnapshot(req) {
   return { method:req.method, path:req.originalUrl, query:req.query, headers:publicHeaders(req), body:req.body ?? null,
-    ip:req.ip, timestamp:new Date().toISOString(), note:'Sensitive and hosting-provider headers are omitted.' };
+    timestamp:new Date().toISOString(), note:'Sensitive, hosting-provider, and client IP information are omitted.' };
 }
 function hasTestCookie(req) {
   const raw=req.get('Cookie')||'';
