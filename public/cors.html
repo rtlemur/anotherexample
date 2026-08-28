@@ -28,30 +28,68 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p class="tag">Test your URL against a real second origin. See what the browser allows, then understand why.</p>
 
 <section class="panel hero">
-<h2>Test your URL</h2>
-<p>Enter the page where your browser code is running. We’ll identify its origin and generate a real AnotherExample endpoint plus code you can run from that page.</p>
-<label for="siteUrl">Your URL</label>
-<input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
-<div id="originResult" class="origin">Your origin will appear here.</div>
+<h2>Find out why your CORS request is failing</h2>
+<p>Tell us where the request starts and what API it is trying to reach. AnotherExample will build two browser tests: your real API request and a known-good comparison against our second origin.</p>
 <div class="two">
 <section>
-<h3>1. Choose the request</h3>
-<label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-<label>Allow-Origin response</label><select id="allowOrigin"><option value="*">* (wildcard)</option><option value="echo">Echo request Origin</option><option value="none">No header</option><option value="https://wrong.example">https://wrong.example</option></select>
-<div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials / allow credentials</label></div>
+<label for="siteUrl">Your page URL</label>
+<input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
+<div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
 </section>
 <section>
-<h3>2. Run it from your URL</h3>
-<ol class="steps"><li>Copy the generated <strong>fetch</strong> code below.</li><li>Run it from the browser page you entered.</li><li>If AnotherExample works but your real API fails, investigate the API’s CORS configuration.</li></ol>
-<p class="small">The URL is used to explain the correct browser origin. AnotherExample does not crawl or modify your site.</p>
+<label for="targetUrl">Target API URL</label>
+<input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
+<div id="targetResult" class="origin">The API/resource your page is trying to reach.</div>
 </section>
 </div>
+<div class="actions"><button id="startDiagnosis">Build diagnostic tests</button></div>
+<p class="small">AnotherExample does not crawl, proxy, or modify either URL. The generated tests run in your browser from your own page, where CORS is actually enforced.</p>
 </section>
 
-<div class="status ok"><strong>Real second origin:</strong> this preview generates requests to <code>cors-preview.anotherexample.com</code>. Your browser—not this page—enforces the CORS policy.</div>
+<div id="diagnostic" style="display:none">
+<h2 class="section">Your diagnostic tests</h2>
+<div class="two">
+<section class="panel">
+<h3>Test A — Your API</h3>
+<p class="small">Run this from the page URL you entered. This reproduces the request to your real target.</p>
+<pre id="targetFetch"></pre>
+<div class="actions"><button id="copyTarget">Copy Test A</button></div>
+</section>
+<section class="panel">
+<h3>Test B — AnotherExample control</h3>
+<p class="small">Run this from the same page. It makes the same kind of request to a controlled second origin.</p>
+<pre id="controlFetch"></pre>
+<div class="actions"><button id="copyControl">Copy Test B</button></div>
+</section>
+</div>
+<div class="panel" style="margin-top:12px">
+<h3>How to read the comparison</h3>
+<p><strong>A fails, B works:</strong> your browser/frontend can make this kind of cross-origin request; investigate the target API’s CORS response.</p>
+<p><strong>A works, B works:</strong> CORS is working for both tests. Reproduce the exact failing method, headers, body, and credentials.</p>
+<p><strong>A fails, B fails:</strong> compare the browser Console errors. The request shape, credentials, browser policy, or environment may differ from what you expect.</p>
+<p class="small">Browsers intentionally expose limited CORS failure detail to JavaScript. Developer Tools remains the authoritative place for the exact browser error.</p>
+</div>
+</div>
 
-<h2 class="section">Code for your URL</h2>
-<div class="two"><section class="panel"><h3>fetch</h3><pre id="fetchCode"></pre><div class="actions"><button id="copyFetch">Copy fetch code</button></div></section>
+<div class="status ok"><strong>Known-good second origin:</strong> preview uses <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</div>
+
+<h2 class="section">Configure the request</h2>
+<div class="panel">
+<div class="two">
+<section>
+<label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
+<div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
+</section>
+<section>
+<label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
+<p class="small">For now, POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
+</section>
+</div>
+</div>
+</strong>
+
+<h2 class="section">AnotherExample lab endpoint</h2>
+<div class="two"><section class="panel"><h3>Configured control request</h3><pre id="fetchCode"></pre><div class="actions"><button id="copyFetch">Copy fetch code</button></div></section>
 <section class="panel"><h3>curl comparison</h3><pre id="curlCode"></pre><div class="actions"><button id="copyUrl" class="secondary">Copy endpoint URL</button></div><p class="small">curl can inspect the server response, but it does not enforce browser CORS rules.</p></section></div>
 
 <hr class="divider">
@@ -90,6 +128,29 @@ const $=id=>document.getElementById(id);
 const defaults={methods:'GET, POST, OPTIONS',headers:'Content-Type',delay:'0'};
 let selectedScenario=scenarios[0];
 
+function validHttpUrl(value){
+  try { const u=new URL(value); return ['http:','https:'].includes(u.protocol)?u:null; } catch { return null; }
+}
+function targetUrl(){
+  const v=$('targetUrl').value.trim(), u=validHttpUrl(v);
+  $('targetResult').textContent = !v ? 'The API/resource your page is trying to reach.' : u ? 'Target origin: '+u.origin : 'Enter a complete URL beginning with http:// or https://';
+  return u ? u.href : 'https://api.example.com/data';
+}
+function bodyObject(){
+  try{return JSON.parse($('requestBody').value||'{}')}catch{return {playground:'test'}}
+}
+function requestSnippet(destination){
+  const method=$('method').value, opts=[];
+  if(method!=='GET') opts.push(`method: '${method}'`, "headers: { 'Content-Type': 'application/json' }", `body: JSON.stringify(${JSON.stringify(bodyObject())})`);
+  if($('credentials').checked) opts.push("credentials: 'include'");
+  return `fetch('${destination}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(async r => ({ status:r.status, headers:Object.fromEntries(r.headers), body:await r.text() }))\n  .then(console.log)\n  .catch(console.error);`;
+}
+function updateDiagnostic(){
+  enteredOrigin();
+  const target=targetUrl();
+  $('targetFetch').textContent=requestSnippet(target);
+  $('controlFetch').textContent=requestSnippet(url());
+}
 function enteredOrigin(){
   const value=$('siteUrl').value.trim();
   if(!value){$('originResult').textContent='Your origin will appear here.';return 'https://your-site.example';}
@@ -129,6 +190,7 @@ function fetchText(){
 }
 function updateCode(){
   const origin=enteredOrigin();
+  targetUrl();
   $('fetchCode').textContent=fetchText();
   $('curlCode').textContent=`curl -i -X ${$('method').value} -H 'Origin: ${origin}' '${url()}'`;
 }
@@ -162,12 +224,22 @@ async function run(){
     $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
   }
 }
-['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',explain));
-$('siteUrl').addEventListener('input',updateCode);
+['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{explain();updateDiagnostic()}));
+$('siteUrl').addEventListener('input',()=>{updateCode();updateDiagnostic()});
+$('targetUrl').addEventListener('input',updateDiagnostic);
+$('requestBody').addEventListener('input',updateDiagnostic);
+$('startDiagnosis').onclick=()=>{
+  const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
+  enteredOrigin();targetUrl();
+  if(!source||!target){$('diagnostic').style.display='none';return;}
+  updateDiagnostic();$('diagnostic').style.display='block';$('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
+};
+$('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
+$('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};
 $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
-apply(scenarios[0].v);box.firstChild.classList.add('active');
+apply(scenarios[0].v);box.firstChild.classList.add('active');updateDiagnostic();
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>

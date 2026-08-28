@@ -77,3 +77,9 @@ Keep public utility endpoints free. Possible paid features after adoption:
 - Generate code developers can run from their own site against a known second origin.
 - Keep real browser scenarios as supporting diagnostics and education.
 - Explain likely causes for expected CORS failures while preserving the browser's actual fetch result.
+
+### V1.1 diagnostic front door
+- Ask for **Your page URL** and **Target API URL** first.
+- Generate Test A for the developer's real API and Test B for AnotherExample's known-good second origin.
+- Do not proxy or server-fetch arbitrary target URLs; tests are generated for the developer to run in their own browser context.
+- Interpret the A/B comparison without pretending JavaScript can see browser-only CORS error details.
