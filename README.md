@@ -49,3 +49,6 @@ The first diagnostic build removed the `allowOrigin` control while legacy lab/sc
 
 ## Current stop point
 Development paused August 27, 2026 on the V1.1 preview. The diagnostic front door works. The next iteration should make the post-click **Your diagnostic is ready** state unmistakable, place Test A/Test B first, and move request configuration into collapsed **Advanced options**. See `ROADMAP.md` for the full resume checklist.
+
+## CORS Debugger iteration
+Diagnosis-first flow: Test A and Test B appear immediately after starting; request configuration is under Advanced options. Product naming changed from CORS Playground to CORS Debugger.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Test your URL against a real second origin and understand browser CORS behavior.">
-<title>CORS Playground — anotherexample.com</title>
+<title>CORS Debugger — anotherexample.com</title>
 <style>
 :root{--bg:#0f1115;--card:#171a21;--border:#2a2e38;--text:#e6e8eb;--muted:#9aa0ac;--accent:#6ee7b7;--code:#10131a;--bad:#f87171;--warn:#fbbf24}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.55}
@@ -24,8 +24,8 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <body>
 <main class="wrap">
 <a class="back" href="/">← anotherexample.com</a>
-<h1>CORS Playground</h1>
-<p class="tag">Test your URL against a real second origin. See what the browser allows, then understand why.</p>
+<h1>CORS Debugger</h1>
+<p class="tag">Why won’t my CORS work? Compare your failing request with a known-good second origin and see where the problem is.</p>
 
 <section class="panel hero">
 <h2>Find out why your CORS request is failing</h2>
@@ -42,38 +42,33 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <div id="targetResult" class="origin">The API/resource your page is trying to reach.</div>
 </section>
 </div>
-<div class="actions"><button id="startDiagnosis">Build diagnostic tests</button></div>
+<div class="actions"><button id="startDiagnosis">Start CORS diagnosis</button></div>
 <p class="small">AnotherExample does not crawl, proxy, or modify either URL. The generated tests run in your browser from your own page, where CORS is actually enforced.</p>
 </section>
 
 <div id="diagnostic" style="display:none">
-<h2 class="section">Your diagnostic tests</h2>
+<div class="panel" style="border-color:#65e6b8">
+<p class="eyebrow" style="margin-top:0">DIAGNOSTIC READY</p>
+<h2 style="margin-top:6px">Your two-test CORS check</h2>
+<p>Run both tests from the page URL you entered. The comparison helps separate a target-API CORS problem from a broader request or browser-environment problem.</p>
 <div class="two">
-<section class="panel">
-<h3>Test A — Your API</h3>
-<p class="small">Run this from the page URL you entered. This reproduces the request to your real target.</p>
-<pre id="targetFetch"></pre>
-<div class="actions"><button id="copyTarget">Copy Test A</button></div>
-</section>
-<section class="panel">
-<h3>Test B — AnotherExample control</h3>
-<p class="small">Run this from the same page. It makes the same kind of request to a controlled second origin.</p>
-<pre id="controlFetch"></pre>
-<div class="actions"><button id="copyControl">Copy Test B</button></div>
-</section>
+<section><h3>Test A — Your real API</h3><p class="small">This reproduces the request to the target API you entered.</p><pre id="targetFetch"></pre><div class="actions"><button id="copyTarget">Copy Test A</button></div></section>
+<section><h3>Test B — Known-good control</h3><p class="small">This makes the same kind of request to AnotherExample's controlled second origin.</p><pre id="controlFetch"></pre><div class="actions"><button id="copyControl">Copy Test B</button></div></section>
 </div>
-<div class="panel" style="margin-top:12px">
-<h3>How to read the comparison</h3>
-<p><strong>A fails, B works:</strong> your browser/frontend can make this kind of cross-origin request; investigate the target API’s CORS response.</p>
-<p><strong>A works, B works:</strong> CORS is working for both tests. Reproduce the exact failing method, headers, body, and credentials.</p>
-<p><strong>A fails, B fails:</strong> compare the browser Console errors. The request shape, credentials, browser policy, or environment may differ from what you expect.</p>
-<p class="small">Browsers intentionally expose limited CORS failure detail to JavaScript. Developer Tools remains the authoritative place for the exact browser error.</p>
+<hr>
+<h3>How to read the result</h3>
+<p><strong>A fails, B works:</strong> focus on the target API's CORS configuration or response.</p>
+<p><strong>A works, B works:</strong> basic cross-origin access works. Reproduce the exact failing method, headers, body, and credentials.</p>
+<p><strong>A fails, B fails:</strong> compare the browser Console errors and verify the request shape, credentials, and environment.</p>
+<p class="small">Run these from your own page's browser context. AnotherExample does not crawl, proxy, or modify your target URL.</p>
 </div>
 </div>
+<p class="small"><strong>Preview environment:</strong> control requests use <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</p>
 
-<div class="status ok"><strong>Known-good second origin:</strong> preview uses <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</div>
+<details id="advancedOptions" style="margin-top:28px">
+<summary class="section" style="cursor:pointer">Advanced options</summary>
+<p class="small">Change the request only when you need to reproduce a specific CORS failure. Start with the default GET test first.</p>
 
-<h2 class="section">Configure the request</h2>
 <div class="panel">
 <div class="two">
 <section>
@@ -94,6 +89,9 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 </div>
 </strong>
+
+
+</details>
 
 <h2 class="section">AnotherExample lab endpoint</h2>
 <div class="two"><section class="panel"><h3>Configured control request</h3><pre id="fetchCode"></pre><div class="actions"><button id="copyFetch">Copy fetch code</button></div></section>
@@ -243,7 +241,7 @@ $('startDiagnosis').onclick=()=>{
   const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
   enteredOrigin();targetUrl();
   if(!source||!target){$('diagnostic').style.display='none';return;}
-  updateDiagnostic();$('diagnostic').style.display='block';$('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
+  updateDiagnostic();$('diagnostic').style.display='block';$('startDiagnosis').textContent='Diagnostic ready ✓';$('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
 };
 $('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
 $('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};

@@ -165,3 +165,13 @@ SEO principle: useful problem-specific content first; no thin keyword-variant pa
 
 ### Resume point
 When work resumes, start with the **post-click diagnostic UX**. Do not reopen the broader product strategy unless testing uncovers a reason to do so.
+
+## V1.1 — CORS Debugger iteration (August 28, 2026)
+- Renamed primary tool **CORS Debugger**.
+- Hero targets the user/search problem: **“Why won’t my CORS work?”**
+- Primary action: **Start CORS diagnosis**.
+- Post-click state begins with prominent **DIAGNOSTIC READY** and Test A/Test B.
+- Comparison outcomes appear beside the tests.
+- Request configuration moved into collapsed **Advanced options**.
+- Next validation: desktop workflow, GET, POST/preflight, credentials, then production-readiness review.
+- SEO/discovery remains planned around real CORS failure-language queries and focused problem pages; avoid thin keyword variants.
