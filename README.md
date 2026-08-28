@@ -55,3 +55,6 @@ Diagnosis-first flow: Test A and Test B appear immediately after starting; reque
 
 ## Diagnostic workflow refinement
 Generated JavaScript is now secondary to the diagnostic workflow. Test A/Test B show concise summaries first, with code available on demand and explicit instructions to run both from the actual page origin in DevTools.
+
+## Diagnosis button state
+The primary button remains actionable after each run. Diagnostic readiness is displayed separately, and editing request inputs automatically marks the previous diagnostic stale so another diagnosis can be started without refreshing the page.

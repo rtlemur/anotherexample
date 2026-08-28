@@ -42,7 +42,10 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <div id="targetResult" class="origin">The API/resource your page is trying to reach.</div>
 </section>
 </div>
-<div class="actions"><button id="startDiagnosis">Start CORS diagnosis</button></div>
+<div class="actions">
+  <button id="startDiagnosis">Start CORS diagnosis</button>
+  <span id="diagnosticStatus" class="small" style="margin-left:12px" aria-live="polite"></span>
+</div>
 <p class="small">AnotherExample does not crawl, proxy, or modify either URL. The generated tests run in your browser from your own page, where CORS is actually enforced.</p>
 </section>
 
@@ -253,15 +256,32 @@ async function run(){
     $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
   }
 }
-['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{explain();updateDiagnostic()}));
-$('siteUrl').addEventListener('input',()=>{updateCode();updateDiagnostic()});
-$('targetUrl').addEventListener('input',updateDiagnostic);
-$('requestBody').addEventListener('input',updateDiagnostic);
+function markDiagnosticStale(){
+  const status=$('diagnosticStatus');
+  if(status) status.textContent='Inputs changed — run diagnosis again';
+  const diagnostic=$('diagnostic');
+  if(diagnostic) diagnostic.style.display='none';
+  const button=$('startDiagnosis');
+  if(button){
+    button.textContent='Start CORS diagnosis';
+    button.disabled=false;
+  }
+}
+
+['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{markDiagnosticStale();explain();updateDiagnostic()}));
+$('siteUrl').addEventListener('input',()=>{markDiagnosticStale();updateCode();updateDiagnostic()});
+$('targetUrl').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
+$('requestBody').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
 $('startDiagnosis').onclick=()=>{
   const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
   enteredOrigin();targetUrl();
   if(!source||!target){$('diagnostic').style.display='none';return;}
-  updateDiagnostic();$('diagnostic').style.display='block';$('startDiagnosis').textContent='Diagnostic ready ✓';$('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
+  updateDiagnostic();
+  $('diagnostic').style.display='block';
+  $('diagnosticStatus').textContent='Diagnostic ready';
+  $('startDiagnosis').textContent='Start CORS diagnosis';
+  $('startDiagnosis').disabled=false;
+  $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
 };
 $('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
 $('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};

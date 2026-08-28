@@ -185,3 +185,13 @@ When work resumes, start with the **post-click diagnostic UX**. Do not reopen th
 - Preserve technical honesty: typing an external URL does not let AnotherExample execute code from that origin.
 - State explicitly that A/B comparison narrows likely causes but does not prove a unique root cause.
 - Future opportunity: structured result paste/import or a lightweight helper, only if it preserves true page-origin execution and does not introduce unsafe proxy behavior.
+
+
+## V1.1 — Diagnosis button state fix
+- Keep **Start CORS diagnosis** as the permanent primary action label.
+- Show **Diagnostic ready** as separate text beside the button after a diagnostic is prepared.
+- If the origin, target URL, body, or request options change, invalidate the previous diagnostic immediately:
+  - hide stale diagnostic output,
+  - show **Inputs changed — run diagnosis again** beside the button,
+  - keep the button active and labeled **Start CORS diagnosis**.
+- A page reload is no longer required to start a second diagnosis.
