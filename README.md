@@ -43,3 +43,9 @@ The CORS Playground now leads with a developer's own URL, derives the browser or
 
 ## Diagnostic comparison iteration
 The CORS page now leads with a two-test workflow: the developer's target API versus a controlled AnotherExample second-origin request. Arbitrary target URLs are not fetched server-side; this avoids turning the service into an open proxy/SSRF surface and preserves real browser CORS enforcement.
+
+## Diagnostic hotfix
+The first diagnostic build removed the `allowOrigin` control while legacy lab/scenario JavaScript still referenced it during page initialization. That exception prevented the **Build diagnostic tests** click handler from ever being attached. This build restores the control and adds a defensive initialization guard.
+
+## Current stop point
+Development paused August 27, 2026 on the V1.1 preview. The diagnostic front door works. The next iteration should make the post-click **Your diagnostic is ready** state unmistakable, place Test A/Test B first, and move request configuration into collapsed **Advanced options**. See `ROADMAP.md` for the full resume checklist.

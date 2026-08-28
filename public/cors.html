@@ -78,6 +78,13 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <div class="two">
 <section>
 <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
+<label for="allowOrigin">Allow-Origin response</label>
+<select id="allowOrigin">
+  <option value="*">*</option>
+  <option value="echo">Reflect requesting origin</option>
+  <option value="none">Omit header</option>
+  <option value="https://wrong.example">Wrong origin</option>
+</select>
 <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
 </section>
 <section>
@@ -165,9 +172,13 @@ function enteredOrigin(){
   }
 }
 function apply(v){
-  for(const k of ['method','allowOrigin','methods','headers','preflight','delay'])
-    if(v[k]!=null)$(k).value=v[k]; else if(defaults[k]!=null)$(k).value=defaults[k];
-  $('credentials').checked=!!v.credentials; explain();
+  for(const k of ['method','allowOrigin','methods','headers','preflight','delay']){
+    const el=$(k);
+    if(!el) continue;
+    if(v[k]!=null) el.value=v[k]; else if(defaults[k]!=null) el.value=defaults[k];
+  }
+  if($('credentials')) $('credentials').checked=!!v.credentials;
+  explain();
 }
 const box=$('scenarios');
 scenarios.forEach((s)=>{

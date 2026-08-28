@@ -83,3 +83,85 @@ Keep public utility endpoints free. Possible paid features after adoption:
 - Generate Test A for the developer's real API and Test B for AnotherExample's known-good second origin.
 - Do not proxy or server-fetch arbitrary target URLs; tests are generated for the developer to run in their own browser context.
 - Interpret the A/B comparison without pretending JavaScript can see browser-only CORS error details.
+
+
+---
+
+## STOP POINT — August 27, 2026
+
+V1.1 preview is intentionally paused here. Do not merge to `main` yet.
+
+### What is working
+- The product direction is now a **CORS diagnostic/debugging tool**, not merely a generic CORS playground.
+- The front door asks for:
+  - **Your page URL** — where the browser request originates.
+  - **Target API URL** — the API/resource the developer is trying to reach.
+- **Build diagnostic tests** works and reveals the next diagnostic section.
+- The controlled comparison concept is established:
+  - **Test A:** the developer's real target API.
+  - **Test B:** AnotherExample's known-good second origin.
+- Preview second origin: `https://cors-preview.anotherexample.com`
+- Intended production second origin: `https://cors.anotherexample.com`
+- Real-browser CORS scenarios were previously validated after Vercel Authentication was disabled.
+- Client IP information is omitted from request echo output.
+
+### UX issue discovered at stop point
+The post-click transition is not obvious enough. The button works, but the page scroll/reveal can make it appear that nothing happened.
+
+### NEXT SESSION — immediate work
+1. Change the page/product label from **CORS Playground** to **CORS Debugger** (working choice).
+2. Make the post-click state unmistakable:
+   - prominent **Your diagnostic is ready** heading;
+   - show Test A and Test B immediately;
+   - clearly explain the three comparison outcomes.
+3. Move **Configure the request** below the primary diagnostic flow.
+4. Rename it **Advanced options** and collapse it by default.
+5. Retest the complete page URL → target API URL → diagnostic workflow on desktop.
+6. Test GET first, then POST/preflight and credentials.
+7. Only after the UX and browser behavior are solid, prepare V1.1 for merge to `main`.
+
+### Product positioning
+Primary user problem:
+> **My CORS request is failing. Tell me why.**
+
+AnotherExample's differentiator is the controlled comparison against a real, known-good second origin. It should help a developer distinguish among frontend/request-shape problems, target API CORS configuration, and browser-enforced CORS behavior.
+
+Avoid positioning AnotherExample as a CORS proxy. Arbitrary target URLs should not be fetched server-side merely to imitate a proxy; preserve real browser enforcement and avoid open-proxy/SSRF risk.
+
+### Discovery / SEO plan
+Build search discovery around real developer problems and browser error language rather than generic keyword pages.
+
+Initial topic/query targets:
+- why isn't my CORS working
+- why am I getting a CORS error
+- how to fix a CORS error
+- CORS works in Postman/curl but not browser
+- CORS preflight failed
+- No Access-Control-Allow-Origin header
+- CORS Failed to fetch
+- CORS credentials wildcard error
+- OPTIONS request CORS error
+- CORS works locally but not in production
+
+Future focused pages may include:
+- `/cors/access-control-allow-origin-missing`
+- `/cors/preflight-failed`
+- `/cors/credentials-wildcard`
+- `/cors/failed-to-fetch`
+
+Each problem page should explain the specific failure clearly and lead naturally into the **CORS Debugger** so the visitor can test rather than only read.
+
+SEO principle: useful problem-specific content first; no thin keyword-variant pages or keyword stuffing.
+
+### Later roadmap — after V1.1
+- Visual Request Debugger.
+- OpenAPI mock-data generator.
+- Live OpenAPI mock APIs.
+- Saved request history/shareable configurations.
+- Cookie/SameSite testing.
+- iframe/CSP/framing testing.
+- Redirect/referrer/origin/postMessage/cross-origin-isolation tools.
+- Monetization only after usage signals justify it: persistent/private endpoints, saved configurations, API keys/higher limits, teams/shared environments, and related infrastructure features.
+
+### Resume point
+When work resumes, start with the **post-click diagnostic UX**. Do not reopen the broader product strategy unless testing uncovers a reason to do so.
