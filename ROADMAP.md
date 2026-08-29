@@ -369,17 +369,18 @@ Prepared the next preview iteration specifically for the two remaining credentia
 
 Next action: upload this build to `v1.1-preview`, then run and record both cases before making further functional changes.
 
-## UX repair — August 29, 2026
-Credential testing exposed a confusing distinction:
-- Test A uses the Target API URL exactly as entered.
-- Request-shape controls such as method/body/credentials apply to both generated tests.
-- Controlled CORS response controls such as Allow-Origin configure Test B only.
+## UX hierarchy repair — August 29, 2026
+Built from the last known-good credentials-validation package after rejecting the prior UX build because Copy Test A/B disappeared.
 
-Repair:
-- moved Advanced request options directly into the diagnosis setup area, above Start CORS diagnosis;
-- kept them collapsed in a dropdown/details control to preserve vertical space;
-- relabeled Allow-Origin as `Test B — Allow-Origin response`;
-- added explicit copy that Test A uses the target URL exactly as entered;
-- added explanatory copy distinguishing shared request settings from Test-B-only controlled response settings.
+Changes are intentionally limited:
+- Copy Test A and Copy Test B are preserved.
+- Advanced request options moved directly above Start CORS diagnosis and remain collapsed.
+- Test A is explicitly described as using the Target API URL exactly as entered.
+- Allow-Origin is explicitly labeled as a Test B controlled-response setting.
+- Existing “Learn with real browser scenarios” section is reframed as **Try a CORS scenario** with clearer hands-on positioning.
+- Scenario mechanics were not redesigned or moved ahead of the primary debugger.
 
-This is a UX clarification, not a change to browser/CORS mechanics.
+Primary hierarchy remains:
+1. CORS Debugger setup
+2. Diagnostic results / Test A and Test B
+3. Try a CORS scenario

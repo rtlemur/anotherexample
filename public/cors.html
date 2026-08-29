@@ -44,9 +44,9 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 <details id="advancedOptions" style="margin-top:28px">
 <summary style="cursor:pointer"><strong>Advanced request options</strong> <span class="small">— method, credentials, controlled CORS response</span></summary>
-<p class="small"><strong>Request settings</strong> (method, body, credentials) are used for both tests. <strong>Controlled response settings</strong> such as Allow-Origin configure Test B only; your Target API URL controls how Test A responds.</p>
+<p class="small"><strong>Method, body, and credentials</strong> shape both generated requests. <strong>Controlled response settings</strong> configure Test B only; Test A uses your Target API URL exactly as entered.</p>
 
-<div class="panel" style="margin-top:12px">
+<div class="panel">
 <div class="two">
 <section>
 <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
@@ -114,8 +114,8 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <section class="panel"><h3>curl comparison</h3><pre id="curlCode"></pre><div class="actions"><button id="copyUrl" class="secondary">Copy endpoint URL</button></div><p class="small">curl can inspect the server response, but it does not enforce browser CORS rules.</p></section></div>
 
 <hr class="divider">
-<h2 class="section">Learn with real browser scenarios</h2>
-<p class="small">These presets reproduce common CORS successes and failures using the same real second-origin endpoint.</p>
+<h2 class="section">Try a CORS scenario</h2>
+<p class="small">See a real browser CORS success or failure using AnotherExample’s controlled second origin. These presets reproduce common problems without requiring your own failing API.</p>
 <div class="scenarios" id="scenarios"></div>
 
 <div class="two">
