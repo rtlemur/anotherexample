@@ -39,9 +39,33 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <section>
 <label for="targetUrl">Target API URL</label>
 <input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
-<div id="targetResult" class="origin">The API/resource your page is trying to reach.</div>
+<div id="targetResult" class="origin">The API/resource your page is trying to reach. Test A uses this URL exactly as entered.</div>
 </section>
 </div>
+<details id="advancedOptions" style="margin-top:28px">
+<summary style="cursor:pointer"><strong>Advanced request options</strong> <span class="small">— method, credentials, controlled CORS response</span></summary>
+<p class="small"><strong>Request settings</strong> (method, body, credentials) are used for both tests. <strong>Controlled response settings</strong> such as Allow-Origin configure Test B only; your Target API URL controls how Test A responds.</p>
+
+<div class="panel" style="margin-top:12px">
+<div class="two">
+<section>
+<label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
+<label for="allowOrigin">Test B — Allow-Origin response</label>
+<select id="allowOrigin">
+  <option value="*">*</option>
+  <option value="echo">Reflect requesting origin</option>
+  <option value="none">Omit header</option>
+  <option value="https://wrong.example">Wrong origin</option>
+</select>
+<div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
+</section>
+<section>
+<label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
+<p class="small">For now, POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
+</section>
+</div>
+</div>
+</details>
 <div class="actions">
   <button id="startDiagnosis">Start CORS diagnosis</button>
   <span id="diagnosticStatus" class="small" style="margin-left:12px" aria-live="polite"></span>
@@ -83,30 +107,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 <p class="small"><strong>Preview environment:</strong> control requests use <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</p>
 
-<details id="advancedOptions" style="margin-top:28px">
-<summary class="section" style="cursor:pointer">Advanced request options</summary>
-<p class="small">Change the request only when you need to reproduce a specific CORS failure. Start with the default GET test first.</p>
 
-<div class="panel">
-<div class="two">
-<section>
-<label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-<label for="allowOrigin">Allow-Origin response</label>
-<select id="allowOrigin">
-  <option value="*">*</option>
-  <option value="echo">Reflect requesting origin</option>
-  <option value="none">Omit header</option>
-  <option value="https://wrong.example">Wrong origin</option>
-</select>
-<div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
-</section>
-<section>
-<label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
-<p class="small">For now, POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
-</section>
-</div>
-</div>
-</details>
 
 <h2 class="section">AnotherExample lab endpoint</h2>
 <div class="two"><section class="panel"><h3>Configured control request</h3><pre id="fetchCode"></pre><div class="actions"><button id="copyFetch">Copy fetch code</button></div></section>
@@ -153,7 +154,7 @@ function validHttpUrl(value){
 }
 function targetUrl(){
   const v=$('targetUrl').value.trim(), u=validHttpUrl(v);
-  $('targetResult').textContent = !v ? 'The API/resource your page is trying to reach.' : u ? 'Target origin: '+u.origin : 'Enter a complete URL beginning with http:// or https://';
+  $('targetResult').textContent = !v ? 'The API/resource your page is trying to reach. Test A uses this URL exactly as entered.' : u ? 'Test A uses this URL exactly as entered · Target origin: '+u.origin : 'Enter a complete URL beginning with http:// or https://';
   return u ? u.href : 'https://api.example.com/data';
 }
 function bodyObject(){
