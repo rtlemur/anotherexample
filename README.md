@@ -58,3 +58,6 @@ Generated JavaScript is now secondary to the diagnostic workflow. Test A/Test B 
 
 ## Diagnosis button state
 The primary button remains actionable after each run. Diagnostic readiness is displayed separately, and editing request inputs automatically marks the previous diagnostic stale so another diagnosis can be started without refreshing the page.
+
+## Product direction — August 29, 2026
+After core CORS/browser validation, V1.1 will add **Paste Console Result / Explain This Error**: deterministic interpretation of common browser CORS/network errors combined with the controlled Test A/Test B comparison.

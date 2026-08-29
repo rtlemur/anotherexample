@@ -141,8 +141,8 @@ const scenarios=[
  {name:'✕ Wrong origin',desc:'Server allows a different site.',reason:'Access-Control-Allow-Origin does not match the page that made the request.',v:{method:'GET',allowOrigin:'https://wrong.example',credentials:false,preflight:'204'}},
  {name:'✓ Preflight allowed',desc:'POST is allowed by preflight.',reason:'The OPTIONS preflight succeeds, so the browser is allowed to send the POST.',v:{method:'POST',allowOrigin:'*',methods:'GET, POST, OPTIONS',headers:'Content-Type',credentials:false,preflight:'204'}},
  {name:'✕ Preflight rejected',desc:'OPTIONS intentionally returns 403.',reason:'The OPTIONS preflight is rejected, so the browser does not send the main POST request.',v:{method:'POST',allowOrigin:'*',credentials:false,preflight:'403'}},
- {name:'✕ Credentials + wildcard',desc:'Browsers reject * with credentials.',reason:'Credentialed CORS cannot use Access-Control-Allow-Origin: *. The server must name the requesting origin.',v:{method:'GET',allowOrigin:'*',credentials:true,preflight:'204'}},
- {name:'✓ Credentials done right',desc:'Reflect Origin and allow credentials.',reason:'The server reflects the requesting Origin and explicitly allows credentials.',v:{method:'GET',allowOrigin:'echo',credentials:true,preflight:'204'}}
+ {name:'✕ Credentials + wildcard',desc:'Expected browser block: credentials cannot use a wildcard origin.',reason:'Validation case: the request uses credentials while the response advertises Access-Control-Allow-Origin: *. The browser should block access to the response.',v:{method:'GET',allowOrigin:'*',credentials:true,preflight:'204'}},
+ {name:'✓ Credentials done right',desc:'Expected success: explicit requesting origin plus credentials.',reason:'Validation case: the controlled endpoint reflects the requesting Origin and sends Access-Control-Allow-Credentials: true. The browser should allow the response.',v:{method:'GET',allowOrigin:'echo',credentials:true,preflight:'204'}}
 ];
 const $=id=>document.getElementById(id);
 const defaults={methods:'GET, POST, OPTIONS',headers:'Content-Type',delay:'0'};

@@ -195,3 +195,176 @@ When work resumes, start with the **post-click diagnostic UX**. Do not reopen th
   - show **Inputs changed — run diagnosis again** beside the button,
   - keep the button active and labeled **Start CORS diagnosis**.
 - A page reload is no longer required to start a second diagnosis.
+
+
+# STOP POINT — August 28, 2026
+
+Do not merge V1.1 to `main` yet. Current work remains on `v1.1-preview`.
+
+## Current product state
+- V1.1 is now positioned as **CORS Debugger**.
+- Front door accepts **Request origin / page URL** and **Target API URL**.
+- Primary CTA remains **Start CORS diagnosis**.
+- Diagnostic readiness is separate status text; changing inputs invalidates the previous diagnostic and allows another run without reloading.
+- Post-click workflow presents:
+  - **Test A — Your real API**
+  - **Test B — Controlled origin**
+  - concise request summaries
+  - Copy Test buttons
+  - generated code hidden until requested
+  - interpretation guidance
+- Language uses **controlled second origin** and **narrow down** rather than overclaiming a definitive diagnosis.
+- Tests must be run from the developer's actual page/browser origin. AnotherExample does not crawl, proxy, or execute arbitrary code from a typed external URL.
+
+## Functional validation completed
+1. **Controlled cross-origin GET success — PASS**
+   - Test B returned HTTP 200 from `cors-preview.anotherexample.com`.
+2. **Real non-CORS network failure observed**
+   - `api.jsonplaceholder.dev/posts/1` timed out with `net::ERR_TIMED_OUT`.
+   - Important product lesson: `TypeError: Failed to fetch` is not necessarily CORS.
+3. **Missing Access-Control-Allow-Origin — PASS**
+   - Deliberate `allowOrigin=none` test was blocked by Chrome with:
+     `No 'Access-Control-Allow-Origin' header is present on the requested resource.`
+4. **POST + application/json + successful preflight — PASS**
+   - POST returned HTTP 200 with the lab configured to allow the request.
+   - Controlled Test B also returned HTTP 200.
+5. **Preflight method rejection — PASS**
+   - PUT + JSON against a lab response advertising only GET was blocked by Chrome with:
+     `Method PUT is not allowed by Access-Control-Allow-Methods in preflight response.`
+
+## Testing lessons
+- Chrome may show its self-XSS warning and require the user to type `allow pasting` before pasted DevTools snippets are accepted. This is real UX friction in the current copy/paste workflow.
+- Console `TypeError: Failed to fetch` is generic; DevTools Console/Network details are needed to distinguish CORS from DNS, timeout, TLS, redirect, connectivity, and other failures.
+- A POST can trigger preflight because of `Content-Type: application/json`, but POST itself is a CORS-safelisted method. For a clean Access-Control-Allow-Methods rejection test, PUT was used.
+- Do not encode the earlier mistaken assumption that POST must be rejected when ACA-Methods advertises GET; the validated method-rejection case is PUT.
+
+## Next session — resume here
+Run the credentials matrix:
+1. **Credentials + wildcard origin** — expected browser CORS failure.
+2. **Credentials + echoed/requesting origin** — expected success.
+3. Verify Test A and Test B behavior for both.
+4. Record exact Chrome errors/results.
+5. Then review remaining edge cases: malformed URL, unreachable server, redirects, HTTP/HTTPS, and any request-header/preflight cases worth including.
+6. Update interpretation copy so **A fails, B works** explicitly includes connectivity/DNS/TLS/redirect/server-response possibilities, not only CORS configuration.
+7. Reassess whether DevTools copy/paste is acceptable for V1.1 or whether a later structured-result/helper workflow belongs on the roadmap.
+8. Only after the functional matrix is satisfactory should V1.1 be prepared for merge to `main` and production `cors.anotherexample.com`.
+
+## Immediate next test
+Start with **credentials + wildcard origin**. Keep the production branch untouched until the credentials and remaining core tests pass.
+
+
+# ROADMAP UPDATE — August 29, 2026
+
+## Product direction
+Continue deeper as a **CORS diagnostic workflow**, not broader as a generic CORS playground.
+
+**Core promise:** “My browser request is failing. Help me narrow down why.”
+
+The differentiator remains the controlled comparison:
+- **Test A — Your real API**
+- **Test B — AnotherExample controlled second origin**
+- Both use the same request shape and are run from the developer's actual page/browser origin.
+
+The A/B result narrows the investigation; it must not be presented as proof of one root cause.
+
+## Immediate work — finish validation
+1. Credentials + wildcard origin — expected browser CORS failure.
+2. Credentials + echoed/requesting origin — expected success when credentials and explicit origin are permitted.
+3. Record exact browser results.
+4. Test malformed URLs, unreachable/timeouts, redirects, relevant HTTP/HTTPS/secure-context behavior, and disallowed request headers/preflight.
+5. Update interpretation copy from observed browser behavior.
+
+## V1.1 next feature — Paste Console Result / Explain This Error
+
+### Workflow
+**Step 1 — Describe the request**
+Origin/page URL, target API URL, method, credentials, and headers/body as needed.
+
+**Step 2 — Run the controlled comparison**
+Test A against the real target and Test B against AnotherExample, from the real browser origin.
+
+**Step 3 — Paste the browser result**
+Add a prominent **Paste Console Result** / **Explain this browser error** input.
+
+**Step 4 — Explain and narrow down**
+Classify recognizable errors deterministically where possible and explain:
+- what the browser reported,
+- which phase failed (network, preflight, response, credentials, etc.),
+- implicated CORS header/request property,
+- what to inspect next,
+- when evidence is insufficient to call it CORS.
+
+### Initial deterministic classifications
+Prioritize:
+- missing `Access-Control-Allow-Origin`
+- origin mismatch
+- wildcard origin with credentials
+- method not allowed by `Access-Control-Allow-Methods`
+- header not allowed by `Access-Control-Allow-Headers`
+- preflight/OPTIONS redirect or rejection
+- generic `TypeError: Failed to fetch`
+- `ERR_TIMED_OUT`
+- recognizable DNS/name-resolution failures
+- recognizable TLS/certificate failures
+- redirect failures
+- other network/server failures where evidence is sufficient
+
+## Interpretation rules
+**A fails / B works:** Controlled cross-origin request succeeded. Investigate the target side first: connectivity, DNS, TLS, redirects, authentication, server response, request configuration, or CORS. Use the browser error to narrow further.
+
+**A works / B works:** Basic cross-origin access works for the generated request shape. Compare the exact failing app request: method, headers, body, credentials, and environment.
+
+**A fails / B fails:** Comparison alone is insufficient. Compare both browser errors and inspect request shape, environment, connectivity, browser policy, credentials, extensions, and CORS. Do not claim it cannot be CORS.
+
+## UX direction
+- Keep **Start CORS diagnosis** as the permanent CTA.
+- Keep readiness/status text separate.
+- Keep generated JavaScript secondary/hidden by default.
+- Preserve privacy message: AnotherExample does not crawl, proxy, or modify the target.
+- Consider scannable Test A/Test B result cards after functionality is proven.
+- Test expanded-code responsiveness before changing the two-column layout.
+- Chrome's DevTools paste warning is known workflow friction and should remain on the usability list.
+
+## Technical guardrails
+- `Failed to fetch` is not synonymous with CORS.
+- The A/B matrix alone does not identify a root cause.
+- DevTools Console/Network detail is key evidence.
+- Do not add an incorrect generic warning about HTTP pages requesting the HTTPS control endpoint as “mixed content”; test secure-context/cookie/localhost/PNA nuances separately.
+- Do not add arbitrary server-side URL fetching/proxying; preserve true browser-origin testing and avoid SSRF/open-proxy risk.
+
+## Product strategy
+1. Finish/validate CORS diagnostic core.
+2. Add deterministic **Paste Console Result / Explain This Error**.
+3. Test whether developers understand and use it.
+4. Improve DevTools handoff if copy/paste friction proves material.
+5. Build SEO/problem pages around real errors the debugger explains.
+6. Measure usage and repeat behavior.
+7. Then evaluate monetization.
+
+Potential later paid features:
+- persistent/private configurable endpoints
+- saved diagnostics/history/configurations
+- shareable debugging sessions
+- higher rate limits/API keys
+- team/shared environments
+- retention/business controls
+
+Do not add accounts, billing, database infrastructure, or AI-dependent diagnosis merely to enlarge V1.1. Classify common browser errors deterministically first so the tool remains fast, predictable, inexpensive, and privacy-conscious.
+
+## V1.1 “finished enough to ship”
+Ship when:
+- core CORS matrix is validated in a real browser,
+- stale-state/input bugs are fixed,
+- wording does not overclaim,
+- A/B workflow is understandable without documentation,
+- common pasted browser errors can be classified/explained usefully,
+- unknown cases clearly say when cause cannot be determined,
+- preview hostname is replaced by the permanent production controlled origin,
+- production is retested before merging to `main`.
+
+## Iteration — Credentials validation build
+Prepared the next preview iteration specifically for the two remaining credential checks. Scenario wording now labels the expected browser behavior without changing the underlying lab mechanics:
+- Credentials + wildcard — expected browser block.
+- Credentials done right — expected success with reflected requesting origin and `Access-Control-Allow-Credentials: true`.
+
+Next action: upload this build to `v1.1-preview`, then run and record both cases before making further functional changes.
