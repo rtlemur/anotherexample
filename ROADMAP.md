@@ -405,3 +405,15 @@ The setup is now presented as a diagnostic procedure rather than a generic form:
 
 `Start CORS diagnosis` remains the single primary action after all setup steps.
 The diagnostic result area still contains Copy Test A and Copy Test B.
+
+## Four-step workflow JavaScript repair — August 30, 2026
+Refresh testing exposed a reproducible startup exception:
+`Cannot set properties of null (setting 'textContent')` in `updateCode()`.
+
+Cause:
+- the four-step redesign removed the old `curlCode` element;
+- legacy JavaScript still attempted to write to it during initial setup.
+
+Repair:
+- guard the legacy `curlCode` update so absence of that optional UI element cannot throw;
+- no CORS endpoint logic or diagnostic behavior changed.
