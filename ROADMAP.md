@@ -410,3 +410,10 @@ The diagnostic result area still contains Copy Test A and Copy Test B.
 The first repair package was verified and found to still contain the old unguarded `curlCode` assignment.
 This package replaces the entire `updateCode()` block explicitly and also guards the optional legacy `response` display references.
 The packaged source was checked before export.
+
+## Diagnose vs Explore split + Browser Result interpreter — August 30, 2026
+- Removed deliberate failure scenarios from the main diagnostic setup.
+- Diagnostic Test B is positioned as a controlled working baseline.
+- Moved scenario presets to a separate `Explore common CORS failures` section.
+- Added `What did your browser say?` after diagnostic results.
+- Added deterministic local classification for common CORS/browser errors: missing ACAO, credentials wildcard, method/header preflight rejection, preflight redirect, timeout, DNS, TLS/certificate, generic Failed to fetch, HTTP 200, and unknown.

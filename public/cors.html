@@ -68,9 +68,9 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 
 <details class="step" id="advancedOptions">
-  <summary style="cursor:pointer"><span class="step-number" style="margin-right:10px">3</span><strong>Configure the controlled comparison</strong> <span class="small">— optional</span></summary>
+  <summary style="cursor:pointer"><span class="step-number" style="margin-right:10px">3</span><strong>Controlled comparison</strong> <span class="small">— optional settings</span></summary>
   <div style="margin-top:16px">
-    <p class="small">These settings affect AnotherExample’s controlled comparison only. They do not change your Target API.</p>
+    <p class="small">AnotherExample uses a controlled second origin as a working baseline. These optional settings affect that comparison only; they do not change your Target API.</p>
     <div class="two">
       <section>
         <label for="allowOrigin">Allow-Origin response</label>
@@ -91,20 +91,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
   </div>
 </details>
 
-<div class="step">
-  <div class="step-head"><span class="step-number">4</span><div><h2>Try a CORS scenario <span class="small">— optional</span></h2><p class="small">Choose a preset to reproduce a common browser CORS success or failure. Choosing one fills in the request and comparison settings above.</p></div></div>
-  <div id="scenarioState" class="status"><strong>Configuration:</strong> Custom configuration</div>
-  <div class="scenarios" id="scenarios"></div>
-  <div class="two" style="margin-top:14px">
-    <section class="panel">
-      <h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or use your current settings.</div>
-    </section>
-    <section class="panel">
-      <h3>Current controlled endpoint</h3><pre id="fetchCode"></pre>
-      <div class="actions"><button id="copyFetch" class="secondary">Copy fetch code</button><button id="copyUrl" class="secondary">Copy endpoint URL</button></div>
-    </section>
-  </div>
-</div>
+
 
 <div class="actions">
   <button id="startDiagnosis">Start CORS diagnosis</button>
@@ -145,10 +132,42 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p class="small">This comparison narrows the investigation; it does not prove a single root cause. AnotherExample does not crawl, proxy, or modify your target URL.</p>
 </div>
 </div>
+<div class="panel" id="browserResultPanel" style="margin-top:24px">
+<p class="eyebrow" style="margin-top:0">NEXT STEP</p>
+<h2>What did your browser say?</h2>
+<p>Paste the error or result from your browser Console. AnotherExample will explain what it recognizes and what to check next.</p>
+<label for="browserResult">Browser Console result</label>
+<textarea id="browserResult" rows="7" placeholder="Paste a browser Console error or result here..."></textarea>
+<div class="actions"><button id="explainBrowserResult" class="secondary">Explain this result</button></div>
+<div id="browserExplanation" class="status" style="display:none;margin-top:14px" aria-live="polite"></div>
+<p class="small">This first version recognizes common browser and CORS messages without guessing when the cause is unclear.</p>
+</div>
+
 <p class="small"><strong>Preview environment:</strong> control requests use <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</p>
 
 
 
+<hr class="divider">
+<section id="corsScenarios">
+<p class="eyebrow">EXPLORE</p>
+<h2 class="section">Explore common CORS failures</h2>
+<p>Want to see what a browser CORS failure actually looks like? These presets intentionally change AnotherExample’s controlled endpoint to reproduce common successes and failures.</p>
+<p class="small"><strong>This is separate from diagnosing your own target.</strong></p>
+<div>
+  
+  <div id="scenarioState" class="status"><strong>Scenario:</strong> None selected</div>
+  <div class="scenarios" id="scenarios"></div>
+  <div class="two" style="margin-top:14px">
+    <section class="panel">
+      <h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or use your current settings.</div>
+    </section>
+    <section class="panel">
+      <h3>Scenario endpoint</h3><pre id="fetchCode"></pre>
+      <div class="actions"><button id="copyFetch" class="secondary">Copy scenario fetch</button><button id="copyUrl" class="secondary">Copy endpoint URL</button></div>
+    </section>
+  </div>
+</div>
+</section>
 </main>
 <script>
 const scenarios=[
@@ -275,7 +294,7 @@ async function run(){
 function markScenarioCustom(){
   selectedScenario=null;
   [...box.children].forEach(x=>x.classList.remove('active'));
-  if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';
+  if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';
 }
 function markDiagnosticStale(){
   const status=$('diagnosticStatus');
@@ -318,8 +337,29 @@ $('toggleControl').onclick=()=>{
 };
 if($('run')) if($('run')) $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
-$('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
-apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';updateDiagnostic();
+$('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy scenario fetch',1200)};
+
+function classifyBrowserResult(text){
+  const s=(text||'').trim(), l=s.toLowerCase();
+  if(!s) return ['Paste a browser result first','Copy the relevant Console error or result and paste it above.'];
+  if(l.includes("no 'access-control-allow-origin' header")||l.includes('no access-control-allow-origin header')) return ['Missing Access-Control-Allow-Origin','The target responded, but the browser says its response does not include an Access-Control-Allow-Origin header permitting your page. Check the target API’s CORS configuration.'];
+  if(l.includes('must not be the wildcard')&&l.includes('credentials')) return ['Credentials cannot use a wildcard origin','The request includes credentials, but the response uses Access-Control-Allow-Origin: *. Credentialed requests need an explicit allowed origin.'];
+  if(l.includes('is not allowed by access-control-allow-methods')) return ['Method rejected by preflight','The requested HTTP method is not permitted by Access-Control-Allow-Methods in the preflight response.'];
+  if(l.includes('is not allowed by access-control-allow-headers')||(l.includes('request header field')&&l.includes('not allowed'))) return ['Request header rejected by preflight','A requested header is not permitted by Access-Control-Allow-Headers in the preflight response.'];
+  if(l.includes('redirect is not allowed for a preflight')) return ['Preflight was redirected','The browser will not follow this redirect for the CORS preflight. Check authentication, proxy, hosting, or URL redirects affecting OPTIONS.'];
+  if(l.includes('err_timed_out')||l.includes('timed out')) return ['Connection timed out — not enough evidence for CORS','The browser did not receive a usable response. Check server availability, connectivity, DNS, firewall/proxy behavior, and the target URL before treating this as CORS.'];
+  if(l.includes('err_name_not_resolved')) return ['DNS / hostname problem','The browser could not resolve the target hostname. Fix that before investigating CORS.'];
+  if(l.includes('err_cert')||l.includes('certificate')||l.includes('tls')) return ['TLS / certificate problem','Resolve the secure-connection or certificate problem before diagnosing CORS.'];
+  if(l.includes('failed to fetch')) return ['Failed to fetch — generic browser failure','This message alone does not identify the cause. Look for the more specific Console or Network error immediately above it.'];
+  if(l.includes('status: 200')||l.includes('status:200')) return ['Successful HTTP response','The pasted result shows HTTP 200. The request reached the server successfully; compare this with any browser-policy errors and the controlled result.'];
+  return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
+}
+$('explainBrowserResult').onclick=()=>{
+  const [title,body]=classifyBrowserResult($('browserResult').value), box=$('browserExplanation');
+  box.style.display='block'; box.innerHTML='<strong>'+title+'</strong><br>'+body;
+};
+
+apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
