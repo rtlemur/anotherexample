@@ -43,20 +43,15 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </section>
 </div>
 <details id="advancedOptions" style="margin-top:28px">
-<summary style="cursor:pointer"><strong>Advanced request options</strong> <span class="small">— method, credentials, controlled response</span></summary>
-<p class="small"><strong>Method, body, and credentials</strong> shape both generated requests. <strong>Controlled response settings</strong> configure AnotherExample’s comparison endpoint only; your Target API URL is used exactly as entered.</p>
+<summary style="cursor:pointer"><strong>Request options</strong> <span class="small">— method, credentials, controlled comparison</span></summary>
+<p class="small">Describe the request you are troubleshooting, then optionally adjust how AnotherExample’s controlled comparison responds.</p>
 
 <div class="panel">
 <div class="two">
 <section>
+<h3>Your request</h3>
+<p class="small">These settings apply to both generated tests.</p>
 <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-<label for="allowOrigin">Controlled comparison — Allow-Origin response</label>
-<select id="allowOrigin">
-  <option value="*">*</option>
-  <option value="echo">Reflect requesting origin</option>
-  <option value="none">Omit header</option>
-  <option value="https://wrong.example">Wrong origin</option>
-</select>
 <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
 </section>
 <section>
@@ -64,6 +59,17 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p class="small">For now, POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
 </section>
 </div>
+<hr>
+<h3>Controlled comparison</h3>
+<p class="small">This affects AnotherExample’s comparison endpoint only. It does not change your Target API.</p>
+<label for="allowOrigin">Controlled comparison — Allow-Origin response</label>
+<select id="allowOrigin">
+  <option value="*">*</option>
+  <option value="echo">Reflect requesting origin</option>
+  <option value="none">Omit header</option>
+  <option value="https://wrong.example">Wrong origin</option>
+</select>
+
 </div>
 </details>
 <h3 style="margin-top:22px">Try a CORS scenario</h3>
@@ -78,7 +84,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <label>Allowed request headers</label><input id="headers" value="Content-Type">
 <label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
 <label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
-<div class="actions"><button id="run">Run test from this playground</button></div>
+
 </section>
 <section class="panel">
 <h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or run the current settings.</div>
@@ -303,7 +309,7 @@ $('toggleControl').onclick=()=>{
   pre.style.display=show?'block':'none';
   $('toggleControl').textContent=show?'Hide generated code':'View generated code';
 };
-$('run').onclick=run;
+if($('run')) $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
 apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';updateDiagnostic();

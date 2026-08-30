@@ -387,3 +387,10 @@ Additional UX clarification:
 - Copy Test A and Copy Test B remain preserved in the diagnostic results.
 
 No production merge. Validate on v1.1-preview first.
+
+## Request-options cleanup — August 29, 2026
+- Renamed `Advanced request options` to `Request options`.
+- Clarified normal request settings versus controlled-comparison response settings.
+- Removed the competing `Run test from this playground` primary button from the setup workflow.
+- `Start CORS diagnosis` is now the single primary action for the diagnostic setup.
+- Preserved Copy Test A / Copy Test B and existing scenario presets.
