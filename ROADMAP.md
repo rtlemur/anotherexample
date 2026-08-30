@@ -369,18 +369,21 @@ Prepared the next preview iteration specifically for the two remaining credentia
 
 Next action: upload this build to `v1.1-preview`, then run and record both cases before making further functional changes.
 
-## UX hierarchy repair — August 29, 2026
-Built from the last known-good credentials-validation package after rejecting the prior UX build because Copy Test A/B disappeared.
+## Setup workflow repair — August 29, 2026
+The diagnosis setup is now intentionally uninterrupted:
 
-Changes are intentionally limited:
-- Copy Test A and Copy Test B are preserved.
-- Advanced request options moved directly above Start CORS diagnosis and remain collapsed.
-- Test A is explicitly described as using the Target API URL exactly as entered.
-- Allow-Origin is explicitly labeled as a Test B controlled-response setting.
-- Existing “Learn with real browser scenarios” section is reframed as **Try a CORS scenario** with clearer hands-on positioning.
-- Scenario mechanics were not redesigned or moved ahead of the primary debugger.
+1. Request origin / page URL
+2. Target API URL
+3. Advanced request options (collapsed)
+4. Try a CORS scenario
+5. Start CORS diagnosis
+6. Diagnostic results
 
-Primary hierarchy remains:
-1. CORS Debugger setup
-2. Diagnostic results / Test A and Test B
-3. Try a CORS scenario
+Additional UX clarification:
+- `Test B — Allow-Origin response` renamed to `Controlled comparison — Allow-Origin response`.
+- Test A continues to use the Target API URL exactly as entered.
+- Named scenario selection is shown explicitly.
+- Manually changing scenario/request settings clears the named preset and shows `Custom configuration`.
+- Copy Test A and Copy Test B remain preserved in the diagnostic results.
+
+No production merge. Validate on v1.1-preview first.

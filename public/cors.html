@@ -43,14 +43,14 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </section>
 </div>
 <details id="advancedOptions" style="margin-top:28px">
-<summary style="cursor:pointer"><strong>Advanced request options</strong> <span class="small">— method, credentials, controlled CORS response</span></summary>
-<p class="small"><strong>Method, body, and credentials</strong> shape both generated requests. <strong>Controlled response settings</strong> configure Test B only; Test A uses your Target API URL exactly as entered.</p>
+<summary style="cursor:pointer"><strong>Advanced request options</strong> <span class="small">— method, credentials, controlled response</span></summary>
+<p class="small"><strong>Method, body, and credentials</strong> shape both generated requests. <strong>Controlled response settings</strong> configure AnotherExample’s comparison endpoint only; your Target API URL is used exactly as entered.</p>
 
 <div class="panel">
 <div class="two">
 <section>
 <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-<label for="allowOrigin">Test B — Allow-Origin response</label>
+<label for="allowOrigin">Controlled comparison — Allow-Origin response</label>
 <select id="allowOrigin">
   <option value="*">*</option>
   <option value="echo">Reflect requesting origin</option>
@@ -66,6 +66,27 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 </div>
 </details>
+<h3 style="margin-top:22px">Try a CORS scenario</h3>
+<p class="small">Optional: choose a preset to reproduce a common browser CORS success or failure. If you change its settings afterward, the configuration becomes custom.</p>
+<div id="scenarioState" class="status"><strong>Configuration:</strong> Custom configuration</div>
+<div class="scenarios" id="scenarios"></div>
+
+<div class="two">
+<section class="panel">
+<h3>Scenario controls</h3>
+<label>Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
+<label>Allowed request headers</label><input id="headers" value="Content-Type">
+<label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
+<label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
+<div class="actions"><button id="run">Run test from this playground</button></div>
+</section>
+<section class="panel">
+<h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or run the current settings.</div>
+<h3>Actual browser result</h3><pre id="response" aria-live="polite">Ready.</pre>
+</section>
+</div>
+
+
 <div class="actions">
   <button id="startDiagnosis">Start CORS diagnosis</button>
   <span id="diagnosticStatus" class="small" style="margin-left:12px" aria-live="polite"></span>
@@ -114,25 +135,6 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <section class="panel"><h3>curl comparison</h3><pre id="curlCode"></pre><div class="actions"><button id="copyUrl" class="secondary">Copy endpoint URL</button></div><p class="small">curl can inspect the server response, but it does not enforce browser CORS rules.</p></section></div>
 
 <hr class="divider">
-<h2 class="section">Try a CORS scenario</h2>
-<p class="small">See a real browser CORS success or failure using AnotherExample’s controlled second origin. These presets reproduce common problems without requiring your own failing API.</p>
-<div class="scenarios" id="scenarios"></div>
-
-<div class="two">
-<section class="panel">
-<h3>Scenario controls</h3>
-<label>Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
-<label>Allowed request headers</label><input id="headers" value="Content-Type">
-<label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
-<label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
-<div class="actions"><button id="run">Run test from this playground</button></div>
-</section>
-<section class="panel">
-<h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or run the current settings.</div>
-<h3>Actual browser result</h3><pre id="response" aria-live="polite">Ready.</pre>
-</section>
-</div>
-
 <p class="small">Preview uses <code>cors-preview.anotherexample.com</code>. Production will use the permanent public CORS hostname before this branch is merged.</p>
 </main>
 <script>
@@ -206,7 +208,7 @@ const box=$('scenarios');
 scenarios.forEach((s)=>{
   const b=document.createElement('button');b.className='scenario';
   b.innerHTML=`<strong>${s.name}</strong><span>${s.desc}</span>`;
-  b.onclick=()=>{[...box.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');selectedScenario=s;apply(s.v)};
+  b.onclick=()=>{[...box.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');selectedScenario=s;apply(s.v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> '+s.name.replace(/^[✓✕]\s*/,'')};
   box.appendChild(b);
 });
 const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='www.anotherexample.com'
@@ -257,6 +259,11 @@ async function run(){
     $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
   }
 }
+function markScenarioCustom(){
+  selectedScenario=null;
+  [...box.children].forEach(x=>x.classList.remove('active'));
+  if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';
+}
 function markDiagnosticStale(){
   const status=$('diagnosticStatus');
   if(status) status.textContent='Inputs changed — run diagnosis again';
@@ -269,10 +276,10 @@ function markDiagnosticStale(){
   }
 }
 
-['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{markDiagnosticStale();explain();updateDiagnostic()}));
+['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{markScenarioCustom();markDiagnosticStale();explain();updateDiagnostic()}));
 $('siteUrl').addEventListener('input',()=>{markDiagnosticStale();updateCode();updateDiagnostic()});
 $('targetUrl').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
-$('requestBody').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
+$('requestBody').addEventListener('input',()=>{markScenarioCustom();markDiagnosticStale();updateDiagnostic()});
 $('startDiagnosis').onclick=()=>{
   const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
   enteredOrigin();targetUrl();
@@ -299,7 +306,7 @@ $('toggleControl').onclick=()=>{
 $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
-apply(scenarios[0].v);box.firstChild.classList.add('active');updateDiagnostic();
+apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';updateDiagnostic();
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
