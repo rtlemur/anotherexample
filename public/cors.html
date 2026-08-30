@@ -240,7 +240,7 @@ function updateCode(){
   const origin=enteredOrigin();
   targetUrl();
   if($('fetchCode')) $('fetchCode').textContent=fetchText();
-  $('curlCode').textContent=`curl -i -X ${$('method').value} -H 'Origin: ${origin}' '${url()}'`;
+  if($('curlCode')) $('curlCode').textContent=`curl -i -X ${$('method').value} -H 'Origin: ${origin}' '${url()}'`;
 }
 function explain(){
   let msg,cls='ok';const a=$('allowOrigin').value,c=$('credentials').checked,p=$('preflight').value,m=$('method').value;
