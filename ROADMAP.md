@@ -394,3 +394,14 @@ No production merge. Validate on v1.1-preview first.
 - Removed the competing `Run test from this playground` primary button from the setup workflow.
 - `Start CORS diagnosis` is now the single primary action for the diagnostic setup.
 - Preserved Copy Test A / Copy Test B and existing scenario presets.
+
+## Four-step diagnostic workflow — August 29, 2026
+The setup is now presented as a diagnostic procedure rather than a generic form:
+
+1. **What are you testing?** — request origin and target API.
+2. **Describe the request** — method, credentials, JSON body; applies to both tests.
+3. **Configure the controlled comparison** — optional/collapsible; affects AnotherExample only.
+4. **Try a CORS scenario** — optional presets; selecting one fills the relevant request/comparison settings.
+
+`Start CORS diagnosis` remains the single primary action after all setup steps.
+The diagnostic result area still contains Copy Test A and Copy Test B.

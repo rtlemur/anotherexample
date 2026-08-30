@@ -19,6 +19,12 @@ button{background:var(--accent);color:#07130e;border:0;border-radius:7px;padding
 h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:uppercase;letter-spacing:.07em}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.back{font-size:.9rem}
 .checkbox{display:flex;gap:8px;align-items:center;margin-top:12px}.checkbox input{width:auto}.checkbox label{margin:0}.origin{font-size:.9rem;margin-top:8px;color:var(--muted)}
 .steps{margin:8px 0 0;padding-left:22px}.steps li{margin:6px 0}.divider{border:0;border-top:1px solid var(--border);margin:36px 0}
+
+.step{margin:22px 0;padding:20px;border:1px solid #303643;border-radius:16px;background:#151922}
+.step-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.step-number{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:999px;border:1px solid #65e6b8;font-weight:800}
+.step-head h2{margin:2px 0 4px;font-size:1.15rem}
+.step-head p{margin:0}
 </style>
 </head>
 <body>
@@ -30,68 +36,75 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <section class="panel hero">
 <h2>Find out why your CORS request is failing</h2>
 <p>Tell us where the request starts and what API it is trying to reach. AnotherExample will build two browser tests: your real API request and a controlled comparison against our second origin.</p>
-<div class="two">
-<section>
-<label for="siteUrl">Request origin / page URL</label>
-<input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
-<div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
-</section>
-<section>
-<label for="targetUrl">Target API URL</label>
-<input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
-<div id="targetResult" class="origin">The API/resource your page is trying to reach. Test A uses this URL exactly as entered.</div>
-</section>
-</div>
-<details id="advancedOptions" style="margin-top:28px">
-<summary style="cursor:pointer"><strong>Request options</strong> <span class="small">— method, credentials, controlled comparison</span></summary>
-<p class="small">Describe the request you are troubleshooting, then optionally adjust how AnotherExample’s controlled comparison responds.</p>
 
-<div class="panel">
-<div class="two">
-<section>
-<h3>Your request</h3>
-<p class="small">These settings apply to both generated tests.</p>
-<label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-<div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
-</section>
-<section>
-<label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
-<p class="small">For now, POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
-</section>
+<div class="step">
+  <div class="step-head"><span class="step-number">1</span><div><h2>What are you testing?</h2><p class="small">Tell us where the browser request starts and what API or resource it is trying to reach.</p></div></div>
+  <div class="two">
+    <section>
+      <label for="siteUrl">Request origin / page URL</label>
+      <input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
+      <div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
+    </section>
+    <section>
+      <label for="targetUrl">Target API URL</label>
+      <input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
+      <div id="targetResult" class="origin">The API/resource your page is trying to reach. Test A uses this URL exactly as entered.</div>
+    </section>
+  </div>
 </div>
-<hr>
-<h3>Controlled comparison</h3>
-<p class="small">This affects AnotherExample’s comparison endpoint only. It does not change your Target API.</p>
-<label for="allowOrigin">Controlled comparison — Allow-Origin response</label>
-<select id="allowOrigin">
-  <option value="*">*</option>
-  <option value="echo">Reflect requesting origin</option>
-  <option value="none">Omit header</option>
-  <option value="https://wrong.example">Wrong origin</option>
-</select>
 
+<div class="step">
+  <div class="step-head"><span class="step-number">2</span><div><h2>Describe the request</h2><p class="small">Match the request that is giving you trouble. These settings are used for both diagnostic tests.</p></div></div>
+  <div class="two">
+    <section>
+      <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
+      <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
+    </section>
+    <section>
+      <label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
+      <p class="small">POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
+    </section>
+  </div>
 </div>
+
+<details class="step" id="advancedOptions">
+  <summary style="cursor:pointer"><span class="step-number" style="margin-right:10px">3</span><strong>Configure the controlled comparison</strong> <span class="small">— optional</span></summary>
+  <div style="margin-top:16px">
+    <p class="small">These settings affect AnotherExample’s controlled comparison only. They do not change your Target API.</p>
+    <div class="two">
+      <section>
+        <label for="allowOrigin">Allow-Origin response</label>
+        <select id="allowOrigin">
+          <option value="*">*</option>
+          <option value="echo">Reflect requesting origin</option>
+          <option value="none">Omit header</option>
+          <option value="https://wrong.example">Wrong origin</option>
+        </select>
+        <label>Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
+      </section>
+      <section>
+        <label>Allowed request headers</label><input id="headers" value="Content-Type">
+        <label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
+        <label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
+      </section>
+    </div>
+  </div>
 </details>
-<h3 style="margin-top:22px">Try a CORS scenario</h3>
-<p class="small">Optional: choose a preset to reproduce a common browser CORS success or failure. If you change its settings afterward, the configuration becomes custom.</p>
-<div id="scenarioState" class="status"><strong>Configuration:</strong> Custom configuration</div>
-<div class="scenarios" id="scenarios"></div>
 
-<div class="two">
-<section class="panel">
-<h3>Scenario controls</h3>
-<label>Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
-<label>Allowed request headers</label><input id="headers" value="Content-Type">
-<label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
-<label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
-
-</section>
-<section class="panel">
-<h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or run the current settings.</div>
-<h3>Actual browser result</h3><pre id="response" aria-live="polite">Ready.</pre>
-</section>
+<div class="step">
+  <div class="step-head"><span class="step-number">4</span><div><h2>Try a CORS scenario <span class="small">— optional</span></h2><p class="small">Choose a preset to reproduce a common browser CORS success or failure. Choosing one fills in the request and comparison settings above.</p></div></div>
+  <div id="scenarioState" class="status"><strong>Configuration:</strong> Custom configuration</div>
+  <div class="scenarios" id="scenarios"></div>
+  <div class="two" style="margin-top:14px">
+    <section class="panel">
+      <h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or use your current settings.</div>
+    </section>
+    <section class="panel">
+      <h3>Current controlled endpoint</h3><pre id="fetchCode"></pre>
+      <div class="actions"><button id="copyFetch" class="secondary">Copy fetch code</button><button id="copyUrl" class="secondary">Copy endpoint URL</button></div>
+    </section>
+  </div>
 </div>
-
 
 <div class="actions">
   <button id="startDiagnosis">Start CORS diagnosis</button>
@@ -136,12 +149,6 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 
 
 
-<h2 class="section">AnotherExample lab endpoint</h2>
-<div class="two"><section class="panel"><h3>Configured control request</h3><pre id="fetchCode"></pre><div class="actions"><button id="copyFetch">Copy fetch code</button></div></section>
-<section class="panel"><h3>curl comparison</h3><pre id="curlCode"></pre><div class="actions"><button id="copyUrl" class="secondary">Copy endpoint URL</button></div><p class="small">curl can inspect the server response, but it does not enforce browser CORS rules.</p></section></div>
-
-<hr class="divider">
-<p class="small">Preview uses <code>cors-preview.anotherexample.com</code>. Production will use the permanent public CORS hostname before this branch is merged.</p>
 </main>
 <script>
 const scenarios=[
@@ -232,7 +239,7 @@ function fetchText(){
 function updateCode(){
   const origin=enteredOrigin();
   targetUrl();
-  $('fetchCode').textContent=fetchText();
+  if($('fetchCode')) $('fetchCode').textContent=fetchText();
   $('curlCode').textContent=`curl -i -X ${$('method').value} -H 'Origin: ${origin}' '${url()}'`;
 }
 function explain(){
@@ -254,15 +261,15 @@ function failureExplanation(){
   return 'The browser did not expose a detailed reason to fetch(). Open Developer Tools for the exact network/CORS error.';
 }
 async function run(){
-  explain();$('response').textContent='Running a real cross-origin request…';
+  explain();if($('response')) $('response').textContent='Running a real cross-origin request…';
   try{
     const options={method:$('method').value,credentials:$('credentials').checked?'include':'omit'};
     if(options.method!=='GET'){options.headers={'Content-Type':'application/json'};options.body=JSON.stringify({playground:'test'});}
     const r=await fetch(url(),options), raw=await r.text();let body=raw;try{body=raw?JSON.parse(raw):null}catch{}
     const headers=Object.fromEntries(r.headers.entries());
-    $('response').textContent='✓ Browser allowed the cross-origin response.\n\n'+JSON.stringify({status:r.status,headers,body},null,2);
+    if($('response')) $('response').textContent='✓ Browser allowed the cross-origin response.\n\n'+JSON.stringify({status:r.status,headers,body},null,2);
   }catch(e){
-    $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
+    if($('response')) $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
   }
 }
 function markScenarioCustom(){
@@ -309,7 +316,7 @@ $('toggleControl').onclick=()=>{
   pre.style.display=show?'block':'none';
   $('toggleControl').textContent=show?'Hide generated code':'View generated code';
 };
-if($('run')) $('run').onclick=run;
+if($('run')) if($('run')) $('run').onclick=run;
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy fetch code',1200)};
 apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Configuration:</strong> Custom configuration';updateDiagnostic();
