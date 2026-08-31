@@ -418,16 +418,15 @@ The packaged source was checked before export.
 - Added `What did your browser say?` after diagnostic results.
 - Added deterministic local classification for common CORS/browser errors: missing ACAO, credentials wildcard, method/header preflight rejection, preflight redirect, timeout, DNS, TLS/certificate, generic Failed to fetch, HTTP 200, and unknown.
 
-
 ## Pre-launch polish checklist
 - Set up `hello@anotherexample.com` as the public contact address.
 - Prefer domain-based forwarding/mail rather than publishing a personal Gmail address.
-- Configure SPF/DKIM/DMARC appropriately when outbound mail from the domain is enabled.
 - Replace preview-specific hostnames/copy with production `cors.anotherexample.com`.
 - Confirm contact/security/privacy links and production wording before launch.
 
-## Live diagnostic state repair — August 31, 2026
-- Removed the possibility of copying an old A/B snippet after changing diagnostic inputs.
-- When a generated diagnosis is visible, changes to origin, target, method, credentials, body, or controlled comparison settings immediately regenerate Test A and Test B.
-- If a changed URL becomes invalid, the generated diagnosis is hidden until valid URLs are supplied.
-- Test A summary now displays the full target URL (including path/query) instead of only the origin.
+## Credentialed controlled-baseline repair — August 31, 2026
+- Real-browser testing found that enabling `credentials: include` could leave Test B configured with `Access-Control-Allow-Origin: *`, which browsers correctly reject.
+- When credentials are enabled and the controlled comparison is still on wildcard origin, AnotherExample now automatically switches the controlled response to `echo` (the requesting origin).
+- Added the same safeguard when Start CORS diagnosis is clicked.
+- Preserved the current stale-state behavior: changing inputs hides generated A/B results and says `Inputs changed — run diagnosis again`.
+- Test A summary now shows the full target URL, including path/query.
