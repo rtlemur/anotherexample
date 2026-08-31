@@ -211,7 +211,7 @@ function updateDiagnostic(){
   const control=url();
   $('targetFetch').textContent=requestSnippet(target);
   $('controlFetch').textContent=requestSnippet(control);
-  if($('targetSummary')) $('targetSummary').textContent=`${new URL(target).origin} · ${requestShapeSummary()}`;
+  if($('targetSummary')) $('targetSummary').textContent=`${target} · ${requestShapeSummary()}`;
   if($('controlSummary')) $('controlSummary').textContent=`${new URL(control).origin}/api/cors/lab · ${requestShapeSummary()}`;
 }
 function enteredOrigin(){
@@ -296,29 +296,47 @@ function markScenarioCustom(){
   [...box.children].forEach(x=>x.classList.remove('active'));
   if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';
 }
-function markDiagnosticStale(){
-  const status=$('diagnosticStatus');
-  if(status) status.textContent='Inputs changed — run diagnosis again';
+function refreshDiagnosticIfOpen(){
   const diagnostic=$('diagnostic');
-  if(diagnostic) diagnostic.style.display='none';
-  const button=$('startDiagnosis');
-  if(button){
-    button.textContent='Start CORS diagnosis';
-    button.disabled=false;
+  if(!diagnostic || diagnostic.style.display==='none') return;
+  const source=validHttpUrl($('siteUrl').value.trim());
+  const target=validHttpUrl($('targetUrl').value.trim());
+  if(!source || !target){
+    diagnostic.style.display='none';
+    if($('diagnosticStatus')) $('diagnosticStatus').textContent='Enter valid page and target URLs';
+    return;
   }
+  updateDiagnostic();
+  if($('diagnosticStatus')) $('diagnosticStatus').textContent='Diagnostic updated for current inputs';
 }
 
-['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{markScenarioCustom();markDiagnosticStale();explain();updateDiagnostic()}));
-$('siteUrl').addEventListener('input',()=>{markDiagnosticStale();updateCode();updateDiagnostic()});
-$('targetUrl').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
-$('requestBody').addEventListener('input',()=>{markScenarioCustom();markDiagnosticStale();updateDiagnostic()});
+['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{
+  markScenarioCustom();
+  explain();
+  updateDiagnostic();
+  refreshDiagnosticIfOpen();
+}));
+$('siteUrl').addEventListener('input',()=>{
+  updateCode();
+  updateDiagnostic();
+  refreshDiagnosticIfOpen();
+});
+$('targetUrl').addEventListener('input',()=>{
+  updateDiagnostic();
+  refreshDiagnosticIfOpen();
+});
+$('requestBody').addEventListener('input',()=>{
+  markScenarioCustom();
+  updateDiagnostic();
+  refreshDiagnosticIfOpen();
+});
 $('startDiagnosis').onclick=()=>{
   const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
   enteredOrigin();targetUrl();
   if(!source||!target){$('diagnostic').style.display='none';return;}
   updateDiagnostic();
   $('diagnostic').style.display='block';
-  $('diagnosticStatus').textContent='Diagnostic ready';
+  $('diagnosticStatus').textContent='Diagnostic ready · changes update automatically';
   $('startDiagnosis').textContent='Start CORS diagnosis';
   $('startDiagnosis').disabled=false;
   $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});

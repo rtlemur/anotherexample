@@ -417,3 +417,17 @@ The packaged source was checked before export.
 - Moved scenario presets to a separate `Explore common CORS failures` section.
 - Added `What did your browser say?` after diagnostic results.
 - Added deterministic local classification for common CORS/browser errors: missing ACAO, credentials wildcard, method/header preflight rejection, preflight redirect, timeout, DNS, TLS/certificate, generic Failed to fetch, HTTP 200, and unknown.
+
+
+## Pre-launch polish checklist
+- Set up `hello@anotherexample.com` as the public contact address.
+- Prefer domain-based forwarding/mail rather than publishing a personal Gmail address.
+- Configure SPF/DKIM/DMARC appropriately when outbound mail from the domain is enabled.
+- Replace preview-specific hostnames/copy with production `cors.anotherexample.com`.
+- Confirm contact/security/privacy links and production wording before launch.
+
+## Live diagnostic state repair — August 31, 2026
+- Removed the possibility of copying an old A/B snippet after changing diagnostic inputs.
+- When a generated diagnosis is visible, changes to origin, target, method, credentials, body, or controlled comparison settings immediately regenerate Test A and Test B.
+- If a changed URL becomes invalid, the generated diagnosis is hidden until valid URLs are supplied.
+- Test A summary now displays the full target URL (including path/query) instead of only the origin.
