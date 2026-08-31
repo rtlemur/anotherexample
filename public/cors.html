@@ -117,7 +117,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 
 <section>
 <h3>Test B — Controlled origin</h3>
-<p class="small">The same request shape against AnotherExample's known-good controlled CORS endpoint.</p>
+<p class="small">The same request shape against AnotherExample's known-good controlled CORS endpoint. Its CORS response is generated automatically from your request.</p>
 <div class="status"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
 <div class="actions"><button id="copyControl">Copy Test B</button><button class="secondary" id="toggleControl">View generated code</button></div>
 <pre id="controlFetch" style="display:none"></pre>
@@ -143,6 +143,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p class="small">This first version recognizes common browser and CORS messages without guessing when the cause is unclear.</p>
 </div>
 
+<p class="small" id="previewBuildMarker" style="display:none"><strong>Preview build:</strong> 1.1 credential-baseline-final</p>
 <p class="small"><strong>Preview environment:</strong> control requests use <code>cors-preview.anotherexample.com</code>. Production will use <code>cors.anotherexample.com</code>.</p>
 
 
@@ -246,16 +247,26 @@ scenarios.forEach((s)=>{
 const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='www.anotherexample.com'
   ? 'https://cors.anotherexample.com'
   : 'https://cors-preview.anotherexample.com';
+if(location.hostname!=='anotherexample.com' && location.hostname!=='www.anotherexample.com'){
+  const marker=document.getElementById('previewBuildMarker');
+  if(marker) marker.style.display='block';
+}
 
 function params(){return new URLSearchParams({allowOrigin:$('allowOrigin').value,credentials:String($('credentials').checked),methods:$('methods').value,headers:$('headers').value,preflightStatus:$('preflight').value,delay:$('delay').value||'0'});}
 function url(){return LAB_ORIGIN+'/api/cors/lab?'+params();}
 function diagnosticControlUrl(){
-  const p=params();
-  if($('credentials').checked){
-    p.set('allowOrigin','echo');
-    p.set('credentials','true');
-  }
-  return LAB_ORIGIN+'/api/cors/lab?'+p.toString();
+  const method=$('method').value;
+  const credentialed=$('credentials').checked;
+  const allowedMethods=[...new Set(['GET','POST',method,'OPTIONS'])].join(', ');
+  const controlParams=new URLSearchParams({
+    allowOrigin: credentialed ? 'echo' : '*',
+    credentials: String(credentialed),
+    methods: allowedMethods,
+    headers: 'Content-Type',
+    preflightStatus: '204',
+    delay: '0'
+  });
+  return LAB_ORIGIN+'/api/cors/lab?'+controlParams.toString();
 }
 function fetchText(){
   const u=url(), method=$('method').value, opts=[];

@@ -438,3 +438,11 @@ The packaged source was checked before export.
 - When credentials are included, Test B now always uses `allowOrigin=echo&credentials=true`, regardless of the demo/scenario setting.
 - The Explore section still uses the configurable lab URL so intentionally broken cases such as wildcard + credentials remain demonstrable there.
 - This enforces the product rule: Diagnose uses a trustworthy baseline; Explore may intentionally break things.
+
+
+## Final credential baseline hardening — August 31, 2026
+- Test B no longer inherits CORS response settings from demo/scenario controls.
+- Credentials OFF -> `allowOrigin=*`, `credentials=false`.
+- Credentials ON -> `allowOrigin=echo`, `credentials=true`.
+- Diagnostic preflight status is fixed to 204 and the requested method is included in allowed methods.
+- Added preview-only build marker `1.1 credential-baseline-final` to verify the deployed build visually.
