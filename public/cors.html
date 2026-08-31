@@ -117,7 +117,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 
 <section>
 <h3>Test B — Controlled origin</h3>
-<p class="small">The same request shape against AnotherExample's controlled CORS endpoint.</p>
+<p class="small">The same request shape against AnotherExample's known-good controlled CORS endpoint.</p>
 <div class="status"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
 <div class="actions"><button id="copyControl">Copy Test B</button><button class="secondary" id="toggleControl">View generated code</button></div>
 <pre id="controlFetch" style="display:none"></pre>
@@ -208,7 +208,7 @@ function requestShapeSummary(){
 function updateDiagnostic(){
   enteredOrigin();
   const target=targetUrl();
-  const control=url();
+  const control=diagnosticControlUrl();
   $('targetFetch').textContent=requestSnippet(target);
   $('controlFetch').textContent=requestSnippet(control);
   if($('targetSummary')) $('targetSummary').textContent=`${target} · ${requestShapeSummary()}`;
@@ -249,6 +249,14 @@ const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='
 
 function params(){return new URLSearchParams({allowOrigin:$('allowOrigin').value,credentials:String($('credentials').checked),methods:$('methods').value,headers:$('headers').value,preflightStatus:$('preflight').value,delay:$('delay').value||'0'});}
 function url(){return LAB_ORIGIN+'/api/cors/lab?'+params();}
+function diagnosticControlUrl(){
+  const p=params();
+  if($('credentials').checked){
+    p.set('allowOrigin','echo');
+    p.set('credentials','true');
+  }
+  return LAB_ORIGIN+'/api/cors/lab?'+p.toString();
+}
 function fetchText(){
   const u=url(), method=$('method').value, opts=[];
   if(method!=='GET') opts.push(`method: '${method}'`, "headers: { 'Content-Type': 'application/json' }", "body: JSON.stringify({ playground: 'test' })");

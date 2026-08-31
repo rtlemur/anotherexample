@@ -430,3 +430,11 @@ The packaged source was checked before export.
 - Added the same safeguard when Start CORS diagnosis is clicked.
 - Preserved the current stale-state behavior: changing inputs hides generated A/B results and says `Inputs changed — run diagnosis again`.
 - Test A summary now shows the full target URL, including path/query.
+
+## Hard separation: diagnostic baseline vs scenario configuration — August 31, 2026
+- Real-browser retest showed Test B could still inherit `allowOrigin=*` while `credentials: include` was enabled.
+- Root cause: the diagnostic baseline and scenario/demo configuration were still sharing the same URL builder.
+- Added a dedicated `diagnosticControlUrl()` for Test B.
+- When credentials are included, Test B now always uses `allowOrigin=echo&credentials=true`, regardless of the demo/scenario setting.
+- The Explore section still uses the configurable lab URL so intentionally broken cases such as wildcard + credentials remain demonstrable there.
+- This enforces the product rule: Diagnose uses a trustworthy baseline; Explore may intentionally break things.
