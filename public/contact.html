@@ -104,7 +104,7 @@
       Questions, feedback, bug reports, or suggestions are welcome.
     </p>
 
-    <form method="post" action="/api/contact">
+    <form id="contactForm" method="post" action="/api/contact">
 
       <label for="name">Name</label>
       <input id="name" name="name" type="text" maxlength="100" autocomplete="name">
@@ -121,8 +121,37 @@
       </div>
 
       <button type="submit">Send message</button>
+      <p id="formStatus" role="status" aria-live="polite"></p>
 
     </form>
   </main>
+  <script>
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('formStatus');
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    status.textContent = 'Sending...';
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        body: new FormData(form)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.sent) {
+        throw new Error(result.error || 'Unable to send message.');
+      }
+
+      form.reset();
+      status.textContent = 'Message sent. Thanks for contacting AnotherExample.';
+    } catch (error) {
+      status.textContent = 'Sorry, your message could not be sent. Please try again.';
+    }
+  });
+</script>
 </body>
 </html>
