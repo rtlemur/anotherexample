@@ -126,13 +126,15 @@
     </form>
   </main>
   <script>
+  const submitButton = document.getElementById('submitButton');
   const form = document.getElementById('contactForm');
   const status = document.getElementById('formStatus');
 
   form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    status.textContent = 'Sending...';
+  event.preventDefault();
+  submitButton.disabled = true;
+  submitButton.textContent = 'Sending…';
+  status.textContent = 'Sending...';
 
     try {
       const response = await fetch('/api/contact', {
@@ -147,8 +149,12 @@
       }
 
       form.reset();
+      submitButton.disabled = false;
+      submitButton.textContent = 'Send message';
       status.textContent = 'Message sent. Thanks for contacting AnotherExample.';
     } catch (error) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Send message';
       status.textContent = 'Sorry, your message could not be sent. Please try again.';
     }
   });
