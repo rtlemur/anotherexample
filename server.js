@@ -102,6 +102,7 @@ app.get('/api/cookie/clear',(req,res)=>{res.clearCookie('anotherexample_test');n
 app.get('/api/health',(req,res)=>{noStore(res);res.json({status:'ok',domain:'anotherexample.com'});});
 
 app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html')));
+app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(path.join(__dirname,'public','.well-known','security.txt')));
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
 app.use(express.static(path.join(__dirname,'public'),{maxAge:'1h'}));
 
