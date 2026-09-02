@@ -3,6 +3,8 @@ const express = require('express');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 
+const contactLimiter = rateLimit({windowMs: 15 * 60 * 1000,limit: 5,standardHeaders: true,legacyHeaders: false});
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MAX_DELAY_MS = 10000;
