@@ -2,12 +2,14 @@
 const express = require('express');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const { Resend } = require('resend');
 
 const contactLimiter = rateLimit({windowMs: 15 * 60 * 1000,limit: 5,standardHeaders: true,legacyHeaders: false});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MAX_DELAY_MS = 10000;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -53,7 +55,7 @@ function setOpenCors(req,res) {
   res.set({'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers':req.get('Access-Control-Request-Headers')||'Content-Type, Authorization','Access-Control-Max-Age':'600'});
 }
-app.post('/api/contact', contactLimiter, (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
   const { name = '', email = '', message = '', website = '' } = req.body || {};
 
   // Honeypot: bots often fill this hidden field.
@@ -84,9 +86,30 @@ app.post('/api/contact', contactLimiter, (req, res) => {
     });
   }
 
+  try {
+  await resend.emails.send({
+    from: 'AnotherExample Contact <contact@anotherexample.com>',
+    to: 'hello@anotherexample.com',
+    replyTo: cleanEmail,
+    subject: 'New AnotherExample contact message',
+    text: [
+      `Name: ${cleanName || 'Not provided'}`,
+      `Email: ${cleanEmail}`,
+      '',
+      cleanMessage
+    ].join('\n')
+  });
+
   return res.status(200).json({
     sent: true
   });
+} catch (error) {
+  console.error('Contact email failed:', error);
+
+  return res.status(500).json({
+    error: 'Unable to send message right now.'
+  });
+}
 });
 
 app.use('/api/cors/open',(req,res,next)=>{setOpenCors(req,res);if(req.method==='OPTIONS')return res.sendStatus(204);next();});
