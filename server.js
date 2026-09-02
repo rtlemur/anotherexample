@@ -53,6 +53,41 @@ function setOpenCors(req,res) {
   res.set({'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers':req.get('Access-Control-Request-Headers')||'Content-Type, Authorization','Access-Control-Max-Age':'600'});
 }
+app.post('/api/contact', contactLimiter, (req, res) => {
+  const { name = '', email = '', message = '', website = '' } = req.body || {};
+
+  // Honeypot: bots often fill this hidden field.
+  if (website) {
+    return res.status(200).json({ sent: true });
+  }
+
+  const cleanName = String(name).trim();
+  const cleanEmail = String(email).trim();
+  const cleanMessage = String(message).trim();
+
+  if (
+    cleanName.length > 100 ||
+    cleanEmail.length > 254 ||
+    cleanMessage.length < 1 ||
+    cleanMessage.length > 5000
+  ) {
+    return res.status(400).json({
+      error: 'Invalid contact form submission.'
+    });
+  }
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailPattern.test(cleanEmail)) {
+    return res.status(400).json({
+      error: 'Please enter a valid email address.'
+    });
+  }
+
+  return res.status(200).json({
+    sent: true
+  });
+});
 
 app.use('/api/cors/open',(req,res,next)=>{setOpenCors(req,res);if(req.method==='OPTIONS')return res.sendStatus(204);next();});
 app.all('/api/cors/open',(req,res)=>{noStore(res);res.json({mode:'open',message:'Permissive CORS response using Access-Control-Allow-Origin: *.',...requestSnapshot(req)});});
