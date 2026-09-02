@@ -2,40 +2,62 @@
 
 A permanent second origin for browser, CORS, cookie, redirect, and integration testing.
 
-## Endpoints
-
-- `ANY /api/echo` — reflect request details as JSON.
-- `ANY /api/cors` — backwards-compatible permissive CORS endpoint.
-- `ANY /api/cors/open` — permissive `Access-Control-Allow-Origin: *` endpoint.
-- `ANY /api/cors/credentials` — reflects `Origin` and permits credentials.
-- `ANY /api/status/:code` — intentional HTTP status (200–599).
-- `ANY /api/delay/:ms` — intentional delay (0–10,000 ms).
-- `GET /api/redirect?target=health|home|example&status=302` — safe redirect testing.
-- `GET /api/cookie/set?sameSite=Lax|Strict|None` — set a test cookie.
-- `GET /api/cookie/check` — report the incoming Cookie header.
-- `GET /api/cookie/clear` — clear the test cookie.
-- `GET /api/health` — health check.
-
-## Safety
-
-Use test data only. Do not send production credentials, API keys, session tokens, personal data, or other secrets to public testing endpoints.
-
-Request bodies are limited to 64 KB. Delay tests are capped at 10 seconds. Redirect targets are predefined so the service cannot be used as a general-purpose open redirector.
-
-## Local development
-
+## Run locally
 ```bash
 npm install
 npm start
 ```
 
-Then open `http://localhost:3000`.
+## Test
+```bash
+npm test
+```
+
+## Main endpoints
+- `ANY /api/echo`
+- `ANY /api/cors/open`
+- `ANY /api/cors/credentials`
+- `ANY /api/cors/lab` — configurable CORS response for the playground
+- `ANY /api/status/:code`
+- `ANY /api/delay/:ms`
+- `GET /api/redirect`
+- `GET /api/cookie/set|check|clear`
+- `GET /api/health`
+
+## CORS playground
+Visit `/cors`. The current V1.1 playground configures and inspects CORS responses. Because the page and lab endpoint share an origin, it explains the browser behavior that a real cross-origin caller should expect. V1.2 will add a deliberately separate host so the browser can enforce the scenarios live inside the playground.
+
+## Safety
+Public API requests are rate limited. Reflected request data omits authorization, cookies, Vercel/internal proxy headers, and related infrastructure metadata. Use test data only.
+
+See `ROADMAP.md` for product direction.
 
 
-## Analytics
+## V1.1 preview second origin
+The preview CORS Playground runs real browser-enforced cross-origin tests against `https://cors-preview.anotherexample.com`, which is mapped in Vercel to the `v1.1-preview` branch. Production should use a permanent second-origin hostname such as `cors.anotherexample.com` before merging the playground live.
 
-Vercel Web Analytics is enabled in the HTML shell using the official `/_vercel/insights/script.js` integration. No React or Next.js conversion is required. Analytics must also be enabled for the Vercel project in the Vercel dashboard.
 
-## Privacy / security
+## V1.1 URL-first CORS preview
 
-Request inspection intentionally omits Authorization, Cookie, Vercel/internal proxy, forwarding, and middleware headers so platform credentials and session cookies are never reflected to callers. Test request bodies may still be echoed; never send production secrets.
+The CORS Playground now leads with a developer's own URL, derives the browser origin for generated examples, and keeps the seven real-browser scenarios as a learning/debugging section. Client IP addresses are no longer included in public request snapshots. The page selects `cors-preview.anotherexample.com` outside production and `cors.anotherexample.com` on the production hostname.
+
+## Diagnostic comparison iteration
+The CORS page now leads with a two-test workflow: the developer's target API versus a controlled AnotherExample second-origin request. Arbitrary target URLs are not fetched server-side; this avoids turning the service into an open proxy/SSRF surface and preserves real browser CORS enforcement.
+
+## Diagnostic hotfix
+The first diagnostic build removed the `allowOrigin` control while legacy lab/scenario JavaScript still referenced it during page initialization. That exception prevented the **Build diagnostic tests** click handler from ever being attached. This build restores the control and adds a defensive initialization guard.
+
+## Current stop point
+Development paused August 27, 2026 on the V1.1 preview. The diagnostic front door works. The next iteration should make the post-click **Your diagnostic is ready** state unmistakable, place Test A/Test B first, and move request configuration into collapsed **Advanced options**. See `ROADMAP.md` for the full resume checklist.
+
+## CORS Debugger iteration
+Diagnosis-first flow: Test A and Test B appear immediately after starting; request configuration is under Advanced options. Product naming changed from CORS Playground to CORS Debugger.
+
+## Diagnostic workflow refinement
+Generated JavaScript is now secondary to the diagnostic workflow. Test A/Test B show concise summaries first, with code available on demand and explicit instructions to run both from the actual page origin in DevTools.
+
+## Diagnosis button state
+The primary button remains actionable after each run. Diagnostic readiness is displayed separately, and editing request inputs automatically marks the previous diagnostic stale so another diagnosis can be started without refreshing the page.
+
+## Product direction — August 29, 2026
+After core CORS/browser validation, V1.1 will add **Paste Console Result / Explain This Error**: deterministic interpretation of common browser CORS/network errors combined with the controlled Test A/Test B comparison.
