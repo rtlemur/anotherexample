@@ -137,7 +137,7 @@
     try {
       const response = await fetch('/api/contact', {
         method: 'POST',
-        body: new FormData(form)
+        body: new URLSearchParams(new FormData(form))
       });
 
       const result = await response.json();
