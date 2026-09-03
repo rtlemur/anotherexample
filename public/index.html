@@ -84,9 +84,36 @@ curl -i 'https://anotherexample.com/api/redirect?target=example&amp;status=302'<
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script>
-const result=document.getElementById('result');
-async function run(url){result.textContent='Requesting '+url+' …';try{const r=await fetch(url);const data=await r.json();result.textContent=JSON.stringify({httpStatus:r.status,...data},null,2)}catch(e){result.textContent='Request failed: '+e.message}}
-document.getElementById('corsTest').addEventListener('click',()=>run('/api/cors/open'));
-document.getElementById('healthTest').addEventListener('click',()=>run('/api/health'));
+const result = document.getElementById('result');
+
+async function run(url) {
+  result.textContent = 'Requesting ' + url + ' …';
+
+  const start = performance.now();
+
+  try {
+    const r = await fetch(url);
+    const data = await r.json();
+    const elapsed = Math.round(performance.now() - start);
+
+    const status = r.ok ? '✓' : '✕';
+
+    result.textContent =
+      `${status} ${r.status} ${r.statusText} · ${elapsed} ms\n\n` +
+      JSON.stringify(data, null, 2);
+
+  } catch (e) {
+    const elapsed = Math.round(performance.now() - start);
+
+    result.textContent =
+      `✕ Request failed · ${elapsed} ms\n\n${e.message}`;
+  }
+}
+
+document.getElementById('corsTest')
+  .addEventListener('click', () => run('/api/cors/open'));
+
+document.getElementById('healthTest')
+  .addEventListener('click', () => run('/api/health'));
 </script>
 </body></html>
