@@ -156,9 +156,9 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
   ></textarea>
 
   <div class="actions">
-    <button id="explainBrowserResult" class="secondary">
-      Explain this result
-    </button>
+ <button id="explainBrowserResult">
+  Explain this result
+</button>
   </div>
 
   <div
@@ -431,7 +431,15 @@ function classifyBrowserResult(text){
   if(l.includes('err_cert')||l.includes('certificate')||l.includes('tls')) return ['TLS / certificate problem','Resolve the secure-connection or certificate problem before diagnosing CORS.'];
   if(l.includes('failed to fetch')) return ['Failed to fetch — generic browser failure','This message alone does not identify the cause. Look for the more specific Console or Network error immediately above it.'];
   if(l.includes('status: 200')||l.includes('status:200')) return ['Successful HTTP response','The pasted result shows HTTP 200. The request reached the server successfully; compare this with any browser-policy errors and the controlled result.'];
-  return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
+  if(
+     l.includes("response to preflight request doesn't pass access control check") ||
+     l.includes('response to preflight request does not pass access control check')
+) {
+  return [
+    'Preflight access-control check failed',
+    'The browser sent an OPTIONS preflight, but the response did not satisfy CORS requirements. Check the preflight status and the Access-Control-Allow-Origin, Access-Control-Allow-Methods, and Access-Control-Allow-Headers response headers.'
+  ];
+} return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
 }
 $('explainBrowserResult').onclick=()=>{
   const text = $('browserResult').value;
