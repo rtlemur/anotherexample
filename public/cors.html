@@ -402,10 +402,39 @@ function classifyBrowserResult(text){
   return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
 }
 $('explainBrowserResult').onclick=()=>{
-  const [title,body]=classifyBrowserResult($('browserResult').value), box=$('browserExplanation');
-  box.style.display='block'; box.innerHTML='<strong>'+title+'</strong><br>'+body;
-};
+  const text = $('browserResult').value;
+  const [title, body] = classifyBrowserResult(text);
+  const box = $('browserExplanation');
 
+  box.style.display = 'block';
+  box.innerHTML = '<strong>' + title + '</strong><br>' + body;
+
+  const preflightPanel = $('preflightDiagnosisPanel');
+  const preflightBox = $('preflightDiagnosis');
+
+  preflightPanel.style.display = 'block';
+
+  const lower = text.toLowerCase();
+
+  if (
+    lower.includes('preflight') ||
+    lower.includes('options') ||
+    lower.includes('access-control-allow-methods') ||
+    lower.includes('access-control-allow-headers')
+  ) {
+    preflightBox.className = 'status bad';
+    preflightBox.innerHTML =
+      '<strong>Preflight likely involved.</strong><br>' +
+      'The browser appears to have performed an OPTIONS permission check before the main request. ' +
+      'Check whether OPTIONS returns a successful status and whether the response allows the requested origin, method, and headers.';
+  } else {
+    preflightBox.className = 'status';
+    preflightBox.innerHTML =
+      '<strong>No clear preflight signal found yet.</strong><br>' +
+      'The pasted browser result does not clearly indicate an OPTIONS/preflight failure. ' +
+      'That does not prove a preflight did not occur.';
+  }
+};
 apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
