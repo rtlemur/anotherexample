@@ -456,18 +456,22 @@ $('explainBrowserResult').onclick=()=>{
 
   const lower = text.toLowerCase();
 
-  if (
-    lower.includes('preflight') ||
-    lower.includes('options') ||
-    lower.includes('access-control-allow-methods') ||
-    lower.includes('access-control-allow-headers')
-  ) {
-    preflightBox.className = 'status bad';
-    preflightBox.innerHTML =
-      '<strong>Preflight likely involved.</strong><br>' +
-      'The browser appears to have performed an OPTIONS permission check before the main request. ' +
-      'Check whether OPTIONS returns a successful status and whether the response allows the requested origin, method, and headers.';
-  } else {
+ if (
+  lower.includes('preflight') ||
+  lower.includes('options') ||
+  lower.includes('access-control-allow-methods') ||
+  lower.includes('access-control-allow-headers')
+) {
+  preflightBox.className = 'status bad';
+  preflightBox.innerHTML =
+    '<strong>Preflight likely happened: YES</strong><br>' +
+    '<strong>Main request likely sent: NO</strong><br><br>' +
+    '<strong>Most likely failure points:</strong><br>' +
+    '• OPTIONS returned a non-2xx status<br>' +
+    '• Access-Control-Allow-Origin is missing or does not match<br>' +
+    '• The requested method is not allowed<br>' +
+    '• A requested header is not allowed';
+} else {
     preflightBox.className = 'status';
     preflightBox.innerHTML =
       '<strong>No clear preflight signal found yet.</strong><br>' +
