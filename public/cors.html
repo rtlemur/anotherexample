@@ -141,26 +141,58 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 </div>
 <div class="panel" id="browserResultPanel" style="margin-top:24px">
-     <div class="panel" id="preflightDiagnosisPanel" style="margin-top:24px;display:none">
-  <p class="eyebrow" style="margin-top:0">DEEPER DIAGNOSIS</p>
-  <h2>Preflight diagnosis</h2>
-  <p id="preflightSummary">
-    AnotherExample will look for signs that the browser sent an OPTIONS preflight and whether the main request was likely allowed to continue.
+  <p class="eyebrow" style="margin-top:0">NEXT STEP</p>
+  <h2>What did your browser say?</h2>
+  <p>
+    Paste the error or result from your browser Console.
+    AnotherExample will explain what it recognizes and what to check next.
   </p>
 
-  <div id="preflightDiagnosis" class="status" aria-live="polite"></div>
-</div>
-<p class="eyebrow" style="margin-top:0">NEXT STEP</p>
-<h2>What did your browser say?</h2>
-<p>Paste the error or result from your browser Console. AnotherExample will explain what it recognizes and what to check next.</p>
-<label for="browserResult">Browser Console result</label>
-<textarea id="browserResult" rows="7" placeholder="Paste a browser Console error or result here..."></textarea>
-<div class="actions"><button id="explainBrowserResult" class="secondary">Explain this result</button></div>
-<div id="browserExplanation" class="status" style="display:none;margin-top:14px" aria-live="polite"></div>
-<p class="small">This first version recognizes common browser and CORS messages without guessing when the cause is unclear.</p>
+  <label for="browserResult">Browser Console result</label>
+  <textarea
+    id="browserResult"
+    rows="7"
+    placeholder="Paste a browser Console error or result here..."
+  ></textarea>
+
+  <div class="actions">
+    <button id="explainBrowserResult" class="secondary">
+      Explain this result
+    </button>
+  </div>
+
+  <div
+    id="browserExplanation"
+    class="status"
+    style="display:none;margin-top:14px"
+    aria-live="polite"
+  ></div>
+
+  <p class="small">
+    This first version recognizes common browser and CORS messages without
+    guessing when the cause is unclear.
+  </p>
 </div>
 
+<div
+  class="panel"
+  id="preflightDiagnosisPanel"
+  style="margin-top:24px;display:none"
+>
+  <p class="eyebrow" style="margin-top:0">DEEPER DIAGNOSIS</p>
+  <h2>Preflight diagnosis</h2>
 
+  <p id="preflightSummary">
+    AnotherExample will look for signs that the browser sent an OPTIONS
+    preflight and whether the main request was likely allowed to continue.
+  </p>
+
+  <div
+    id="preflightDiagnosis"
+    class="status"
+    aria-live="polite"
+  ></div>
+</div>
 
 
 
