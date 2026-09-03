@@ -259,9 +259,10 @@ async function run(url) {
     const elapsed = Math.round(performance.now() - start);
 
     const status = r.ok ? '✓' : '✕';
+    const statusText = r.statusText || (r.ok ? 'OK' : '');
 
     result.textContent =
-      `${status} ${r.status} ${r.statusText} · ${elapsed} ms\n\n` +
+      `${status} ${r.status} ${statusText} · ${elapsed} ms\n\n` +
       JSON.stringify(data, null, 2);
 
   } catch (e) {
