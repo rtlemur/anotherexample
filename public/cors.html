@@ -455,7 +455,21 @@ $('explainBrowserResult').onclick=()=>{
 
   const lower = text.toLowerCase();
 
- if (
+if (
+  lower.includes('is not allowed by access-control-allow-methods')
+) {
+  preflightBox.className = 'status bad';
+  preflightBox.innerHTML =
+    '<strong>Preflight likely happened: YES</strong><br>' +
+    '<strong>Main request likely sent: NO</strong><br><br>' +
+    '<strong>Likely cause:</strong><br>' +
+    'The requested HTTP method is not listed in Access-Control-Allow-Methods.<br><br>' +
+    '<strong>Check next:</strong><br>' +
+    '• Confirm the server handles OPTIONS<br>' +
+    '• Confirm the preflight response returns 2xx<br>' +
+    '• Add the requested method to Access-Control-Allow-Methods';
+}
+else if (
   lower.includes('preflight') ||
   lower.includes('options') ||
   lower.includes('access-control-allow-methods') ||
@@ -470,13 +484,7 @@ $('explainBrowserResult').onclick=()=>{
     '• Access-Control-Allow-Origin is missing or does not match<br>' +
     '• The requested method is not allowed<br>' +
     '• A requested header is not allowed';
-} else {
-    preflightBox.className = 'status';
-    preflightBox.innerHTML =
-      '<strong>No clear preflight signal found yet.</strong><br>' +
-      'The pasted browser result does not clearly indicate an OPTIONS/preflight failure. ' +
-      'That does not prove a preflight did not occur.';
-  }
+}
 };
 apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
 </script>
