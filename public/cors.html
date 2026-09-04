@@ -527,6 +527,8 @@ else if (
   lower.includes("no 'access-control-allow-origin' header") ||
   lower.includes('no access-control-allow-origin header')
 ) {
+  $('preflightSummary').textContent =
+  'This browser message does not prove whether a preflight occurred. Here’s what the result suggests.';
   preflightBox.className = 'status bad';
   preflightBox.innerHTML =
     '<strong>Preflight likely happened: MAYBE</strong><br>' +
