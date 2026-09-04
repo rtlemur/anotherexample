@@ -506,6 +506,21 @@ if (
     '• Check proxy, CDN, or hosting rules affecting OPTIONS<br>' +
     '• Make sure the final API URL handles OPTIONS directly';
 }
+          else if (
+  lower.includes('must not be the wildcard') &&
+  lower.includes('credentials')
+) {
+  preflightBox.className = 'status bad';
+  preflightBox.innerHTML =
+    '<strong>Preflight likely happened: MAYBE</strong><br>' +
+    '<strong>Main request likely sent: POSSIBLY</strong><br><br>' +
+    '<strong>Likely cause:</strong><br>' +
+    'The request includes credentials, but the server allows every origin with Access-Control-Allow-Origin: *.<br><br>' +
+    '<strong>Check next:</strong><br>' +
+    '• Replace * with the exact requesting origin<br>' +
+    '• Return Access-Control-Allow-Credentials: true<br>' +
+    '• Make sure the browser request uses credentials: include only when needed';
+}
 else if (
   lower.includes('preflight') ||
   lower.includes('options') ||
