@@ -458,6 +458,8 @@ $('explainBrowserResult').onclick=()=>{
 if (
   lower.includes('is not allowed by access-control-allow-methods')
 ) {
+  $('preflightSummary').textContent =
+  'This browser message does not prove whether a preflight occurred. Here’s what the result suggests.';
   preflightBox.className = 'status bad';
   preflightBox.innerHTML =
     '<strong>Preflight likely happened: YES</strong><br>' +
