@@ -113,7 +113,15 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p class="eyebrow" style="margin-top:0">DIAGNOSTIC READY</p>
 <h2 style="margin-top:6px">Run the check from your page</h2>
 <p>Open Developer Tools on the page URL you entered, switch to the Console, then run Test A and Test B there. CORS is enforced in that page's browser origin, so where you run the tests matters.</p>
+<div class="actions">
+  <button id="copyCombined">
+    Copy combined A + B test
+  </button>
+</div>
 
+<p class="small">
+  Recommended: copy one diagnostic snippet that runs both tests and labels the results automatically.
+</p>
 <div class="two">
 <section>
 <h3>Test A — Your real API</h3>
@@ -243,6 +251,71 @@ function bodyObject(){
   try{return JSON.parse($('requestBody').value||'{}')}catch{return {playground:'test'}}
 }
 function requestSnippet(destination){
+     function combinedDiagnosticSnippet(target, control) {
+  const method = $('method').value;
+  const optionLines = [];
+
+  if (method !== 'GET') {
+    optionLines.push(
+      `method: '${method}'`,
+      "headers: { 'Content-Type': 'application/json' }",
+      `body: JSON.stringify(${JSON.stringify(bodyObject())})`
+    );
+  }
+
+  if ($('credentials').checked) {
+    optionLines.push("credentials: 'include'");
+  }
+
+  const options = optionLines.length
+    ? `{\n      ${optionLines.join(',\n      ')}\n    }`
+    : '{}';
+
+  return `(async () => {
+  async function runTest(label, url) {
+    console.log('\\n=== ' + label + ' ===');
+
+    try {
+      const response = await fetch(url, ${options});
+      const body = await response.text();
+
+      const result = {
+        success: true,
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        body
+      };
+
+      console.log(result);
+      return result;
+    } catch (error) {
+      const result = {
+        success: false,
+        error: String(error)
+      };
+
+      console.error(result);
+      return result;
+    }
+  }
+
+  const testA = await runTest(
+    'TEST A — Your API',
+    '${target}'
+  );
+
+  const testB = await runTest(
+    'TEST B — Controlled baseline',
+    '${control}'
+  );
+
+  console.log('\\n=== AnotherExample comparison ===');
+  console.log({
+    testA,
+    testB
+  });
+})();`;
+}
   const method=$('method').value, opts=[];
   if(method!=='GET') opts.push(`method: '${method}'`, "headers: { 'Content-Type': 'application/json' }", `body: JSON.stringify(${JSON.stringify(bodyObject())})`);
   if($('credentials').checked) opts.push("credentials: 'include'");
@@ -400,6 +473,20 @@ $('startDiagnosis').onclick=()=>{
   $('startDiagnosis').textContent='Start CORS diagnosis';
   $('startDiagnosis').disabled=false;
   $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
+};
+     $('copyCombined').onclick = async () => {
+  const target = targetUrl();
+  const control = diagnosticControlUrl();
+
+  await navigator.clipboard.writeText(
+    combinedDiagnosticSnippet(target, control)
+  );
+
+  $('copyCombined').textContent = 'Copied combined test';
+
+  setTimeout(() => {
+    $('copyCombined').textContent = 'Copy combined A + B test';
+  }, 1200);
 };
 $('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
 $('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};
