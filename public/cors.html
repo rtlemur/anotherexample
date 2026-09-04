@@ -522,6 +522,22 @@ if (
     '• Make sure the browser request uses credentials: include only when needed';
 }
 else if (
+  lower.includes("no 'access-control-allow-origin' header") ||
+  lower.includes('no access-control-allow-origin header')
+) {
+  preflightBox.className = 'status bad';
+  preflightBox.innerHTML =
+    '<strong>Preflight likely happened: MAYBE</strong><br>' +
+    '<strong>Main request likely sent: POSSIBLY</strong><br><br>' +
+    '<strong>Likely cause:</strong><br>' +
+    'The server response does not include an Access-Control-Allow-Origin header that permits the requesting page.<br><br>' +
+    '<strong>Check next:</strong><br>' +
+    '• Confirm the server sends Access-Control-Allow-Origin<br>' +
+    '• Make sure it matches the requesting origin when needed<br>' +
+    '• Check both the OPTIONS response and the final response<br>' +
+    '• Do not assume the request failed just because browser JavaScript cannot read the response';
+}
+else if (
   lower.includes('preflight') ||
   lower.includes('options') ||
   lower.includes('access-control-allow-methods') ||
