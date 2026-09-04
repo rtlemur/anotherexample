@@ -488,6 +488,20 @@ $('startDiagnosis').onclick=()=>{
     $('copyCombined').textContent = 'Copy combined A + B test';
   }, 1200);
 };
+     $('copyCombined').onclick = async () => {
+  const target = targetUrl();
+  const control = diagnosticControlUrl();
+
+  await navigator.clipboard.writeText(
+    combinedDiagnosticSnippet(target, control)
+  );
+
+  $('copyCombined').textContent = 'Copied combined test';
+
+  setTimeout(() => {
+    $('copyCombined').textContent = 'Copy combined A + B test';
+  }, 1200);
+};
 $('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
 $('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};
 $('toggleTarget').onclick=()=>{
