@@ -251,15 +251,7 @@ function bodyObject(){
   try{return JSON.parse($('requestBody').value||'{}')}catch{return {playground:'test'}}
 }
 function requestSnippet(destination){
-  const method=$('method').value, opts=[];
-  if(method!=='GET') opts.push(
-    `method: '${method}'`,
-    "headers: { 'Content-Type': 'application/json' }",
-    `body: JSON.stringify(${JSON.stringify(bodyObject())})`
-  );
-  if($('credentials').checked) opts.push("credentials: 'include'");
-  return `fetch('${destination}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(async r => ({ status:r.status, headers:Object.fromEntries(r.headers), body:await r.text() }))\n  .then(console.log)\n  .catch(console.error);`;
-}
+  
  function combinedDiagnosticSnippet(target, control) {
   const method = $('method').value;
   const optionLines = [];
@@ -325,11 +317,7 @@ function requestSnippet(destination){
   });
 })();`;
 }
-  const method=$('method').value, opts=[];
-  if(method!=='GET') opts.push(`method: '${method}'`, "headers: { 'Content-Type': 'application/json' }", `body: JSON.stringify(${JSON.stringify(bodyObject())})`);
-  if($('credentials').checked) opts.push("credentials: 'include'");
-  return `fetch('${destination}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(async r => ({ status:r.status, headers:Object.fromEntries(r.headers), body:await r.text() }))\n  .then(console.log)\n  .catch(console.error);`;
-}
+
 function requestShapeSummary(){
   const method=$('method').value;
   const creds=$('credentials').checked ? 'credentials included' : 'no credentials';
@@ -483,7 +471,7 @@ $('startDiagnosis').onclick=()=>{
   $('startDiagnosis').disabled=false;
   $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
 };
-     $('copyCombined').onclick = async () => {
+     $('copy').onclick = async () => {
   const target = targetUrl();
   const control = diagnosticControlUrl();
 
