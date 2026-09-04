@@ -471,20 +471,7 @@ $('startDiagnosis').onclick=()=>{
   $('startDiagnosis').disabled=false;
   $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
 };
-     $('copy').onclick = async () => {
-  const target = targetUrl();
-  const control = diagnosticControlUrl();
-
-  await navigator.clipboard.writeText(
-    combinedDiagnosticSnippet(target, control)
-  );
-
-  $('copyCombined').textContent = 'Copied combined test';
-
-  setTimeout(() => {
-    $('copyCombined').textContent = 'Copy combined A + B test';
-  }, 1200);
-};
+     
      $('copyCombined').onclick = async () => {
   const target = targetUrl();
   const control = diagnosticControlUrl();
