@@ -438,7 +438,18 @@ function classifyBrowserResult(text){
     'Preflight access-control check failed',
     'The browser sent an OPTIONS preflight, but the response did not satisfy CORS requirements. Check the preflight status and the Access-Control-Allow-Origin, Access-Control-Allow-Methods, and Access-Control-Allow-Headers response headers.'
   ];
-} return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
+} 
+     if (
+  l.includes('access-control-allow-origin') &&
+  l.includes('does not match')
+) {
+  return [
+    'Allowed origin does not match',
+    'The server sent Access-Control-Allow-Origin, but it names a different origin than the page making the request.'
+  ];
+}
+     
+     return ['Result not recognized yet','This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.'];
 }
 $('explainBrowserResult').onclick=()=>{
   const text = $('browserResult').value;
