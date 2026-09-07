@@ -112,14 +112,28 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 }
 });
 
-app.use('/api/cors/open',(req,res,next)=>{setOpenCors(req,res);if(req.method==='OPTIONS')return res.sendStatus(204);next();});
+app.use('/api/cors/open',(req,res,next)=>{
+  setOpenCors(req,res);
+  if(req.method==='OPTIONS'){
+    noStore(res);
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.all('/api/cors/open',(req,res)=>{noStore(res);res.json({mode:'open',message:'Permissive CORS response using Access-Control-Allow-Origin: *.',...requestSnapshot(req)});});
 
 app.use('/api/cors/credentials',(req,res,next)=>{
-  const origin=req.get('Origin'); if(origin){res.set('Access-Control-Allow-Origin',origin);res.set('Vary','Origin');}
+  const origin=req.get('Origin'); 
+  if(origin){res.set('Access-Control-Allow-Origin',origin);
+  res.set('Vary','Origin');}
   res.set({'Access-Control-Allow-Credentials':'true','Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers':req.get('Access-Control-Request-Headers')||'Content-Type, Authorization','Access-Control-Max-Age':'600'});
-  if(req.method==='OPTIONS')return res.sendStatus(204); next();
+    'Access-Control-Allow-Headers':
+  req.get('Access-Control-Request-Headers')||'Content-Type, Authorization','Access-Control-Max-Age':'600'});
+ if(req.method==='OPTIONS'){
+  noStore(res);
+  return res.sendStatus(204);
+}
+next();
 });
 app.all('/api/cors/credentials',(req,res)=>{noStore(res);res.json({mode:'credentials',message:'Credentialed CORS response. The request Origin is reflected when present.',...requestSnapshot(req)});});
 
