@@ -24,7 +24,7 @@ button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var
 .status{border-left:3px solid var(--warn);padding:10px 13px;background:var(--code);margin:14px 0}.ok{border-color:var(--accent)}.bad{border-color:var(--bad)}.small{font-size:.86rem;color:var(--muted)}
 h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:uppercase;letter-spacing:.07em}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.back{font-size:.9rem}
 .checkbox{display:flex;gap:8px;align-items:center;margin-top:12px}.checkbox input{width:auto}.checkbox label{margin:0}.origin{font-size:.9rem;margin-top:8px;color:var(--muted)}
-.steps{margin:8px 0 0;padding-left:22px}.steps li{margin:6px 0}.divider{border:0;border-top:1px solid var(--border);margin:36px 0}
+.divider{border:0;border-top:1px solid var(--border);margin:36px 0}
 
 .step{margin:22px 0;padding:20px;border:1px solid #303643;border-radius:16px;background:#151922}
 .step-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
@@ -435,7 +435,7 @@ function fetchText(){
   return `fetch('${u}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);`;
 }
 function updateCode(){
-  const origin=enteredOrigin();
+  enteredOrigin();
   targetUrl();
   if($('fetchCode')) $('fetchCode').textContent=fetchText();
   
