@@ -450,25 +450,7 @@ function explain(){
   else{msg='Should succeed for a cross-origin request that matches these settings.'}
   $('expected').className='status '+cls;$('expected').textContent=msg;updateCode();
 }
-function failureExplanation(){
-  const a=$('allowOrigin').value,c=$('credentials').checked,p=$('preflight').value,m=$('method').value;
-  if(a==='none') return 'Likely reason: the response omitted Access-Control-Allow-Origin.';
-  if(a==='https://wrong.example') return 'Likely reason: Access-Control-Allow-Origin did not match this page’s origin.';
-  if(c&&a==='*') return 'Likely reason: browsers reject wildcard Access-Control-Allow-Origin when credentials are included.';
-  if(m!=='GET'&&p!=='204') return 'Likely reason: the OPTIONS preflight was rejected, so the browser did not send the main request.';
-  return 'The browser did not expose a detailed reason to fetch(). Open Developer Tools for the exact network/CORS error.';
-}
-async function run(){
-  explain();if($('response')) $('response').textContent='Running a real cross-origin request…';
-  try{
-    const options={method:$('method').value,credentials:$('credentials').checked?'include':'omit'};
-    if(options.method!=='GET'){options.headers={'Content-Type':'application/json'};options.body=JSON.stringify({playground:'test'});}
-    const r=await fetch(url(),options), raw=await r.text();let body=raw;try{body=raw?JSON.parse(raw):null}catch{}
-    const headers=Object.fromEntries(r.headers.entries());
-    if($('response')) $('response').textContent='✓ Browser allowed the cross-origin response.\n\n'+JSON.stringify({status:r.status,headers,body},null,2);
-  }catch(e){
-    if($('response')) $('response').textContent='✕ Browser blocked the cross-origin response.\n\n'+failureExplanation()+'\n\nBrowser fetch result: '+e.message+'\n\nDeveloper Tools may show the exact CORS error.';
-  }
+
 }
 function markScenarioCustom(){
   selectedScenario=null;
