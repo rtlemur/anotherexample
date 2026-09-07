@@ -138,7 +138,7 @@ next();
 app.all('/api/cors/credentials',(req,res)=>{noStore(res);res.json({mode:'credentials',message:'Credentialed CORS response. The request Origin is reflected when present.',...requestSnapshot(req)});});
 
 // Configurable CORS laboratory endpoint. Query parameters deliberately control response behavior.
-app.all('', async (req,res)=>{
+app.all('/api/cors/lab', async (req,res)=>{
   const q=req.query;
   const delay=Math.min(Math.max(Number(q.delay)||0,0),3000);
   if(delay) await new Promise(resolve=>setTimeout(resolve,delay));
@@ -165,7 +165,7 @@ app.all('', async (req,res)=>{
 });
 
 app.use('/api/cors',(req,res,next)=>{if(req.path!=='/')return next();setOpenCors(req,res);if(req.method==='OPTIONS')return res.sendStatus(204);next();});
-app.all('/api/cors',(req,res)=>{noStore(res);res.json({message:'Permissive CORS response. See /api/cors/open, /api/cors/credentials, and .',...requestSnapshot(req)});});
+app.all('/api/cors',(req,res)=>{noStore(res);res.json({message:'Permissive CORS response. See /api/cors/open, /api/cors/credentials, and /api/cors/lab.',...requestSnapshot(req)});});
 app.all('/api/echo',(req,res)=>{noStore(res);res.json(requestSnapshot(req));});
 app.all('/api/status/:code',(req,res)=>{const code=Number(req.params.code);if(!Number.isInteger(code)||code<200||code>599)return res.status(400).json({error:'Status code must be an integer from 200 to 599.'});noStore(res);if(code===204||code===304)return res.status(code).end();res.status(code).json({status:code,message:`Intentional test response with HTTP ${code}.`});});
 app.all('/api/delay/:ms',async(req,res)=>{const ms=Number(req.params.ms);if(!Number.isInteger(ms)||ms<0||ms>MAX_DELAY_MS)return res.status(400).json({error:`Delay must be an integer from 0 to ${MAX_DELAY_MS} milliseconds.`});await new Promise(resolve=>setTimeout(resolve,ms));noStore(res);res.json({delayed:ms,unit:'milliseconds'});});
