@@ -334,11 +334,34 @@ function combinedDiagnosticSnippet(target, control) {
     '${control}'
   );
 
-  console.log('\\n=== AnotherExample comparison ===');
-  console.log({
-    testA,
-    testB
-  });
+ console.log('\n=== AnotherExample comparison ===');
+
+let conclusion;
+
+if (testA.success && testB.success) {
+  conclusion =
+    'A works, B works — basic cross-origin access works for this request shape. Reproduce the exact failing method, headers, body, and credentials.';
+}
+else if (!testA.success && testB.success) {
+  conclusion =
+    'A fails, B works — the controlled baseline succeeded, so investigate the target API CORS configuration or response first.';
+}
+else if (!testA.success && !testB.success) {
+  conclusion =
+    'A fails, B fails — compare the browser errors and verify the request shape, credentials, browser policy, extensions, and environment.';
+}
+else {
+  conclusion =
+    'A works, B fails — this is unusual. Recheck the controlled comparison settings and browser environment.';
+}
+
+console.log({
+  testA,
+  testB,
+  conclusion
+});
+
+console.log('\n' + conclusion);
 })();`;
 }
 
