@@ -193,5 +193,16 @@ app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt')
 app.use(express.static(path.join(__dirname,'public'),{maxAge:'1h'}));
 
 app.use((err,req,res,next)=>{if(err&&err.type==='entity.too.large')return res.status(413).json({error:'Request body too large. Maximum body size is 64 KB.'});if(err instanceof SyntaxError&&err.status===400&&'body'in err)return res.status(400).json({error:'Invalid JSON body.'});next(err);});
+app.use((err,req,res,next)=>{
+  console.error('Unhandled server error:', err);
+
+  if(res.headersSent){
+    return next(err);
+  }
+
+  res.status(500).json({
+    error:'Internal server error.'
+  });
+});
 if(require.main===module)app.listen(PORT,()=>console.log(`anotherexample.com running on http://localhost:${PORT}`));
 module.exports=app;
