@@ -237,7 +237,7 @@ const scenarios=[
 ];
 const $=id=>document.getElementById(id);
 const defaults={methods:'GET, POST, OPTIONS',headers:'Content-Type',delay:'0'};
-let selectedScenario=scenarios[0];
+
 
 function validHttpUrl(value){
   try { const u=new URL(value); return ['http:','https:'].includes(u.protocol)?u:null; } catch { return null; }
