@@ -164,7 +164,18 @@ app.all('/api/cors/lab', async (req,res)=>{
   res.status(safeStatus).json({mode:'lab',configuration:{allowOrigin,credentials:q.credentials==='true',methods:q.methods||'GET, POST, OPTIONS',headers:q.headers||'Content-Type',delay},...requestSnapshot(req)});
 });
 
-app.use('/api/cors',(req,res,next)=>{if(req.path!=='/')return next();setOpenCors(req,res);if(req.method==='OPTIONS')return res.sendStatus(204);next();});
+app.use('/api/cors',(req,res,next)=>{
+  if(req.path!=='/') return next();
+
+  setOpenCors(req,res);
+
+  if(req.method==='OPTIONS'){
+    noStore(res);
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 app.all('/api/cors',(req,res)=>{noStore(res);res.json({message:'Permissive CORS response. See /api/cors/open, /api/cors/credentials, and /api/cors/lab.',...requestSnapshot(req)});});
 app.all('/api/echo',(req,res)=>{noStore(res);res.json(requestSnapshot(req));});
 app.all('/api/status/:code',(req,res)=>{const code=Number(req.params.code);if(!Number.isInteger(code)||code<200||code>599)return res.status(400).json({error:'Status code must be an integer from 200 to 599.'});noStore(res);if(code===204||code===304)return res.status(code).end();res.status(code).json({status:code,message:`Intentional test response with HTTP ${code}.`});});
