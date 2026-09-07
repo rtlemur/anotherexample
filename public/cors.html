@@ -541,7 +541,7 @@ $('toggleControl').onclick=()=>{
   pre.style.display=show?'block':'none';
   $('toggleControl').textContent=show?'Hide generated code':'View generated code';
 };
-if($('run')) if($('run')) $('run').onclick=run;
+
 $('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
 $('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy scenario fetch',1200)};
 
