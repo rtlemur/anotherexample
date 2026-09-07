@@ -405,7 +405,7 @@ const box=$('scenarios');
 scenarios.forEach((s)=>{
   const b=document.createElement('button');b.className='scenario';
   b.innerHTML=`<strong>${s.name}</strong><span>${s.desc}</span>`;
-  b.onclick=()=>{[...box.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');selectedScenario=s;apply(s.v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> '+s.name.replace(/^[✓✕]\s*/,'')};
+  b.onclick=()=>{[...box.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');apply(s.v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> '+s.name.replace(/^[✓✕]\s*/,'')};
   box.appendChild(b);
 });
 const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='www.anotherexample.com'
@@ -438,7 +438,7 @@ function updateCode(){
   const origin=enteredOrigin();
   targetUrl();
   if($('fetchCode')) $('fetchCode').textContent=fetchText();
-  if($('curlCode')) $('curlCode').textContent=`curl -i -X ${$('method').value} -H 'Origin: ${origin}' '${url()}'`;
+  
 }
 function explain(){
   let msg,cls='ok';const a=$('allowOrigin').value,c=$('credentials').checked,p=$('preflight').value,m=$('method').value;
@@ -453,7 +453,6 @@ function explain(){
 
 }
 function markScenarioCustom(){
-  selectedScenario=null;
   [...box.children].forEach(x=>x.classList.remove('active'));
   if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';
 }
@@ -928,7 +927,7 @@ $('explainBrowserResult').onclick = () => {
   const diagnosis = findBrowserDiagnosis($('browserResult').value);
   renderDiagnosis(diagnosis);
 };
-apply(scenarios[0].v);selectedScenario=null;if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
+apply(scenarios[0].v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
 </script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
