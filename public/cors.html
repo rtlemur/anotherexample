@@ -411,10 +411,6 @@ scenarios.forEach((s)=>{
 const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='www.anotherexample.com'
   ? 'https://cors.anotherexample.com'
   : 'https://cors-preview.anotherexample.com';
-if(location.hostname!=='anotherexample.com' && location.hostname!=='www.anotherexample.com'){
-  const marker=document.getElementById('previewBuildMarker');
-  if(marker) marker.style.display='block';
-}
 
 function params(){return new URLSearchParams({allowOrigin:$('allowOrigin').value,credentials:String($('credentials').checked),methods:$('methods').value,headers:$('headers').value,preflightStatus:$('preflight').value,delay:$('delay').value||'0'});}
 function url(){return LAB_ORIGIN+'/api/cors/lab?'+params();}
