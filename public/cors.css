@@ -20,7 +20,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 
 .step{margin:22px 0;padding:20px;border:1px solid #303643;border-radius:16px;background:#151922}
 .step-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
-.step-number{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:999px;border:1px solid #65e6b8;font-weight:800}
+.step-number{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex:none;border-radius:999px;border:1px solid #65e6b8;font-weight:800}
 .step-head h2{margin:2px 0 4px;font-size:1.15rem}
 .step-head p{margin:0}
 
