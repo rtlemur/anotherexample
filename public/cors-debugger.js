@@ -221,371 +221,123 @@ $('toggleControl').onclick=()=>{
   $('toggleControl').textContent=show?'Hide generated code':'View generated code';
 };
 
+// Keep classification independent of the DOM. Specific policy failures precede
+// generic network messages, which browsers often append to the same error.
+function browserDiagnosis(family, title, side, explanation, checks, preflight = 'MAYBE') {
+  return {
+    family, title, side,
+    explanation: explanation + ' Inspect the ' + side + ' first.',
+    summary: preflight === 'YES'
+      ? 'The message identifies a failed preflight; the main request may not have been sent.'
+      : 'This message alone does not establish whether a preflight occurred.',
+    preflight,
+    mainRequest: preflight === 'YES' ? 'NO' : 'UNKNOWN',
+    likelyCause: explanation,
+    checks
+  };
+}
+
 const browserDiagnosisRules = [
   {
-    matches: text =>
-      text.includes("no 'access-control-allow-origin' header") ||
-      text.includes('no access-control-allow-origin header'),
-
-    title: 'Missing Access-Control-Allow-Origin',
-
-    explanation:
-      'The target responded, but the browser says its response does not include an Access-Control-Allow-Origin header permitting your page. Check the target API’s CORS configuration.',
-
-    summary:
-      'This browser message does not prove whether a preflight occurred. Here’s what the result suggests.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'The server response does not include an Access-Control-Allow-Origin header that permits the requesting page.',
-
-    checks: [
-      'Confirm the server sends Access-Control-Allow-Origin',
-      'Make sure it matches the requesting origin when needed',
-      'Check both the OPTIONS response and the final response',
-      'Do not assume the request failed just because browser JavaScript cannot read the response'
-    ]
+    matches: t => /access-control-allow-origin|\bacao\b/.test(t) && /multiple|more than one|only one.*allowed/.test(t),
+    diagnosis: browserDiagnosis('multiple-origin', 'Multiple allowed-origin headers', 'server',
+      'The response supplies multiple Access-Control-Allow-Origin headers or values; the browser requires a single allowed origin.',
+      ['Inspect raw response headers in DevTools or server logs', 'Check whether both the application and proxy add the header', 'Return one allowed origin, not a comma-separated list'])
   },
-
   {
-    matches: text =>
-      text.includes('must not be the wildcard') &&
-      text.includes('credentials'),
-
-    title: 'Credentials cannot use a wildcard origin',
-
-    explanation:
-      'The request includes credentials, but the response uses Access-Control-Allow-Origin: *. Credentialed requests need an explicit allowed origin.',
-
-    summary:
-      'This browser message points to a credentials and origin-policy mismatch.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'The request includes credentials, but the server allows every origin with Access-Control-Allow-Origin: *.',
-
-    checks: [
-      'Replace * with the exact requesting origin',
-      'Return Access-Control-Allow-Credentials: true',
-      'Make sure the browser request uses credentials: include only when needed'
-    ]
+    matches: t => /credential/.test(t) && (/wildcard/.test(t) || /access-control-allow-origin[^\n]*\*/.test(t) || /explicit (?:allowed )?origin/.test(t)),
+    diagnosis: browserDiagnosis('credentials-wildcard', 'Credentials cannot use a wildcard origin', 'server',
+      'Credentialed requests require an explicit allowed origin instead of Access-Control-Allow-Origin: *.',
+      ['Return the exact permitted requesting origin', 'Return Access-Control-Allow-Credentials: true for permitted credentialed requests', 'Check whether the client actually needs credentials'])
   },
-
   {
-    matches: text =>
-      text.includes('is not allowed by access-control-allow-methods'),
-
-    title: 'Method rejected by preflight',
-
-    explanation:
-      'The requested HTTP method is not permitted by Access-Control-Allow-Methods in the preflight response.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight checked the requested method and rejected it.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The requested HTTP method is not listed in Access-Control-Allow-Methods.',
-
-    checks: [
-      'Confirm the server handles OPTIONS',
-      'Confirm the preflight response returns 2xx',
-      'Add the requested method to Access-Control-Allow-Methods'
-    ]
+    matches: t => /access-control-allow-credentials/.test(t) && /missing|expected|must be|not.*true|invalid|is not|does not|is \'\'/.test(t),
+    diagnosis: browserDiagnosis('allow-credentials', 'Missing or invalid Allow-Credentials', 'server',
+      'The credentialed request requires Access-Control-Allow-Credentials with the case-sensitive value true; the message reports it missing or invalid.',
+      ['Inspect the OPTIONS and final response in DevTools or server logs', 'Return Access-Control-Allow-Credentials: true for approved credentialed access', 'Check whether the client sends credentials (credentials: "include" or withCredentials = true)'])
   },
-
   {
-    matches: text =>
-      text.includes('is not allowed by access-control-allow-headers') ||
-      (
-        text.includes('request header field') &&
-        text.includes('not allowed')
-      ),
-
-    title: 'Request header rejected by preflight',
-
-    explanation:
-      'A requested header is not permitted by Access-Control-Allow-Headers in the preflight response.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight checked the requested headers and rejected one of them.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'A request header is not listed in Access-Control-Allow-Headers.',
-
-    checks: [
-      'Confirm the server handles OPTIONS',
-      'Confirm the preflight response returns 2xx',
-      'Add the requested header to Access-Control-Allow-Headers'
-    ]
+    matches: t => /access-control-allow-methods/.test(t) && /not allowed|missing|absent|did not find|invalid token|not (?:present|listed|permitted)/.test(t),
+    diagnosis: browserDiagnosis('method', 'Method rejected by preflight', 'server',
+      'The allowed-methods response omits the requested method or contains an invalid method token.',
+      ['Compare Access-Control-Request-Method with Access-Control-Allow-Methods', 'Use valid comma-separated HTTP method tokens', 'Check that OPTIONS receives a successful response'], 'YES')
   },
-
   {
-    matches: text =>
-      text.includes('redirect is not allowed for a preflight') ||
-      (
-        text.includes('preflight') &&
-        text.includes('redirect')
-      ),
-
-    title: 'Preflight was redirected',
-
-    explanation:
-      'The browser will not follow this redirect for the CORS preflight. Check authentication, proxy, hosting, or URL redirects affecting OPTIONS.',
-
-    summary:
-      'The browser result indicates that the OPTIONS preflight was redirected instead of answered directly.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The OPTIONS preflight was redirected instead of answering the browser directly.',
-
-    checks: [
-      'Check for HTTP → HTTPS redirects',
-      'Check login or authentication redirects',
-      'Check proxy, CDN, or hosting rules affecting OPTIONS',
-      'Make sure the final API URL handles OPTIONS directly'
-    ]
+    matches: t => /access-control-allow-headers/.test(t) && /not allowed|missing|absent|did not find|invalid token|not (?:present|listed|permitted)/.test(t),
+    diagnosis: browserDiagnosis('header', 'Request header rejected by preflight', 'server',
+      'The allowed-headers response omits a requested header or contains an invalid header-name token.',
+      ['Compare Access-Control-Request-Headers with Access-Control-Allow-Headers', 'Use valid comma-separated header names', 'Check that OPTIONS receives a successful response'], 'YES')
   },
-
   {
-    matches: text =>
-      text.includes("response to preflight request doesn't pass access control check") ||
-      text.includes('response to preflight request does not pass access control check'),
-
-    title: 'Preflight access-control check failed',
-
-    explanation:
-      'The browser sent an OPTIONS preflight, but the response did not satisfy CORS requirements.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight occurred and failed before the main request could continue.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The preflight response did not satisfy one or more CORS requirements.',
-
-    checks: [
-      'Check the OPTIONS response status',
-      'Check Access-Control-Allow-Origin',
-      'Check Access-Control-Allow-Methods',
-      'Check Access-Control-Allow-Headers'
-    ]
+    matches: t => /access-control-allow-origin|returned origin/.test(t) && /does not match|doesn\'t match|mismatch|different origin/.test(t),
+    diagnosis: browserDiagnosis('origin-mismatch', 'Allowed origin does not match', 'server',
+      'The response names an allowed origin different from the requesting page origin.',
+      ['Compare the page origin with the response header in DevTools', 'Check scheme, hostname, and port', 'Check proxy configuration and cached responses for the wrong origin'])
   },
-
   {
-    matches: text =>
-      text.includes('access-control-allow-origin') &&
-      text.includes('does not match'),
-
-    title: 'Allowed origin does not match',
-
-    explanation:
-      'The server sent Access-Control-Allow-Origin, but it names a different origin than the page making the request.',
-
-    summary:
-      'This browser message shows that the server sent an Access-Control-Allow-Origin header, but it did not permit the requesting page.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'Access-Control-Allow-Origin names a different origin than the page making the request.',
-
-    checks: [
-      'Compare the browser page origin with Access-Control-Allow-Origin',
-      'Watch for http vs https differences',
-      'Watch for different ports or subdomains',
-      'If credentials are used, return the exact allowed origin instead of *'
-    ]
+    matches: t => /access-control-allow-origin/.test(t) && /missing|no ["']?access-control-allow-origin["']? header|origin .*not allowed by/.test(t),
+    diagnosis: browserDiagnosis('missing-origin', 'Origin not allowed by server', 'server',
+      'The browser reports a missing allowed-origin header or an origin it does not permit. “Origin is not allowed” alone does not distinguish a missing header from a mismatched value.',
+      ['Inspect the OPTIONS and final response headers in DevTools or server logs', 'Ensure the server permits the exact page origin', 'Check error responses and proxy responses for missing headers'])
   },
-
   {
-    matches: text =>
-      text.includes('err_timed_out') ||
-      text.includes('timed out'),
-
-    title: 'Connection timed out — not enough evidence for CORS',
-
-    explanation:
-      'The browser did not receive a usable response. Check server availability, connectivity, DNS, firewall/proxy behavior, and the target URL before treating this as CORS.',
-
-    summary:
-      'This result points to a connection problem rather than a clear CORS diagnosis.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not complete the network request.',
-
-    checks: [
-      'Check that the target server is reachable',
-      'Check DNS and network connectivity',
-      'Check firewall or proxy behavior',
-      'Confirm the target URL is correct'
-    ]
+    matches: t => /redirect/.test(t) && /not allowed|not permitted|disallowed|blocked/.test(t) && /cors|cross-origin|preflight/.test(t),
+    diagnosis: browserDiagnosis('redirect', 'CORS redirect blocked', 'server',
+      'The browser reports a redirect it cannot follow during CORS processing. This may affect a preflight or the main request.',
+      ['Inspect the redirect chain and Location in DevTools or server logs', 'Use the final API URL directly', 'Check authentication, HTTPS, and proxy redirects on OPTIONS'])
   },
-
   {
-    matches: text =>
-      text.includes('err_name_not_resolved'),
-
-    title: 'DNS / hostname problem',
-
-    explanation:
-      'The browser could not resolve the target hostname. Fix that before investigating CORS.',
-
-    summary:
-      'This result points to a hostname or DNS failure rather than a clear CORS problem.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not resolve the target hostname.',
-
-    checks: [
-      'Confirm the hostname is spelled correctly',
-      'Check DNS resolution',
-      'Confirm the domain is active and reachable'
-    ]
+    matches: t => /cors request not https?\b|cross origin requests are only supported for protocol schemes|url scheme .*not supported|unsupported (?:url )?scheme/.test(t) ||
+      (/cors|cross-origin|cross origin/.test(t) && /(?:file|[a-z][a-z0-9+.-]*):\/\//.test(t) && /scheme|protocol/.test(t) && /not|only|unsupported|blocked/.test(t)),
+    diagnosis: browserDiagnosis('scheme', 'Unsupported request scheme', 'client',
+      'The request uses a scheme the browser does not support for this cross-origin fetch, such as file:// or a custom protocol.',
+      ['Serve local pages through an HTTP or HTTPS development server', 'Check the target URL scheme', 'Use an HTTP or HTTPS API URL'], 'UNKNOWN')
   },
-
   {
-    matches: text =>
-      text.includes('err_cert') ||
-      text.includes('certificate') ||
-      text.includes('tls'),
-
-    title: 'TLS / certificate problem',
-
-    explanation:
-      'Resolve the secure-connection or certificate problem before diagnosing CORS.',
-
-    summary:
-      'This result points to a TLS or certificate failure rather than a clear CORS problem.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not establish a trusted secure connection.',
-
-    checks: [
-      'Check the TLS certificate',
-      'Check hostname and certificate matching',
-      'Check certificate expiration',
-      'Resolve the HTTPS problem before diagnosing CORS'
-    ]
+    matches: t => /preflight/.test(t) && /unsuccessful|did not succeed|fail|reject|non-2xx|not.*(?:ok|successful|2xx)|doesn\'t pass|does not pass/.test(t) || /options request (?:was )?rejected/.test(t),
+    diagnosis: browserDiagnosis('preflight', 'Preflight failed', 'server',
+      'The OPTIONS preflight failed. This message alone may not distinguish a rejected response from a transport failure.',
+      ['Inspect the OPTIONS status and browser network error', 'Ensure OPTIONS returns a successful 2xx response without authentication redirects', 'Check allowed origin, method, and headers', 'If no response arrived, check connectivity and TLS'], 'YES')
   },
-
   {
-    matches: text =>
-      text.includes('failed to fetch'),
-
-    title: 'Failed to fetch — generic browser failure',
-
-    explanation:
-      'This message alone does not identify the cause. Look for the more specific Console or Network error immediately above it.',
-
-    summary:
-      'The browser result is too generic to identify whether preflight or the main request failed.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser did not provide enough detail in this message alone.',
-
-    checks: [
-      'Look for a more specific Console error',
-      'Check the Network tab',
-      'Look for an OPTIONS request',
-      'Check whether the target request was sent'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('status: 200') ||
-      text.includes('status:200'),
-
-    title: 'Successful HTTP response',
-
-    explanation:
-      'The pasted result shows HTTP 200. The request reached the server successfully; compare this with any browser-policy errors and the controlled result.',
-
-    summary:
-      'The pasted result shows that the browser received an HTTP 200 response.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'YES',
-
-    likelyCause:
-      'The request reached the server successfully.',
-
-    checks: [
-      'Compare this result with the controlled test',
-      'Check for browser-policy errors',
-      'Confirm JavaScript could read the response'
-    ]
+    matches: t => /err_(?:name_not_resolved|connection_[a-z_]+|timed_out|cert_[a-z_]+|ssl_[a-z_]+)|cors request did not succeed|failed to fetch|load failed|networkerror when attempting to fetch resource|network request failed|request timed out|network connection was lost|could not connect to the server|server with the specified hostname could not be found|mixed content.*(?:blocked|insecure)|(?:tls|ssl|certificate|dns|connection).*(?:error|failed|failure|invalid|expired|refused|timed out)/.test(t),
+    diagnosis: browserDiagnosis('network', 'CORS or network failure — cause unclear', 'network',
+      'This may not be a CORS configuration problem. The message alone cannot distinguish CORS from connectivity, DNS, TLS, mixed-content blocking, or another browser restriction.',
+      ['Look for a more specific Console or Network error for the same request', 'Check target availability, DNS, and TLS certificates', 'Check for an HTTPS page requesting an insecure HTTP resource', 'Inspect OPTIONS and the main request in DevTools; blocked headers are not available to page JavaScript'], 'UNKNOWN')
   }
 ];
 
 function findBrowserDiagnosis(text) {
-  const normalized = (text || '').trim().toLowerCase();
-
-  if (!normalized) {
+  const normalized = String(text || '').trim().toLowerCase()
+    .replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ');
+  const matched = browserDiagnosisRules.find(rule => rule.matches(normalized));
+  // Require a status label, HTTP prefix, or standard status reason; a URL port
+  // or arbitrary number alongside the word CORS is not HTTP-error evidence.
+  const httpError = /\b(?:status(?: code| of)?|http(?:\/\d(?:\.\d)?)?)[\s:='"(]+[45]\d{2}\b|\b[45]\d{2}\s+(?:bad request|unauthorized|forbidden|not found|internal server error|bad gateway|service unavailable|gateway timeout)\b/.test(normalized);
+  const corsComplaint = matched && !['network', 'scheme'].includes(matched.diagnosis.family) ||
+    /blocked by cors|cors (?:error|request did not succeed)|access.control (?:check|checks).*fail/.test(normalized);
+  if (httpError && corsComplaint) {
+    return browserDiagnosis('http-error', 'HTTP error with a CORS complaint', 'server',
+      'The message includes a 4xx/5xx response and a CORS complaint. The underlying server or upstream error may be the primary problem; its error response may simply lack CORS headers. Confirm both messages refer to the same request.',
+      ['Correlate the status and CORS message with the same URL in DevTools', 'Inspect server and proxy logs for the underlying HTTP error', 'Check CORS headers on error responses as well as successful responses', 'Do not rely on page JavaScript to read a blocked response'], /preflight|options/.test(normalized) ? 'YES' : 'MAYBE');
+  }
+  if (matched) return matched.diagnosis;
+  if (/^status\s*:\s*200\b/.test(normalized) && !/cors|blocked|error|fail/.test(normalized)) {
     return {
-      title: 'Paste a browser result first',
-      explanation:
-        'Copy the relevant Console error or result and paste it above.',
-      summary:
-        'AnotherExample needs a browser result before it can diagnose the request.',
-      preflight: 'UNKNOWN',
-      mainRequest: 'UNKNOWN',
-      likelyCause:
-        'No browser result was provided.',
-      checks: [
-        'Paste the relevant browser Console or Network result'
-      ]
+      ...browserDiagnosis('success', 'Successful HTTP response', 'client',
+        'The pasted result reports HTTP 200, which alone does not prove JavaScript could read the response.',
+        ['Compare with the controlled test', 'Confirm JavaScript could read the response'], 'UNKNOWN'),
+      mainRequest: 'YES'
     };
   }
-
-  return browserDiagnosisRules.find(rule => rule.matches(normalized)) || {
-    title: 'Result not recognized yet',
-
-    explanation:
-      'This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.',
-
-    summary:
-      'AnotherExample does not have enough evidence to make a specific preflight diagnosis from this message.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser message does not match a known diagnosis pattern yet.',
-
-    checks: [
-      'Keep the original browser message',
-      'Check the Network tab for OPTIONS and the main request',
-      'Compare the result with the controlled test'
-    ]
+  return {
+    family: 'unknown', side: null,
+    title: normalized ? 'Result not recognized yet' : 'Paste a browser result first',
+    explanation: 'There is not enough evidence to identify the cause or choose a client, server, or network fix.',
+    summary: 'The message does not establish whether a preflight occurred.',
+    preflight: 'UNKNOWN', mainRequest: 'UNKNOWN',
+    likelyCause: 'Unknown; keep the original browser message rather than guessing.',
+    checks: ['Copy the complete Console message for the failing request', 'Inspect the matching request in the Network tab']
   };
 }
 
