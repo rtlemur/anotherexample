@@ -6,36 +6,12 @@
 <meta name="description" content="Test your URL against a real second origin and understand browser CORS behavior.">
      <link rel="icon" href="/aefavicon.ico" sizes="any">
 <title>CORS Debugger — anotherexample.com</title>
-<style>
-:root{--bg:#0f1115;--card:#171a21;--border:#2a2e38;--text:#e6e8eb;--muted:#9aa0ac;--accent:#6ee7b7;--code:#10131a;--bad:#f87171;--warn:#fbbf24}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.55}
-.wrap{max-width:1100px;margin:auto;padding:38px 20px 80px}a{color:var(--accent)}h1{font-size:clamp(2rem,6vw,3.5rem);margin:.25rem 0}.tag{color:var(--muted);max-width:820px;font-size:1.05rem}
-.panel,.scenario{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}.hero{margin-top:22px;padding:22px}.hero h2{margin-top:0}
-.two,.scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.two{margin-top:16px}.scenarios{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.scenario{cursor:pointer;text-align:left;color:var(--text)}.scenario:hover,.scenario.active{border-color:var(--accent)}.scenario strong{display:block}.scenario span{color:var(--muted);font-size:.88rem}
-label{display:block;color:var(--muted);font-size:.84rem;margin:12px 0 4px}
-input,select,textarea{width:100%;background:#343c4a;color:#ffffff;border:1px solid #b2bac8;border-radius:6px;padding:10px;font:inherit}
-input:hover,select:hover,textarea:hover{border-color:#737d90}
-input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
-.checkbox input{accent-color:var(--accent)}
-button{background:var(--accent);color:#07130e;border:0;border-radius:7px;padding:10px 14px;font-weight:700;cursor:pointer}.secondary{background:var(--card);color:var(--text);border:1px solid var(--border)}
-button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:13px;overflow:auto;white-space:pre-wrap;font-size:.82rem}
-.status{border-left:3px solid var(--warn);padding:10px 13px;background:var(--code);margin:14px 0}.ok{border-color:var(--accent)}.bad{border-color:var(--bad)}.small{font-size:.86rem;color:var(--muted)}
-h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:uppercase;letter-spacing:.07em}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.back{font-size:.9rem}
-.checkbox{display:flex;gap:8px;align-items:center;margin-top:12px}.checkbox input{width:auto}.checkbox label{margin:0}.origin{font-size:.9rem;margin-top:8px;color:var(--muted)}
-.divider{border:0;border-top:1px solid var(--border);margin:36px 0}
-
-.step{margin:22px 0;padding:20px;border:1px solid #303643;border-radius:16px;background:#151922}
-.step-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
-.step-number{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:999px;border:1px solid #65e6b8;font-weight:800}
-.step-head h2{margin:2px 0 4px;font-size:1.15rem}
-.step-head p{margin:0}
-</style>
+<link rel="stylesheet" href="/cors.css">
 </head>
 <body>
 <main class="wrap">
 <a class="back" href="/">← anotherexample.com</a>
+<nav class="cors-nav" aria-label="CORS tools"><a href="/cors" aria-current="page">Debugger</a><span aria-hidden="true">|</span><a href="/cors/playground">Playground</a></nav>
 <h1>CORS Debugger</h1>
 <p class="tag">Why won’t my CORS work? Compare your failing request with a controlled second origin to narrow down where the problem is.</p>
 
@@ -65,11 +41,11 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
   <div class="step-head"><span class="step-number">2</span><div><h2>Describe the request</h2><p class="small">Match the request that is giving you trouble. These settings are used for both diagnostic tests.</p></div></div>
   <div class="two">
     <section>
-      <label>Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
+      <label for="method">Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
       <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
     </section>
     <section>
-      <label>JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
+      <label for="requestBody">JSON body for POST/PUT</label><input id="requestBody" value='{"playground":"test"}'>
       <p class="small">POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
     </section>
   </div>
@@ -88,12 +64,12 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
           <option value="none">Omit header</option>
           <option value="https://wrong.example">Wrong origin</option>
         </select>
-        <label>Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
+        <label for="methods">Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
       </section>
       <section>
-        <label>Allowed request headers</label><input id="headers" value="Content-Type">
-        <label>Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
-        <label>Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
+        <label for="headers">Allowed request headers</label><input id="headers" value="Content-Type">
+        <label for="preflight">Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
+        <label for="delay">Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
       </section>
     </div>
   </div>
@@ -115,7 +91,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <p>Open Developer Tools on the page URL you entered, switch to the Console, then run Test A and Test B there. CORS is enforced in that page's browser origin, so where you run the tests matters.</p>
 <div class="actions">
   <button id="copyCombined">
-    Copy combined A + B test
+    Copy code — combined A + B test
   </button>
 </div>
 
@@ -127,7 +103,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <h3>Test A — Your real API</h3>
 <p class="small">Your target request.</p>
 <div class="status"><strong id="targetSummary">Target API</strong></div>
-<div class="actions"><button id="copyTarget">Copy Test A</button><button class="secondary" id="toggleTarget">View generated code</button></div>
+<div class="actions"><button id="copyTarget">Copy code — Test A</button><button class="secondary" id="toggleTarget" aria-controls="targetFetch" aria-expanded="false">View generated code</button></div>
 <pre id="targetFetch" style="display:none"></pre>
 </section>
 
@@ -135,7 +111,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 <h3>Test B — Controlled origin</h3>
 <p class="small">The same request shape against AnotherExample's known-good controlled CORS endpoint. Its CORS response is generated automatically from your request.</p>
 <div class="status"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
-<div class="actions"><button id="copyControl">Copy Test B</button><button class="secondary" id="toggleControl">View generated code</button></div>
+<div class="actions"><button id="copyControl">Copy code — Test B</button><button class="secondary" id="toggleControl" aria-controls="controlFetch" aria-expanded="false">View generated code</button></div>
 <pre id="controlFetch" style="display:none"></pre>
 </section>
 </div>
@@ -150,7 +126,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 </div>
 <div class="panel" id="browserResultPanel" style="margin-top:24px">
   <p class="eyebrow" style="margin-top:0">NEXT STEP</p>
-  <h2>What did your browser say?</h2>
+  <h2>Got a browser error? Paste it here.</h2>
   <p>
     Paste the error or result from your browser Console.
     AnotherExample will explain what it recognizes and what to check next.
@@ -177,8 +153,7 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
   ></div>
 
   <p class="small">
-    This first version recognizes common browser and CORS messages without
-    guessing when the cause is unclear.
+    Recognizes common browser and CORS messages and avoids guessing when the cause is unclear.
   </p>
 </div>
 
@@ -203,728 +178,9 @@ h2.section{margin-top:42px;color:var(--accent);font-size:1rem;text-transform:upp
 
 
 
-<hr class="divider">
-<section id="corsScenarios">
-<p class="eyebrow">EXPLORE</p>
-<h2 class="section">Explore common CORS failures</h2>
-<p>Want to see what a browser CORS failure actually looks like? These presets intentionally change AnotherExample’s controlled endpoint to reproduce common successes and failures.</p>
-<p class="small"><strong>This is separate from diagnosing your own target.</strong></p>
-    <div id="scenarioState" class="status"><strong>Scenario:</strong> None selected</div>
-  <div class="scenarios" id="scenarios"></div>
-  <div class="two" style="margin-top:14px">
-    <section class="panel">
-      <h3>Expected browser result</h3><div id="expected" class="status">Choose a scenario or use your current settings.</div>
-    </section>
-    <section class="panel">
-      <h3>Scenario endpoint</h3><pre id="fetchCode"></pre>
-      <div class="actions"><button id="copyFetch" class="secondary">Copy scenario fetch</button><button id="copyUrl" class="secondary">Copy endpoint URL</button></div>
-    </section>
-</div>
-</section>
 </main>
-<script>
-const scenarios=[
-  {name:'✓ Basic success',desc:'Wildcard origin; simple GET.',v:{method:'GET',allowOrigin:'*',methods:'GET, POST, OPTIONS',headers:'Content-Type',credentials:false,preflight:'204'}},
-  {name:'✕ Missing allow-origin',desc:'Server sends no Allow-Origin.',v:{method:'GET',allowOrigin:'none',credentials:false,preflight:'204'}},
-  {name:'✕ Wrong origin',desc:'Server allows a different site.',v:{method:'GET',allowOrigin:'https://wrong.example',credentials:false,preflight:'204'}},
-  {name:'✓ Preflight allowed',desc:'POST is allowed by preflight.',v:{method:'POST',allowOrigin:'*',methods:'GET, POST, OPTIONS',headers:'Content-Type',credentials:false,preflight:'204'}},
-  {name:'✕ Preflight rejected',desc:'OPTIONS intentionally returns 403.',v:{method:'POST',allowOrigin:'*',credentials:false,preflight:'403'}},
-  {name:'✕ Credentials + wildcard',desc:'Expected browser block: credentials cannot use a wildcard origin.',v:{method:'GET',allowOrigin:'*',credentials:true,preflight:'204'}},
-  {name:'✓ Credentials done right',desc:'Expected success: explicit requesting origin plus credentials.',v:{method:'GET',allowOrigin:'echo',credentials:true,preflight:'204'}}
-];
-
-const $=id=>document.getElementById(id);
-const defaults={methods:'GET, POST, OPTIONS',headers:'Content-Type',delay:'0'};
-function validHttpUrl(value){
-  try { const u=new URL(value); return ['http:','https:'].includes(u.protocol)?u:null; } catch { return null; }
-}
-function targetUrl(){
-  const v=$('targetUrl').value.trim(), u=validHttpUrl(v);
-  $('targetResult').textContent = !v ? 'The API/resource your page is trying to reach. Test A uses this URL exactly as entered.' : u ? 'Test A uses this URL exactly as entered · Target origin: '+u.origin : 'Enter a complete URL beginning with http:// or https://';
-  return u ? u.href : 'https://api.example.com/data';
-}
-function bodyObject(){
-  try{return JSON.parse($('requestBody').value||'{}')}catch{return {playground:'test'}}
-}
-function requestSnippet(destination){
-  const method = $('method').value;
-  const opts = [];
-
-  if (method !== 'GET') {
-    opts.push(
-      `method: '${method}'`,
-      "headers: { 'Content-Type': 'application/json' }",
-      `body: JSON.stringify(${JSON.stringify(bodyObject())})`
-    );
-  }
-
-  if ($('credentials').checked) {
-    opts.push("credentials: 'include'");
-  }
-
-  return `fetch('${destination}'${opts.length ? `, {\n  ${opts.join(',\n  ')}\n}` : ''})
-  .then(async r => ({
-    status: r.status,
-    headers: Object.fromEntries(r.headers),
-    body: await r.text()
-  }))
-  .then(console.log)
-  .catch(console.error);`;
-}
-
-function combinedDiagnosticSnippet(target, control) {
-  const method = $('method').value;
-  const optionLines = [];
-
-  if (method !== 'GET') {
-    optionLines.push(
-      `method: '${method}'`,
-      "headers: { 'Content-Type': 'application/json' }",
-      `body: JSON.stringify(${JSON.stringify(bodyObject())})`
-    );
-  }
-
-  if ($('credentials').checked) {
-    optionLines.push("credentials: 'include'");
-  }
-
-  const options = optionLines.length
-    ? `{\n      ${optionLines.join(',\n      ')}\n    }`
-    : '{}';
-
-  return `(async () => {
-  async function runTest(label, url) {
-    console.log('\\n=== ' + label + ' ===');
-
-    try {
-      const response = await fetch(url, ${options});
-      const body = await response.text();
-
-      const result = {
-        success: true,
-        status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
-        body
-      };
-
-      console.log(result);
-      return result;
-    } catch (error) {
-      const result = {
-        success: false,
-        error: String(error)
-      };
-
-      console.error(result);
-      return result;
-    }
-  }
-
-  const testA = await runTest(
-    'TEST A — Your API',
-    '${target}'
-  );
-
-  const testB = await runTest(
-    'TEST B — Controlled baseline',
-    '${control}'
-  );
-
- console.log('\\n=== AnotherExample comparison ===');
-
-let conclusion;
-
-if (testA.success && testB.success) {
-  conclusion =
-    'A works, B works — basic cross-origin access works for this request shape. Reproduce the exact failing method, headers, body, and credentials.';
-}
-else if (!testA.success && testB.success) {
-  conclusion =
-    'A fails, B works — the controlled baseline succeeded, so investigate the target API CORS configuration or response first.';
-}
-else if (!testA.success && !testB.success) {
-  conclusion =
-    'A fails, B fails — compare the browser errors and verify the request shape, credentials, browser policy, extensions, and environment.';
-}
-else {
-  conclusion =
-    'A works, B fails — this is unusual. Recheck the controlled comparison settings and browser environment.';
-}
-
-console.log({
-  testA,
-  testB,
-  conclusion
-});
-
-console.log('\\n' + conclusion);
-})();`;
-}
-
-function requestShapeSummary(){
-  const method=$('method').value;
-  const creds=$('credentials').checked ? 'credentials included' : 'no credentials';
-  return `${method} · ${creds}`;
-}
-function updateDiagnostic(){
-  enteredOrigin();
-  const target=targetUrl();
-  const control=diagnosticControlUrl();
-  $('targetFetch').textContent=requestSnippet(target);
-  $('controlFetch').textContent=requestSnippet(control);
-  if($('targetSummary')) $('targetSummary').textContent=`${target} · ${requestShapeSummary()}`;
-  if($('controlSummary')) $('controlSummary').textContent=`${new URL(control).origin}/api/cors/lab · ${requestShapeSummary()}`;
-}
-function enteredOrigin(){
-  const value=$('siteUrl').value.trim();
-  if(!value){$('originResult').textContent='Example: https://app.example.com/page → origin https://app.example.com';return 'https://your-site.example';}
-  try{
-    const u=new URL(value);
-    if(!['http:','https:'].includes(u.protocol)) throw new Error();
-    $('originResult').innerHTML='Browser origin: <code>'+u.origin+'</code>';
-    return u.origin;
-  }catch{
-    $('originResult').textContent='Enter a complete URL beginning with http:// or https://';
-    return 'https://your-site.example';
-  }
-}
-function apply(v){
-  for(const k of ['method','allowOrigin','methods','headers','preflight','delay']){
-    const el=$(k);
-    if(!el) continue;
-    if(v[k]!=null) el.value=v[k]; else if(defaults[k]!=null) el.value=defaults[k];
-  }
-  if($('credentials')) $('credentials').checked=!!v.credentials;
-  explain();
-}
-const box=$('scenarios');
-scenarios.forEach((s)=>{
-  const b=document.createElement('button');b.className='scenario';
-  b.innerHTML=`<strong>${s.name}</strong><span>${s.desc}</span>`;
-  b.onclick=()=>{[...box.children].forEach(x=>x.classList.remove('active'));b.classList.add('active');apply(s.v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> '+s.name.replace(/^[✓✕]\s*/,'')};
-  box.appendChild(b);
-});
-const LAB_ORIGIN=location.hostname==='anotherexample.com'||location.hostname==='www.anotherexample.com'
-  ? 'https://cors.anotherexample.com'
-  : 'https://cors-preview.anotherexample.com';
-
-function params(){return new URLSearchParams({allowOrigin:$('allowOrigin').value,credentials:String($('credentials').checked),methods:$('methods').value,headers:$('headers').value,preflightStatus:$('preflight').value,delay:$('delay').value||'0'});}
-function url(){return LAB_ORIGIN+'/api/cors/lab?'+params();}
-function diagnosticControlUrl(){
-  const method=$('method').value;
-  const credentialed=$('credentials').checked;
-  const allowedMethods=[...new Set(['GET','POST',method,'OPTIONS'])].join(', ');
-  const controlParams=new URLSearchParams({
-    allowOrigin: credentialed ? 'echo' : '*',
-    credentials: String(credentialed),
-    methods: allowedMethods,
-    headers: 'Content-Type',
-    preflightStatus: '204',
-    delay: '0'
-  });
-  return LAB_ORIGIN+'/api/cors/lab?'+controlParams.toString();
-}
-function fetchText(){
-  const u=url(), method=$('method').value, opts=[];
-  if(method!=='GET') opts.push(`method: '${method}'`, "headers: { 'Content-Type': 'application/json' }", "body: JSON.stringify({ playground: 'test' })");
-  if($('credentials').checked) opts.push("credentials: 'include'");
-  return `fetch('${u}'${opts.length?`, {\n  ${opts.join(',\n  ')}\n}`:''})\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);`;
-}
-function updateCode(){
-  enteredOrigin();
-  targetUrl();
-  if($('fetchCode')) $('fetchCode').textContent=fetchText();
-  
-}
-function explain(){
-  let msg,cls='ok';const a=$('allowOrigin').value,c=$('credentials').checked,p=$('preflight').value,m=$('method').value;
-  if(a==='none'){msg='Blocked: the response has no Access-Control-Allow-Origin header.';cls='bad'}
-  else if(a==='https://wrong.example'){msg='Blocked: the allowed origin does not match the requesting page.';cls='bad'}
-  else if(c&&a==='*'){msg='Blocked: credentialed CORS cannot use Access-Control-Allow-Origin: *.';cls='bad'}
-  else if(m!=='GET'&&p!=='204'){msg='Blocked before the main request: the preflight is rejected.';cls='bad'}
-  else if(c&&a==='echo'){msg='Should succeed: the caller Origin is reflected and credentials are allowed.'}
-  else{msg='Should succeed for a cross-origin request that matches these settings.'}
-  $('expected').className='status '+cls;$('expected').textContent=msg;updateCode();
-}
-
-
-function markScenarioCustom(){
-  [...box.children].forEach(x=>x.classList.remove('active'));
-  if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';
-}
-function markDiagnosticStale(){
-  const status=$('diagnosticStatus');
-  if(status) status.textContent='Inputs changed — run diagnosis again';
-  const diagnostic=$('diagnostic');
-  if(diagnostic) diagnostic.style.display='none';
-  const button=$('startDiagnosis');
-  if(button){
-    button.textContent='Start CORS diagnosis';
-    button.disabled=false;
-  }
-}
-
-['method','allowOrigin','methods','headers','credentials','preflight','delay'].forEach(id=>$(id).addEventListener('change',()=>{
-  if(id==='credentials' && $('credentials').checked && $('allowOrigin').value==='*'){
-    $('allowOrigin').value='echo';
-  }
-  markScenarioCustom();
-  markDiagnosticStale();
-  explain();
-  updateDiagnostic();
-}));
-$('siteUrl').addEventListener('input',()=>{markDiagnosticStale();updateCode();updateDiagnostic()});
-$('targetUrl').addEventListener('input',()=>{markDiagnosticStale();updateDiagnostic()});
-$('requestBody').addEventListener('input',()=>{markScenarioCustom();markDiagnosticStale();updateDiagnostic()});
-$('startDiagnosis').onclick=()=>{
-  if($('credentials').checked && $('allowOrigin').value==='*'){
-    $('allowOrigin').value='echo';
-    explain();
-  }
-  const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
-  enteredOrigin();targetUrl();
-  if(!source||!target){$('diagnostic').style.display='none';return;}
-  updateDiagnostic();
-  $('diagnostic').style.display='block';
-  $('diagnosticStatus').textContent='Diagnostic ready';
-  $('startDiagnosis').textContent='Start CORS diagnosis';
-  $('startDiagnosis').disabled=false;
-  $('diagnostic').scrollIntoView({behavior:'smooth',block:'start'});
-};
-     
-     $('copyCombined').onclick = async () => {
-  const target = targetUrl();
-  const control = diagnosticControlUrl();
-
-  await navigator.clipboard.writeText(
-    combinedDiagnosticSnippet(target, control)
-  );
-
-  $('copyCombined').textContent = 'Copied combined test';
-
-  setTimeout(() => {
-    $('copyCombined').textContent = 'Copy combined A + B test';
-  }, 1200);
-};
-$('copyTarget').onclick=async()=>{await navigator.clipboard.writeText($('targetFetch').textContent);$('copyTarget').textContent='Copied';setTimeout(()=>$('copyTarget').textContent='Copy Test A',1200)};
-$('copyControl').onclick=async()=>{await navigator.clipboard.writeText($('controlFetch').textContent);$('copyControl').textContent='Copied';setTimeout(()=>$('copyControl').textContent='Copy Test B',1200)};
-$('toggleTarget').onclick=()=>{
-  const pre=$('targetFetch'), show=pre.style.display==='none';
-  pre.style.display=show?'block':'none';
-  $('toggleTarget').textContent=show?'Hide generated code':'View generated code';
-};
-$('toggleControl').onclick=()=>{
-  const pre=$('controlFetch'), show=pre.style.display==='none';
-  pre.style.display=show?'block':'none';
-  $('toggleControl').textContent=show?'Hide generated code':'View generated code';
-};
-
-$('copyUrl').onclick=async()=>{await navigator.clipboard.writeText(url());$('copyUrl').textContent='Copied';setTimeout(()=>$('copyUrl').textContent='Copy endpoint URL',1200)};
-$('copyFetch').onclick=async()=>{await navigator.clipboard.writeText(fetchText());$('copyFetch').textContent='Copied';setTimeout(()=>$('copyFetch').textContent='Copy scenario fetch',1200)};
-
-const browserDiagnosisRules = [
-  {
-    matches: text =>
-      text.includes("no 'access-control-allow-origin' header") ||
-      text.includes('no access-control-allow-origin header'),
-
-    title: 'Missing Access-Control-Allow-Origin',
-
-    explanation:
-      'The target responded, but the browser says its response does not include an Access-Control-Allow-Origin header permitting your page. Check the target API’s CORS configuration.',
-
-    summary:
-      'This browser message does not prove whether a preflight occurred. Here’s what the result suggests.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'The server response does not include an Access-Control-Allow-Origin header that permits the requesting page.',
-
-    checks: [
-      'Confirm the server sends Access-Control-Allow-Origin',
-      'Make sure it matches the requesting origin when needed',
-      'Check both the OPTIONS response and the final response',
-      'Do not assume the request failed just because browser JavaScript cannot read the response'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('must not be the wildcard') &&
-      text.includes('credentials'),
-
-    title: 'Credentials cannot use a wildcard origin',
-
-    explanation:
-      'The request includes credentials, but the response uses Access-Control-Allow-Origin: *. Credentialed requests need an explicit allowed origin.',
-
-    summary:
-      'This browser message points to a credentials and origin-policy mismatch.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'The request includes credentials, but the server allows every origin with Access-Control-Allow-Origin: *.',
-
-    checks: [
-      'Replace * with the exact requesting origin',
-      'Return Access-Control-Allow-Credentials: true',
-      'Make sure the browser request uses credentials: include only when needed'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('is not allowed by access-control-allow-methods'),
-
-    title: 'Method rejected by preflight',
-
-    explanation:
-      'The requested HTTP method is not permitted by Access-Control-Allow-Methods in the preflight response.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight checked the requested method and rejected it.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The requested HTTP method is not listed in Access-Control-Allow-Methods.',
-
-    checks: [
-      'Confirm the server handles OPTIONS',
-      'Confirm the preflight response returns 2xx',
-      'Add the requested method to Access-Control-Allow-Methods'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('is not allowed by access-control-allow-headers') ||
-      (
-        text.includes('request header field') &&
-        text.includes('not allowed')
-      ),
-
-    title: 'Request header rejected by preflight',
-
-    explanation:
-      'A requested header is not permitted by Access-Control-Allow-Headers in the preflight response.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight checked the requested headers and rejected one of them.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'A request header is not listed in Access-Control-Allow-Headers.',
-
-    checks: [
-      'Confirm the server handles OPTIONS',
-      'Confirm the preflight response returns 2xx',
-      'Add the requested header to Access-Control-Allow-Headers'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('redirect is not allowed for a preflight') ||
-      (
-        text.includes('preflight') &&
-        text.includes('redirect')
-      ),
-
-    title: 'Preflight was redirected',
-
-    explanation:
-      'The browser will not follow this redirect for the CORS preflight. Check authentication, proxy, hosting, or URL redirects affecting OPTIONS.',
-
-    summary:
-      'The browser result indicates that the OPTIONS preflight was redirected instead of answered directly.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The OPTIONS preflight was redirected instead of answering the browser directly.',
-
-    checks: [
-      'Check for HTTP → HTTPS redirects',
-      'Check login or authentication redirects',
-      'Check proxy, CDN, or hosting rules affecting OPTIONS',
-      'Make sure the final API URL handles OPTIONS directly'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes("response to preflight request doesn't pass access control check") ||
-      text.includes('response to preflight request does not pass access control check'),
-
-    title: 'Preflight access-control check failed',
-
-    explanation:
-      'The browser sent an OPTIONS preflight, but the response did not satisfy CORS requirements.',
-
-    summary:
-      'The browser result indicates that an OPTIONS preflight occurred and failed before the main request could continue.',
-
-    preflight: 'YES',
-    mainRequest: 'NO',
-
-    likelyCause:
-      'The preflight response did not satisfy one or more CORS requirements.',
-
-    checks: [
-      'Check the OPTIONS response status',
-      'Check Access-Control-Allow-Origin',
-      'Check Access-Control-Allow-Methods',
-      'Check Access-Control-Allow-Headers'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('access-control-allow-origin') &&
-      text.includes('does not match'),
-
-    title: 'Allowed origin does not match',
-
-    explanation:
-      'The server sent Access-Control-Allow-Origin, but it names a different origin than the page making the request.',
-
-    summary:
-      'This browser message shows that the server sent an Access-Control-Allow-Origin header, but it did not permit the requesting page.',
-
-    preflight: 'MAYBE',
-    mainRequest: 'POSSIBLY',
-
-    likelyCause:
-      'Access-Control-Allow-Origin names a different origin than the page making the request.',
-
-    checks: [
-      'Compare the browser page origin with Access-Control-Allow-Origin',
-      'Watch for http vs https differences',
-      'Watch for different ports or subdomains',
-      'If credentials are used, return the exact allowed origin instead of *'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('err_timed_out') ||
-      text.includes('timed out'),
-
-    title: 'Connection timed out — not enough evidence for CORS',
-
-    explanation:
-      'The browser did not receive a usable response. Check server availability, connectivity, DNS, firewall/proxy behavior, and the target URL before treating this as CORS.',
-
-    summary:
-      'This result points to a connection problem rather than a clear CORS diagnosis.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not complete the network request.',
-
-    checks: [
-      'Check that the target server is reachable',
-      'Check DNS and network connectivity',
-      'Check firewall or proxy behavior',
-      'Confirm the target URL is correct'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('err_name_not_resolved'),
-
-    title: 'DNS / hostname problem',
-
-    explanation:
-      'The browser could not resolve the target hostname. Fix that before investigating CORS.',
-
-    summary:
-      'This result points to a hostname or DNS failure rather than a clear CORS problem.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not resolve the target hostname.',
-
-    checks: [
-      'Confirm the hostname is spelled correctly',
-      'Check DNS resolution',
-      'Confirm the domain is active and reachable'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('err_cert') ||
-      text.includes('certificate') ||
-      text.includes('tls'),
-
-    title: 'TLS / certificate problem',
-
-    explanation:
-      'Resolve the secure-connection or certificate problem before diagnosing CORS.',
-
-    summary:
-      'This result points to a TLS or certificate failure rather than a clear CORS problem.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser could not establish a trusted secure connection.',
-
-    checks: [
-      'Check the TLS certificate',
-      'Check hostname and certificate matching',
-      'Check certificate expiration',
-      'Resolve the HTTPS problem before diagnosing CORS'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('failed to fetch'),
-
-    title: 'Failed to fetch — generic browser failure',
-
-    explanation:
-      'This message alone does not identify the cause. Look for the more specific Console or Network error immediately above it.',
-
-    summary:
-      'The browser result is too generic to identify whether preflight or the main request failed.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser did not provide enough detail in this message alone.',
-
-    checks: [
-      'Look for a more specific Console error',
-      'Check the Network tab',
-      'Look for an OPTIONS request',
-      'Check whether the target request was sent'
-    ]
-  },
-
-  {
-    matches: text =>
-      text.includes('status: 200') ||
-      text.includes('status:200'),
-
-    title: 'Successful HTTP response',
-
-    explanation:
-      'The pasted result shows HTTP 200. The request reached the server successfully; compare this with any browser-policy errors and the controlled result.',
-
-    summary:
-      'The pasted result shows that the browser received an HTTP 200 response.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'YES',
-
-    likelyCause:
-      'The request reached the server successfully.',
-
-    checks: [
-      'Compare this result with the controlled test',
-      'Check for browser-policy errors',
-      'Confirm JavaScript could read the response'
-    ]
-  }
-];
-
-function findBrowserDiagnosis(text) {
-  const normalized = (text || '').trim().toLowerCase();
-
-  if (!normalized) {
-    return {
-      title: 'Paste a browser result first',
-      explanation:
-        'Copy the relevant Console error or result and paste it above.',
-      summary:
-        'AnotherExample needs a browser result before it can diagnose the request.',
-      preflight: 'UNKNOWN',
-      mainRequest: 'UNKNOWN',
-      likelyCause:
-        'No browser result was provided.',
-      checks: [
-        'Paste the relevant browser Console or Network result'
-      ]
-    };
-  }
-
-  return browserDiagnosisRules.find(rule => rule.matches(normalized)) || {
-    title: 'Result not recognized yet',
-
-    explanation:
-      'This first version does not recognize that message confidently. Keep the original Console text; the classifier can be expanded without guessing.',
-
-    summary:
-      'AnotherExample does not have enough evidence to make a specific preflight diagnosis from this message.',
-
-    preflight: 'UNKNOWN',
-    mainRequest: 'UNKNOWN',
-
-    likelyCause:
-      'The browser message does not match a known diagnosis pattern yet.',
-
-    checks: [
-      'Keep the original browser message',
-      'Check the Network tab for OPTIONS and the main request',
-      'Compare the result with the controlled test'
-    ]
-  };
-}
-
-function renderDiagnosis(diagnosis) {
-  const explanationBox = $('browserExplanation');
-  const preflightPanel = $('preflightDiagnosisPanel');
-  const preflightBox = $('preflightDiagnosis');
-
-  explanationBox.style.display = 'block';
-  explanationBox.innerHTML =
-    '<strong>' + diagnosis.title + '</strong><br>' +
-    diagnosis.explanation;
-
-  $('preflightSummary').textContent = diagnosis.summary;
-
-  preflightPanel.style.display = 'block';
-  preflightBox.className = 'status bad';
-
-  const checks = diagnosis.checks
-    .map(check => '• ' + check + '<br>')
-    .join('');
-
-  preflightBox.innerHTML =
-    '<strong>Preflight likely happened: ' + diagnosis.preflight + '</strong><br>' +
-    '<strong>Main request likely sent: ' + diagnosis.mainRequest + '</strong><br><br>' +
-    '<strong>Likely cause:</strong><br>' +
-    diagnosis.likelyCause +
-    '<br><br>' +
-    '<strong>Check next:</strong><br>' +
-    checks;
-}
-
-$('explainBrowserResult').onclick = () => {
-  const diagnosis = findBrowserDiagnosis($('browserResult').value);
-  renderDiagnosis(diagnosis);
-};
-apply(scenarios[0].v);if($('scenarioState')) $('scenarioState').innerHTML='<strong>Scenario:</strong> None selected';updateDiagnostic();
-</script>
+<script src="/cors-ui.js"></script>
+<script src="/cors-debugger.js"></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body></html>
