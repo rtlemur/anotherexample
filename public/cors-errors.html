@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Browser Error Explainer — AnotherExample</title>
+<link rel="icon" href="/aefavicon.ico" sizes="any">
+<link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body><main class="wrap error-page">
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors" aria-current="page">Error Explainer</a><a href="/contact">Contact</a></nav>
+<h1 class="page-title">Browser Error Explainer</h1>
+  <p class="page-intro">
+    Paste the error or result from your browser Console.
+    AnotherExample will explain what it recognizes and what to check next.
+  </p>
+<div class="panel page-panel page-section" id="browserResultPanel">
+  <h2>Got a browser error? Paste it here.</h2>
+
+
+  <label for="browserResult">Browser Console result</label>
+  <p id="errorPrivacy">Analyzed locally in your browser. Remove secrets, tokens, and sensitive URLs before pasting.</p>
+  <textarea
+    id="browserResult"
+    rows="3"
+    aria-describedby="errorPrivacy"
+    spellcheck="false"
+    placeholder="Paste a browser Console error or result here..."
+  ></textarea>
+
+  <p id="errorContext" class="small" hidden></p>
+  <div class="actions">
+ <button id="explainBrowserResult">
+  Explain this result
+</button>
+  </div>
+
+  <div
+    id="browserExplanation"
+    class="status"
+    style="display:none;margin-top:14px"
+    aria-live="polite"
+  ></div>
+
+  <p class="small">
+    Recognizes common browser and CORS messages and avoids guessing when the cause is unclear.
+  </p>
+</div>
+
+<div
+  class="panel page-panel page-section"
+  id="preflightDiagnosisPanel"
+  style="display:none"
+>
+  <h2>What to check next</h2>
+
+ <p id="preflightSummary">
+  AnotherExample found signs that this request involved an OPTIONS preflight. Here’s what the browser result suggests.
+ </p>
+
+  <div
+    id="preflightDiagnosis"
+    class="status"
+    aria-live="polite"
+  ></div>
+</div>
+
+
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
+<script src="/cors-ui.js"></script>
+<script src="/cors-diagnosis.js"></script>
+<script src="/cors-error-interpreter.js"></script>
+</body></html>

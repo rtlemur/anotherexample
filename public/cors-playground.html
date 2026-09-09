@@ -7,11 +7,11 @@
      <link rel="icon" href="/aefavicon.ico" sizes="any">
 <title>CORS Playground — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
 </head>
 <body>
 <main class="wrap">
-<a class="back" href="/">← anotherexample.com</a>
-<nav class="cors-nav" aria-label="CORS tools"><a href="/cors">Debugger</a><span aria-hidden="true">|</span><a href="/cors/playground" aria-current="page">Playground</a></nav>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
 <h1>CORS Playground</h1>
 <p class="tag">Explore common CORS failures using AnotherExample’s controlled endpoint. These scenarios intentionally reproduce common browser successes and failures without affecting your own API.</p>
 <section id="corsScenarios" aria-label="Controlled scenarios">    <div id="scenarioState" class="status"><strong>Scenario:</strong> None selected</div>
@@ -28,6 +28,7 @@
 </section>
 
 <p class="small">Copy the code and run it in your browser Console from another origin. Results below are expected outcomes, not live measurements.</p>
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/cors-ui.js"></script>
 <script src="/cors-playground.js"></script>

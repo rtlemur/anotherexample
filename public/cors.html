@@ -7,11 +7,11 @@
      <link rel="icon" href="/aefavicon.ico" sizes="any">
 <title>CORS Debugger — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
 </head>
 <body>
 <main class="wrap">
-<a class="back" href="/">← anotherexample.com</a>
-<nav class="cors-nav" aria-label="CORS tools"><a href="/cors" aria-current="page">Debugger</a><span aria-hidden="true">|</span><a href="/cors/playground">Playground</a></nav>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors" aria-current="page">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
 <h1>CORS Debugger</h1>
 <p class="tag">Why won’t my CORS work? Compare your failing request with a controlled second origin to narrow down where the problem is.</p>
 
@@ -124,60 +124,11 @@
 <p class="small">This comparison narrows the investigation; it does not prove a single root cause. AnotherExample does not crawl, proxy, or modify your target URL.</p>
 </div>
 </div>
-<div class="panel" id="browserResultPanel" style="margin-top:24px">
-  <p class="eyebrow" style="margin-top:0">NEXT STEP</p>
-  <h2>Got a browser error? Paste it here.</h2>
-  <p>
-    Paste the error or result from your browser Console.
-    AnotherExample will explain what it recognizes and what to check next.
-  </p>
-
-  <label for="browserResult">Browser Console result</label>
-  <textarea
-    id="browserResult"
-    rows="7"
-    placeholder="Paste a browser Console error or result here..."
-  ></textarea>
-
-  <div class="actions">
- <button id="explainBrowserResult">
-  Explain this result
-</button>
-  </div>
-
-  <div
-    id="browserExplanation"
-    class="status"
-    style="display:none;margin-top:14px"
-    aria-live="polite"
-  ></div>
-
-  <p class="small">
-    Recognizes common browser and CORS messages and avoids guessing when the cause is unclear.
-  </p>
-</div>
-
-<div
-  class="panel"
-  id="preflightDiagnosisPanel"
-  style="margin-top:24px;display:none"
->
-  <p class="eyebrow" style="margin-top:0">DEEPER DIAGNOSIS</p>
-  <h2>Preflight diagnosis</h2>
-
- <p id="preflightSummary">
-  AnotherExample found signs that this request involved an OPTIONS preflight. Here’s what the browser result suggests.
- </p>
-
-  <div
-    id="preflightDiagnosis"
-    class="status"
-    aria-live="polite"
-  ></div>
-</div>
-
-
-
+<section class="panel" style="margin-top:24px">
+<h2>Got a browser error?</h2>
+<p><a href="/cors/errors">Open the Error Explainer →</a> Paste your Console message for a local explanation and suggested next steps.</p>
+</section>
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/cors-ui.js"></script>
 <script src="/cors-debugger.js"></script>

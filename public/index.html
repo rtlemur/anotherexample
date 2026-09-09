@@ -178,9 +178,10 @@
     }
   }
 </style>
+<link rel="stylesheet" href="/site.css">
 </head>
 <body><main class="wrap">
-<span class="badge">Hi and Welcome</span>
+<nav class="site-nav" aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
 <h1>Sometimes one example isn&#39;t enough.</h1>
 <p class="tagline">AnotherExample gives developers a real, controlled second origin for debugging CORS and other browser integration problems.</p>
 <p class="lead"><code>example.com</code> and <code>example.org</code> are reserved by IANA for documentation. AnotherExample provides a stable, real HTTPS origin you can use for CORS, cookies, redirects, and integration testing.</p>
@@ -239,7 +240,8 @@ curl -i 'https://anotherexample.com/api/redirect?target=example&amp;status=302'<
 
 <div id="acceptable-use" class="notice"><h2>Use test data only.</h2> Request-inspection endpoints may reflect headers and bodies. <b><i>Never</i></b> send production passwords, API keys, session tokens, personal data, or other secrets.</div>
 
-<footer><a href="/contact">Contact AnotherExample</a></footer>
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };

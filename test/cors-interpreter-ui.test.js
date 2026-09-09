@@ -4,8 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.join(__dirname, '../public/cors-debugger.js'), 'utf8');
-const interpreter = source.slice(source.indexOf('function browserDiagnosis('), source.indexOf('\nupdateDiagnostic();', source.indexOf('function renderDiagnosis')));
+const parser = fs.readFileSync(path.join(__dirname, '../public/cors-diagnosis.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../public/cors-error-interpreter.js'), 'utf8');
+const interpreter = parser + source.slice(source.indexOf('function renderDiagnosis('));
 
 function setup() {
   const elements = new Map();
@@ -18,7 +19,7 @@ function setup() {
     if (!elements.has(id)) {
       let html = '';
       elements.set(id, {
-        value: '', style: {}, attributes: {}, listeners: {},
+        value: '', scrollHeight: 90, style: {}, attributes: {}, listeners: {},
         get innerHTML() { return html; },
         set innerHTML(value) { html = value; writes++; },
         setAttribute(name, value) { this.attributes[name] = value; },
@@ -31,7 +32,7 @@ function setup() {
     return elements.get(id);
   };
   const context = vm.createContext({
-    $, resultBadge: () => ({}),
+    $, URL, resultBadge: () => ({}),
     setTimeout(fn, delay) { const id = ++nextTimer; timers.set(id, {fn, due: now + delay}); return id; },
     clearTimeout(id) { timers.delete(id); },
   });
@@ -104,7 +105,7 @@ test('equivalent diagnoses do not rewrite live regions or repeat announcements',
   ui.advance(400);
   assert.equal(ui.writes, writes);
   assert.equal(ui.$('preflightDiagnosis').attributes['aria-live'], 'off');
-  const markup = fs.readFileSync(path.join(__dirname, '../public/cors.html'), 'utf8');
+  const markup = fs.readFileSync(path.join(__dirname, '../public/cors-errors.html'), 'utf8');
   assert.match(markup, /id="browserExplanation"[^>]*aria-live="polite"/);
 });
 
@@ -118,4 +119,31 @@ test('IME composition waits until composition ends before scheduling', () => {
   ui.$('browserResult').listeners.compositionend();
   ui.advance(400);
   assert.equal(ui.parses, 1);
+});
+
+test('textarea grows, caps long input, and shrinks when cleared', () => {
+  const ui = setup();
+  ui.$('browserResult').scrollHeight = 150;
+  ui.input('Failed to fetch');
+  assert.equal(ui.$('browserResult').style.height, '152px');
+  ui.$('browserResult').scrollHeight = 1000;
+  ui.input('Failed to fetch\n'.repeat(50));
+  assert.equal(ui.$('browserResult').style.height, '220px');
+  ui.$('browserResult').scrollHeight = 90;
+  ui.input('');
+  assert.equal(ui.$('browserResult').style.height, '92px');
+});
+
+test('context updates even for equivalent diagnoses and clears with the input', () => {
+  const ui = setup();
+  const message = "Access to fetch at 'https://api.example/data' from origin 'https://client.example' has been blocked by CORS policy";
+  ui.input(message);
+  ui.advance(400);
+  assert.match(ui.$('errorContext').textContent, /https:\/\/api.example\/data/);
+  ui.input(message.replace('api.example', 'other.example'));
+  ui.advance(400);
+  assert.match(ui.$('errorContext').textContent, /https:\/\/other.example\/data/);
+  ui.input('');
+  assert.equal(ui.$('errorContext').hidden, true);
+  assert.equal(ui.$('errorContext').textContent, '');
 });

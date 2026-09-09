@@ -186,12 +186,15 @@ app.get('/api/cookie/check',(req,res)=>{noStore(res);res.json({cookie:'anotherex
 app.get('/api/cookie/clear',(req,res)=>{res.clearCookie('anotherexample_test');noStore(res);res.json({cleared:true,cookie:'anotherexample_test'});});
 app.get('/api/health',(req,res)=>{noStore(res);res.json({status:'ok',domain:'anotherexample.com'});});
 
+app.get('/cors/errors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-errors.html')));
 app.get('/cors/playground',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-playground.html')));
 app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html')));
 app.get('/contact',(req,res)=>res.sendFile(path.join(__dirname,'public','contact.html')));
 app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(path.join(__dirname,'public','.well-known','security.txt'),{dotfiles:'allow'}));
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
 app.use(express.static(path.join(__dirname,'public'),{maxAge:'1h'}));
+
+app.use((req,res)=>res.status(404).sendFile(path.join(__dirname,'public','404.html')));
 
 app.use((err,req,res,next)=>{if(err&&err.type==='entity.too.large')return res.status(413).json({error:'Request body too large. Maximum body size is 64 KB.'});if(err instanceof SyntaxError&&err.status===400&&'body'in err)return res.status(400).json({error:'Invalid JSON body.'});next(err);});
 app.use((err,req,res,next)=>{

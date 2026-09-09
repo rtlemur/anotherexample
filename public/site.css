@@ -1,0 +1,31 @@
+/* Shared container, navigation, and footer. */
+.wrap{max-width:1100px;margin:auto;padding:38px 20px 80px}
+.site-nav{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:0 0 24px;padding:0;font-size:.9rem;line-height:24px}
+.site-nav a{display:inline-flex;align-items:center;min-height:40px;padding:7px 9px;margin:0;border:1px solid transparent;border-radius:6px;font-weight:700;line-height:24px;text-decoration:none}
+.site-nav a[aria-current=page]{border-color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:4px}
+.site-footer{color:var(--muted);font-size:.85rem;margin-top:48px;border-top:1px solid var(--border);padding-top:20px}
+.site-nav a:link,.site-nav a:visited,.site-footer a:link,.site-footer a:visited{color:var(--accent)}
+.site-nav a:hover,.site-footer a:hover{color:var(--text);text-decoration:underline;text-underline-offset:4px}
+.site-nav a:focus-visible,.site-footer a:focus-visible{color:var(--text);outline:2px solid var(--accent);outline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+/* Reusable page-shell typography and first-section spacing, matching CORS. */
+.page-title{font-size:clamp(2rem,6vw,3.5rem);line-height:1.55;margin:.25rem 0;padding:0}
+.page-intro{max-width:820px;font-size:1.05rem;line-height:1.55;color:var(--muted);margin:1em 0}
+.page-section{margin:22px 0 0}
+.page-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:22px;line-height:1.55}
+.site-footer{line-height:1.55}
+@media(max-width:480px){.page-panel{padding:14px}}
+.error-page h2{margin:0 0 8px;font-size:1.15rem}
+.error-page #browserResultPanel>p{margin:8px 0}
+.error-page #browserResult{display:block;min-height:0;max-height:220px;overflow-y:auto;resize:vertical}
+.error-page #errorContext{overflow-wrap:anywhere}
+@media(max-width:480px){.wrap{padding:24px 14px 48px}.site-nav{gap:4px;font-size:.85rem}.site-nav a{padding:7px}.site-footer{margin-top:32px}}
+
+/* Existing copy buttons use the site's mint action-button treatment. */
+button[id^="copy"]{appearance:none;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:#07130e;font:inherit;font-weight:700;line-height:1.5;cursor:pointer}
+button[id^="copy"]:hover{background:#a7f3d0;border-color:#a7f3d0}
+button[id^="copy"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button[id^="copy"]:active{background:#34d399;border-color:#34d399}
+button[id^="copy"]:disabled{background:var(--border);border-color:var(--muted);color:var(--muted);cursor:not-allowed}
+.error-page #errorPrivacy{color:var(--text);margin:8px 0;font-size:.9rem}

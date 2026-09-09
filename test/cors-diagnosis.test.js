@@ -5,8 +5,8 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 // Exercise the actual DOM-independent parser without executing page handlers.
-const source = fs.readFileSync(path.join(__dirname, '../public/cors-debugger.js'), 'utf8');
-const parser = source.slice(source.indexOf('function browserDiagnosis('), source.indexOf('\nfunction renderDiagnosis'));
+const source = fs.readFileSync(path.join(__dirname, '../public/cors-diagnosis.js'), 'utf8');
+const parser = source;
 const diagnose = vm.runInNewContext(parser + '\nfindBrowserDiagnosis');
 
 const families = {
@@ -143,4 +143,31 @@ test('a port number is not a server error status', () => {
 test('HTTP 200 is retained without asserting JavaScript access', () => {
   assert.equal(diagnose('status: 200').family, 'success');
   assert.match(diagnose('status: 200').explanation, /does not prove/);
+});
+
+const extract = vm.runInNewContext(source + '\nextractBrowserContext', {URL});
+const chromeMessage = "Access to fetch at 'https://api.example/data?a=1' from origin 'https://client.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header";
+test('extracts explicit Chrome target and requesting origin as context only', () => {
+  assert.equal(extract(chromeMessage).origin, 'https://client.example');
+  assert.equal(extract(chromeMessage).target, 'https://api.example/data?a=1');
+  assert.equal(diagnose(chromeMessage).family, 'missing-origin');
+});
+test('extracts Firefox target without inventing its page origin', () => {
+  const result = extract('Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://api.example/data. (Reason: CORS header missing).');
+  assert.equal(result.target, 'https://api.example/data');
+  assert.equal(result.origin, undefined);
+});
+test('context ignores unrelated URLs and rejects malformed, credentialed, or conflicting requests', () => {
+  for (const message of [
+    "Access-Control-Allow-Origin header has a value 'https://allowed.example'",
+    'Failed to fetch https://api.example',
+    chromeMessage.replace('https://client.example', 'null'),
+    chromeMessage.replace('https://client.example', 'https://client.example/path'),
+    chromeMessage.replace('https://api.example/data?a=1', 'https://user:secret@api.example/data'),
+    chromeMessage + '\n' + chromeMessage.replace('api.example', 'other.example'),
+    chromeMessage.replace('https://api.example/data?a=1', 'https://invalid host/data'),
+  ]) {
+    assert.equal(extract(message).origin, undefined);
+    assert.equal(extract(message).target, undefined);
+  }
 });

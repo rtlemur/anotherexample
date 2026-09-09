@@ -1,0 +1,55 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const request = require('supertest');
+const app = require('../server');
+
+for (const [route, active] of [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors'], ['/contact', '/contact']]) {
+  test(`${route} has shared navigation, active state, and contact footer`, async () => {
+    const response = await request(app).get(route).expect(200);
+    assert.match(response.text, /class="site-nav" aria-label="Main navigation"/);
+    assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
+    for (const url of ['/', '/cors', '/cors/playground', '/cors/errors', '/contact']) assert.ok(response.text.includes(`href="${url}"`));
+    assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
+  });
+}
+test('unknown URL returns branded HTML with 404 status and recovery links', async () => {
+  const response = await request(app).get('/missing-page').expect(404);
+  assert.match(response.text, /404 — Page not found/);
+  assert.match(response.text, /href="\/cors"/);
+  assert.doesNotMatch(response.text, /Cannot GET|aria-current/);
+});
+test('existing malformed JSON error handling is preserved', async () => {
+  const response = await request(app).post('/api/echo').set('Content-Type', 'application/json').send('{').expect(400);
+  assert.equal(response.body.error, 'Invalid JSON body.');
+});
+
+test('error page keeps compact input, local privacy note, and manual fallback', async () => {
+  const {text} = await request(app).get('/cors/errors').expect(200);
+  assert.match(text, /id="browserResult"\s+rows="3"\s+aria-describedby="errorPrivacy"/);
+  assert.match(text, /Analyzed locally in your browser\./);
+  assert.match(text, /Remove secrets, tokens, and sensitive URLs before pasting/);
+  assert.ok(text.indexOf('id="errorPrivacy"') < text.indexOf('<textarea'));
+  assert.match(text, /id="explainBrowserResult"/);
+  for (const script of ['/cors-diagnosis.js', '/cors-error-interpreter.js']) {
+    assert.ok(text.includes(`src="${script}"`));
+    await request(app).get(script).expect(200);
+  }
+});
+
+test('debugger links to error explainer and homepage greeting is removed', async () => {
+  const debuggerPage = await request(app).get('/cors').expect(200);
+  assert.match(debuggerPage.text, /href="\/cors\/errors"/);
+  assert.doesNotMatch(debuggerPage.text, /id="browserResult"/);
+  for (const route of ['/']) {
+    const page = await request(app).get(route).expect(200);
+    assert.doesNotMatch(page.text, /Hi and Welcome/);
+  }
+});
+
+test('shared styles explicitly cover visited links, hover, focus, and wrapping navigation', async () => {
+  const {text} = await request(app).get('/site.css').expect(200);
+  assert.match(text, /\.site-nav\{[^}]*flex-wrap:wrap/);
+  assert.match(text, /\.site-footer a:link,\.site-footer a:visited\{color:var\(--accent\)\}/);
+  assert.match(text, /\.site-footer a:hover\{[^}]*color:var\(--text\)/);
+  assert.match(text, /\.site-footer a:focus-visible\{[^}]*outline:2px solid var\(--accent\)/);
+});

@@ -105,19 +105,19 @@
   color:#f87171;
 }
   </style>
+<link rel="stylesheet" href="/site.css">
 </head>
 
 <body>
   <main class="wrap">
-    <a href="/">← anotherexample.com</a>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact" aria-current="page">Contact</a></nav>
+    <h1 class="page-title">Contact AnotherExample</h1>
 
-    <h1>Contact AnotherExample</h1>
-
-    <p class="lead">
+    <p class="page-intro">
       Questions, feedback, bug reports, or suggestions are welcome.
     </p>
 
-    <form id="contactForm" method="post" action="/api/contact">
+    <form class="page-panel page-section" id="contactForm" method="post" action="/api/contact">
 
       <label for="name">Name</label>
       <input id="name" name="name" type="text" maxlength="100" autocomplete="name">
@@ -137,7 +137,8 @@
       <p id="formStatus" role="status" aria-live="polite"></p>
 
     </form>
-  </main>
+  <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
   <script>
   const submitButton = document.getElementById('submitButton');
   const form = document.getElementById('contactForm');
