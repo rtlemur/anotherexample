@@ -372,10 +372,53 @@ function renderDiagnosis(diagnosis) {
     checks;
 }
 
-$('explainBrowserResult').onclick = () => {
-  const diagnosis = findBrowserDiagnosis($('browserResult').value);
-  renderDiagnosis(diagnosis);
-};
+function bindBrowserResultInterpreter() {
+  const input = $('browserResult');
+  let timer;
+  let composing = false;
+  let lastDiagnosis = null;
+
+  // Announce the short explanation politely; keep the detailed checks readable
+  // without a second, lengthy live announcement on every edit.
+  $('preflightDiagnosis').setAttribute('aria-live', 'off');
+
+  function update() {
+    clearTimeout(timer);
+    if (!input.value.trim()) {
+      lastDiagnosis = null;
+      $('browserExplanation').style.display = 'none';
+      $('preflightDiagnosisPanel').style.display = 'none';
+      return;
+    }
+    const diagnosis = findBrowserDiagnosis(input.value);
+    const signature = JSON.stringify(diagnosis);
+    if (signature !== lastDiagnosis) {
+      renderDiagnosis(diagnosis);
+      lastDiagnosis = signature;
+    }
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    if (!input.value.trim()) {
+      update();
+    } else if (!composing) {
+      timer = setTimeout(update, 400);
+    }
+  }
+
+  input.addEventListener('input', schedule);
+  input.addEventListener('compositionstart', () => {
+    composing = true;
+    clearTimeout(timer);
+  });
+  input.addEventListener('compositionend', () => {
+    composing = false;
+    schedule();
+  });
+  $('explainBrowserResult').onclick = update;
+}
+bindBrowserResultInterpreter();
 updateDiagnostic();
 copyControl('copyTarget', () => $('targetFetch').textContent);
 copyControl('copyControl', () => $('controlFetch').textContent);
