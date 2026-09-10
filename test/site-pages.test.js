@@ -26,8 +26,8 @@ test('existing malformed JSON error handling is preserved', async () => {
 test('error page keeps compact input, local privacy note, and manual fallback', async () => {
   const {text} = await request(app).get('/cors/errors').expect(200);
   assert.match(text, /id="browserResult"\s+rows="3"\s+aria-describedby="errorPrivacy"/);
-  assert.match(text, /Analyzed locally in your browser\./);
-  assert.match(text, /Remove secrets, tokens, and sensitive URLs before pasting/);
+  assert.match(text, /Before you paste/);
+  assert.match(text, /Remove anything private first\. Analysis stays local in your browser\./);
   assert.ok(text.indexOf('id="errorPrivacy"') < text.indexOf('<textarea'));
   assert.match(text, /id="explainBrowserResult"/);
   for (const script of ['/cors-diagnosis.js', '/cors-error-interpreter.js']) {
