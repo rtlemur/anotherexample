@@ -28,4 +28,6 @@ button[id^="copy"]:hover{background:#a7f3d0;border-color:#a7f3d0}
 button[id^="copy"]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 button[id^="copy"]:active{background:#34d399;border-color:#34d399}
 button[id^="copy"]:disabled{background:var(--border);border-color:var(--muted);color:var(--muted);cursor:not-allowed}
-.error-page #errorPrivacy{color:var(--text);margin:8px 0;font-size:.9rem}
+.error-page #errorPrivacy{margin:10px 0 12px;padding:12px 14px;border:2px solid var(--warn);border-radius:8px;background:rgba(251,191,36,.08);color:var(--text);font-size:.92rem;line-height:1.45}
+.error-page #errorPrivacy strong{display:block;margin-bottom:3px;color:var(--warn);font-size:1rem}
+.error-page #errorPrivacy span{display:block;color:var(--text)}
