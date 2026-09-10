@@ -21,7 +21,10 @@
 
 
   <label for="browserResult">Browser Console result</label>
-  <p id="errorPrivacy">Analyzed locally in your browser. Remove secrets, tokens, and sensitive URLs before pasting.</p>
+  <div id="errorPrivacy" class="privacy-warning">
+    <strong>Before you paste</strong>
+    <span>Console errors may contain tokens, internal URLs, or other sensitive information. Remove anything private first. Analysis stays local in your browser.</span>
+  </div>
   <textarea
     id="browserResult"
     rows="3"
