@@ -36,6 +36,15 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   }
 });
 
+test('missing Allow-Origin guide is reachable and routes into the tools', async () => {
+  const {text} = await request(app).get('/cors/no-access-control-allow-origin').expect(200);
+  assert.match(text, /No ‘Access-Control-Allow-Origin’ header is present/);
+  assert.match(text, /href="\/cors"/);
+  assert.match(text, /href="\/cors\/errors"/);
+  assert.match(text, /href="\/cors\/playground"/);
+  assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/open/);
+});
+
 test('debugger links to error explainer and homepage greeting is removed', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
