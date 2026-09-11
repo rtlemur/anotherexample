@@ -188,6 +188,8 @@ app.get('/api/health',(req,res)=>{noStore(res);res.json({status:'ok',domain:'ano
 
 app.get('/cors/no-access-control-allow-origin',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-no-allow-origin.html')));
 app.get('/cors/preflight-failed',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-preflight-failed.html')));
+app.get('/cors/works-locally-but-not-in-production',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-works-locally-not-production.html')));
+app.get('/cors/blocked-by-cors-policy',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-blocked-by-policy.html')));
 app.get('/cors/errors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-errors.html')));
 app.get('/cors/playground',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-playground.html')));
 app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html')));
