@@ -58,6 +58,27 @@ test('preflight guide is reachable and demonstrates failing and successful OPTIO
   assert.match(text, /href="\/cors\/playground"/);
 });
 
+test('local-vs-production guide is reachable and links to related troubleshooting', async () => {
+  const {text} = await request(app).get('/cors/works-locally-but-not-in-production').expect(200);
+  assert.match(text, /CORS works locally but fails in production/);
+  assert.match(text, /location\.origin/);
+  assert.match(text, /allowOrigin=echo/);
+  assert.match(text, /href="\/cors\/blocked-by-cors-policy"/);
+  assert.match(text, /href="\/cors\/preflight-failed"/);
+  assert.match(text, /href="\/cors\/no-access-control-allow-origin"/);
+  assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/lab/);
+});
+
+test('blocked-by-policy guide is reachable and routes to specific CORS causes', async () => {
+  const {text} = await request(app).get('/cors/blocked-by-cors-policy').expect(200);
+  assert.match(text, /Blocked by CORS policy: what it means and what to check/);
+  assert.match(text, /href="\/cors\/no-access-control-allow-origin"/);
+  assert.match(text, /href="\/cors\/preflight-failed"/);
+  assert.match(text, /href="\/cors\/works-locally-but-not-in-production"/);
+  assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/open/);
+  assert.match(text, /href="\/cors\/errors"/);
+});
+
 test('debugger links to error explainer and homepage greeting is removed', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
