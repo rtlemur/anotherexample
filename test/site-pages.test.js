@@ -42,6 +42,9 @@ test('missing Allow-Origin guide is reachable and routes into the tools', async 
   assert.match(text, /href="\/cors"/);
   assert.match(text, /href="\/cors\/errors"/);
   assert.match(text, /href="\/cors\/playground"/);
+  assert.match(text, /href="\/cors\/preflight-failed"/);
+  assert.match(text, /href="\/cors\/works-locally-but-not-in-production"/);
+  assert.match(text, /href="\/cors\/blocked-by-cors-policy"/);
   assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/open/);
 });
 
@@ -56,6 +59,9 @@ test('preflight guide is reachable and demonstrates failing and successful OPTIO
   assert.match(text, /href="\/cors"/);
   assert.match(text, /href="\/cors\/errors"/);
   assert.match(text, /href="\/cors\/playground"/);
+  assert.match(text, /href="\/cors\/no-access-control-allow-origin"/);
+  assert.match(text, /href="\/cors\/works-locally-but-not-in-production"/);
+  assert.match(text, /href="\/cors\/blocked-by-cors-policy"/);
 });
 
 test('local-vs-production guide is reachable and links to related troubleshooting', async () => {
