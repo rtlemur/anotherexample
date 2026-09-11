@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Fix the browser error: No Access-Control-Allow-Origin header is present on the requested resource. Understand the cause and test your CORS setup with a real second origin.">
+<title>Fix “No Access-Control-Allow-Origin Header” CORS Error — AnotherExample</title>
+<link rel="icon" href="/aefavicon.ico" sizes="any">
+<link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<main class="wrap">
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+
+<h1 class="page-title">No ‘Access-Control-Allow-Origin’ header is present</h1>
+<p class="page-intro">If your browser says a request was blocked because no <code>Access-Control-Allow-Origin</code> header is present, the server response did not give your page permission to read it cross-origin.</p>
+
+<section class="page-panel page-section">
+<h2>What this error means</h2>
+<p>CORS is enforced by the browser. When JavaScript on one origin requests a resource from another origin, the response must include an <code>Access-Control-Allow-Origin</code> value that permits the requesting page.</p>
+<p>If that header is missing, the browser may still send the request, but it will block your JavaScript from reading the response.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Check these first</h2>
+<ol>
+<li>Open DevTools → Network and inspect the failing request.</li>
+<li>If there is an <code>OPTIONS</code> request, inspect that preflight response too.</li>
+<li>Confirm the response includes <code>Access-Control-Allow-Origin</code>.</li>
+<li>Make sure its value matches your page origin, or is <code>*</code> for a non-credentialed public response.</li>
+<li>Check error responses, redirects, proxies, and CDN responses too — CORS headers must be present on the response the browser actually receives.</li>
+</ol>
+</section>
+
+<section class="page-panel page-section">
+<h2>Compare against a known-good second origin</h2>
+<p>Use the <a href="/cors">CORS Debugger</a> to run the same request shape against AnotherExample’s controlled second origin. If your target fails while the controlled request works, investigate the target server’s CORS configuration first.</p>
+<pre>fetch('https://cors.anotherexample.com/api/cors/open')
+  .then(r => r.json())
+  .then(console.log)
+  .catch(console.error);</pre>
+</section>
+
+<section class="page-panel page-section">
+<h2>Common server-side causes</h2>
+<p>The usual causes are CORS middleware not running for that route, an origin allowlist that does not include the exact requesting origin, a preflight handler that returns without CORS headers, or a proxy/CDN/error handler stripping the headers.</p>
+<p>Do not “fix” this by disabling browser security or adding a public CORS proxy in front of a private API. Fix the server response that your browser is actually receiving.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Still stuck?</h2>
+<p><a href="/cors/errors">Paste the browser error into the Error Explainer →</a></p>
+<p><a href="/cors/playground">Explore working and broken CORS scenarios in the Playground →</a></p>
+</section>
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
+</body>
+</html>
