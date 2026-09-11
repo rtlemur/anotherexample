@@ -45,6 +45,19 @@ test('missing Allow-Origin guide is reachable and routes into the tools', async 
   assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/open/);
 });
 
+test('preflight guide is reachable and demonstrates failing and successful OPTIONS responses', async () => {
+  const {text} = await request(app).get('/cors/preflight-failed').expect(200);
+  assert.match(text, /CORS preflight \/ OPTIONS request failed/);
+  assert.match(text, /preflightStatus=403/);
+  assert.match(text, /preflightStatus=204/);
+  assert.match(text, /Access-Control-Allow-Methods/);
+  assert.match(text, /Access-Control-Allow-Headers/);
+  assert.match(text, /https:\/\/cors\.anotherexample\.com\/api\/cors\/lab/);
+  assert.match(text, /href="\/cors"/);
+  assert.match(text, /href="\/cors\/errors"/);
+  assert.match(text, /href="\/cors\/playground"/);
+});
+
 test('debugger links to error explainer and homepage greeting is removed', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
