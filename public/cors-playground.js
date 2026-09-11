@@ -6,7 +6,7 @@ const scenarios=[
   {name:'✓ Preflight allowed',desc:'Preflight should succeed',v:{method:'POST',allowOrigin:'*',methods:'GET, POST, OPTIONS',headers:'Content-Type',credentials:false,preflight:'204'}},
   {name:'✕ Preflight rejected',desc:'OPTIONS returns 403',v:{method:'POST',allowOrigin:'*',credentials:false,preflight:'403'}},
   {name:'✕ Credentials + wildcard',desc:'Browser should block it',v:{method:'GET',allowOrigin:'*',credentials:true,preflight:'204'}},
-  {name:'✓ Credentials done right',desc:'Request should succeed',v:{method:'GET',allowOrigin:'echo',credentials:true,preflight:'204'}}
+  {name:'✓ Reflected origin + credentials',desc:'Caller origin is reflected; request should succeed',v:{method:'GET',allowOrigin:'echo',credentials:true,preflight:'204'}}
 ];
 
 const $=id=>document.getElementById(id);
@@ -29,7 +29,7 @@ function explain(){
   else if(a==='https://wrong.example'){msg='Blocked: the allowed origin does not match the requesting page.';cls='bad'}
   else if(c&&a==='*'){msg='Blocked: credentialed CORS cannot use Access-Control-Allow-Origin: *.';cls='bad'}
   else if(m!=='GET'&&p!=='204'){msg='Blocked before the main request: the preflight is rejected.';cls='bad'}
-  else if(c&&a==='echo'){msg='Should succeed: the caller Origin is reflected and credentials are allowed.'}
+  else if(c&&a==='echo'){msg='Should succeed here: the caller Origin is reflected and credentials are allowed. In production, only reflect origins you trust.'}
   else{msg='Should succeed for a cross-origin request that matches these settings.'}
   $('expected').className='status '+cls;$('expected').textContent=msg;highlightCode($('fetchCode'), fetchText());
   const labels=cls==='bad' ? (m!=='GET'&&p!=='204' ? ['403 Forbidden','Preflight failed'] : ['CORS blocked']) : (m!=='GET' ? ['204 No Content','200 OK'] : ['200 OK']);
