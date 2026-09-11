@@ -7,6 +7,8 @@
 .site-nav a:link,.site-nav a:visited,.site-footer a:link,.site-footer a:visited{color:var(--accent)}
 .site-nav a:hover,.site-footer a:hover{color:var(--text);text-decoration:underline;text-underline-offset:4px}
 .site-nav a:focus-visible,.site-footer a:focus-visible{color:var(--text);outline:2px solid var(--accent);outline-offset:3px}
+.card h3 a:link,.card h3 a:visited{color:var(--accent)}
+.card h3 a:hover{color:var(--text)}
 a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 
 /* Reusable page-shell typography and first-section spacing, matching CORS. */
