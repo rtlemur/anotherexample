@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Fix CORS preflight and OPTIONS request failures. See what the browser checks, inspect the failing preflight, and compare it with a controlled second-origin example.">
+<title>Fix CORS Preflight / OPTIONS Request Failed Errors — AnotherExample</title>
+<link rel="icon" href="/aefavicon.ico" sizes="any">
+<link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
+<style>
+.guide-page .page-title{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.2;max-width:900px}
+.guide-page .page-intro{font-size:1rem;max-width:850px}
+.guide-page .page-panel h2{font-size:1.1rem}
+.guide-page .page-panel p,.guide-page .page-panel li{font-size:.96rem}
+</style>
+</head>
+<body>
+<main class="wrap guide-page">
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+
+<h1 class="page-title">CORS preflight / OPTIONS request failed</h1>
+<p class="page-intro">If the browser blocks a cross-origin request during preflight, the problem is usually in the <code>OPTIONS</code> response that is supposed to approve the real request before it is sent.</p>
+
+<section class="page-panel page-section">
+<h2>What this error means</h2>
+<p>Some cross-origin requests require a preflight before the browser sends the real request. The browser sends an <code>OPTIONS</code> request describing the method and headers it wants to use.</p>
+<p>If that preflight does not succeed, or its CORS headers do not approve the requested origin, method, and headers, the browser blocks the real request.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Check these first</h2>
+<ol>
+<li>Open DevTools → Network and find the <code>OPTIONS</code> request immediately before the failure.</li>
+<li>Confirm the preflight receives a successful response instead of an auth error, server error, timeout, or failed network request.</li>
+<li>Check <code>Access-Control-Allow-Origin</code> and make sure it permits the page origin.</li>
+<li>Check <code>Access-Control-Allow-Methods</code> and make sure it includes the method the browser wants to send.</li>
+<li>Check <code>Access-Control-Allow-Headers</code> and make sure it permits the non-safelisted request headers listed by <code>Access-Control-Request-Headers</code>.</li>
+<li>Make sure middleware, authentication, a reverse proxy, or a CDN is not rejecting <code>OPTIONS</code> before your CORS handler runs.</li>
+</ol>
+</section>
+
+<section class="page-panel page-section">
+<h2>See a failing preflight on a real second origin</h2>
+<p>This request intentionally triggers a preflight and tells AnotherExample’s CORS lab to reject that preflight with HTTP 403. The browser should stop before sending the real <code>PUT</code> request.</p>
+<pre>fetch('https://cors.anotherexample.com/api/cors/lab?preflightStatus=403&amp;allowOrigin=*&amp;methods=PUT,OPTIONS&amp;headers=Content-Type', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ test: true })
+})
+  .then(r => r.json())
+  .then(console.log)
+  .catch(console.error);</pre>
+<p>Change <code>preflightStatus=403</code> to <code>preflightStatus=204</code> and run the same request again. The controlled preflight should succeed, allowing you to compare the two cases without changing the rest of the request.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Common server-side causes</h2>
+<p>Typical causes include an <code>OPTIONS</code> route that is not handled, authentication running before CORS middleware, a requested method missing from <code>Access-Control-Allow-Methods</code>, a requested header missing from <code>Access-Control-Allow-Headers</code>, or a proxy/CDN returning a different response than your application.</p>
+<p>Do not try to solve a preflight failure with <code>mode: 'no-cors'</code>. That produces an opaque response that normal JavaScript cannot inspect, so it is not a substitute for a correct CORS response.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Still stuck?</h2>
+<p><a href="/cors">Compare the request in the CORS Debugger →</a></p>
+<p><a href="/cors/errors">Paste the browser error into the Error Explainer →</a></p>
+<p><a href="/cors/playground">Explore working and broken preflight scenarios in the Playground →</a></p>
+</section>
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
+</body>
+</html>
