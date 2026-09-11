@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Understand and fix browser messages that say a request was blocked by CORS policy. Identify whether the problem is Allow-Origin, preflight, credentials, redirects, or production configuration.">
+<title>Blocked by CORS Policy: What It Means and What to Check — AnotherExample</title>
+<link rel="icon" href="/aefavicon.ico" sizes="any">
+<link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
+<style>
+.guide-page .page-title{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.2;max-width:900px}
+.guide-page .page-intro{font-size:1rem;max-width:850px}
+.guide-page .page-panel h2{font-size:1.1rem}
+.guide-page .page-panel p,.guide-page .page-panel li{font-size:.96rem}
+</style>
+</head>
+<body>
+<main class="wrap guide-page">
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+
+<h1 class="page-title">Blocked by CORS policy: what it means and what to check</h1>
+<p class="page-intro">“Blocked by CORS policy” is a broad browser message, not one single configuration error. The useful clue is the rest of the Console message and the request details in DevTools.</p>
+
+<section class="page-panel page-section">
+<h2>What the browser is telling you</h2>
+<p>Your page tried to access a resource on another origin, and the browser did not find a CORS response that permits JavaScript to use it. The request may have failed during preflight, or the final response may be missing or returning the wrong CORS headers.</p>
+<p>The exact Console wording matters. Treat “blocked by CORS policy” as the category, then identify the specific reason underneath it.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Check these first</h2>
+<ol>
+<li>Copy the complete browser Console error, not just the words “blocked by CORS policy.”</li>
+<li>Open DevTools → Network and inspect the failing request.</li>
+<li>Look for an <code>OPTIONS</code> request immediately before it. If one exists, inspect that preflight separately.</li>
+<li>Check the response for <code>Access-Control-Allow-Origin</code> and confirm it permits the requesting page origin.</li>
+<li>For a preflight, also inspect <code>Access-Control-Allow-Methods</code> and <code>Access-Control-Allow-Headers</code>.</li>
+<li>If credentials are used, check that the server's credentialed CORS response is valid for the exact origin.</li>
+<li>Check redirects, authentication failures, proxy/CDN responses, and server errors too; the browser evaluates the response it actually receives.</li>
+</ol>
+</section>
+
+<section class="page-panel page-section">
+<h2>Compare with a known-good second origin</h2>
+<p>Run this from the Console of the page that is failing:</p>
+<pre>fetch('https://cors.anotherexample.com/api/cors/open')
+  .then(r => r.json())
+  .then(console.log)
+  .catch(console.error);</pre>
+<p>If the controlled AnotherExample request works while your target request fails, you have narrowed the problem toward the target server, proxy, redirect, or its CORS configuration rather than cross-origin fetch in general.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Match the detailed error to the next check</h2>
+<p>If the browser says no <code>Access-Control-Allow-Origin</code> header is present, start with the missing-header guide. If it says the preflight or <code>OPTIONS</code> request failed, inspect the preflight response first. If everything works on localhost but not after deployment, compare the exact production origin and infrastructure.</p>
+<p>Other detailed errors can point to credential rules, disallowed methods or headers, redirects, or a response that never reached the browser successfully.</p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Related CORS guides</h2>
+<p><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header →</a></p>
+<p><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed →</a></p>
+<p><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production →</a></p>
+</section>
+
+<section class="page-panel page-section">
+<h2>Still stuck?</h2>
+<p><a href="/cors/errors">Paste the full Console message into the Error Explainer →</a></p>
+<p><a href="/cors">Compare your request in the CORS Debugger →</a></p>
+<p><a href="/cors/playground">Explore working and broken CORS scenarios in the Playground →</a></p>
+</section>
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
+</body>
+</html>
