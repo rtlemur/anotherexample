@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://anotherexample.com/</loc></url>
+  <url><loc>https://anotherexample.com/cors</loc></url>
+  <url><loc>https://anotherexample.com/cors/playground</loc></url>
+  <url><loc>https://anotherexample.com/cors/errors</loc></url>
+  <url><loc>https://anotherexample.com/cors/no-access-control-allow-origin</loc></url>
+  <url><loc>https://anotherexample.com/cors/preflight-failed</loc></url>
+  <url><loc>https://anotherexample.com/cors/works-locally-but-not-in-production</loc></url>
+  <url><loc>https://anotherexample.com/cors/blocked-by-cors-policy</loc></url>
+  <url><loc>https://anotherexample.com/contact</loc></url>
+</urlset>
