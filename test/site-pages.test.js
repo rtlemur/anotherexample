@@ -79,6 +79,31 @@ test('blocked-by-policy guide is reachable and routes to specific CORS causes', 
   assert.match(text, /href="\/cors\/errors"/);
 });
 
+test('sitemap lists the public pages intended for search discovery', async () => {
+  const response = await request(app).get('/sitemap.xml').expect(200);
+  assert.match(response.headers['content-type'], /xml/);
+  const urls = [
+    'https://anotherexample.com/',
+    'https://anotherexample.com/cors',
+    'https://anotherexample.com/cors/playground',
+    'https://anotherexample.com/cors/errors',
+    'https://anotherexample.com/cors/no-access-control-allow-origin',
+    'https://anotherexample.com/cors/preflight-failed',
+    'https://anotherexample.com/cors/works-locally-but-not-in-production',
+    'https://anotherexample.com/cors/blocked-by-cors-policy',
+    'https://anotherexample.com/contact'
+  ];
+  for (const url of urls) assert.ok(response.text.includes(`<loc>${url}</loc>`));
+});
+
+test('robots.txt allows crawling and advertises the sitemap', async () => {
+  const response = await request(app).get('/robots.txt').expect(200);
+  assert.match(response.headers['content-type'], /text\/plain/);
+  assert.match(response.text, /User-agent: \*/);
+  assert.match(response.text, /Allow: \/(?:\r?\n|$)/);
+  assert.match(response.text, /Sitemap: https:\/\/anotherexample\.com\/sitemap\.xml/);
+});
+
 test('debugger links to error explainer and homepage greeting is removed', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
