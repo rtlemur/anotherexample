@@ -48,7 +48,7 @@
     font-weight: 500;
     line-height: 1.4;
     color: var(--muted);
-    margin: 0 0 28px;
+    margin: 0 0 16px;
   }
 
   .badge {
@@ -183,11 +183,8 @@
 <body><main class="wrap">
 <nav class="site-nav" aria-label="Main navigation"><a href="/" aria-current="page">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
 <h1>Sometimes one example isn&#39;t enough.</h1>
-<p class="tagline">AnotherExample gives developers a real, controlled second origin for debugging CORS and other browser integration problems.</p>
-<p class="lead"><code>example.com</code> and <code>example.org</code> are reserved by IANA for documentation. AnotherExample provides a stable, real HTTPS origin you can use for CORS, cookies, redirects, and integration testing.</p>
-<div class="actions">
-  <a class="button" href="/cors">Debug a CORS problem →</a>
-</div>
+<p class="tagline"><strong>Because <code>example.com</code> can’t take a real request.</strong> AnotherExample gives developers a stable, controlled second origin for testing what browsers actually do with CORS.</p>
+<p class="lead">Yes, it’s a real domain. No, it’s not a typo. That’s the point: use <code>anotherexample.com</code> and <code>cors.anotherexample.com</code> to test CORS, credentials, cookies, redirects, and preflights against a real HTTPS origin.</p>
 
 <section>
 <h2>Choose a tool</h2>
@@ -207,17 +204,6 @@
 </div>
 </section>
 
-<section>
-<h2>Why AnotherExample?</h2>
-<p><strong>Because <code>example.com</code> can’t take a real request.</strong> AnotherExample gives you a stable second origin for testing what browsers actually do with CORS, credentials, cookies, redirects, and preflights.</p>
-<p class="muted">Yes, it’s a real domain. No, it’s not a typo. Yes, that’s the whole point.</p>
-</section>
-    
-<!--<section>
-<h2>Featured tool</h2>
-<div class="card" style="margin-bottom:18px"><h3 style="margin:0 0 8px">CORS Debugger</h3><p>Compare your failing browser request against a controlled second origin, see where the behavior differs, and understand what to investigate next.</p><div class="actions"><a class="button" href="/cors">Open CORS Debugger →</a></div></div>
-</section>
--->
 <section>
 <h2>Try the endpoints</h2>
 <p>Run a real cross-origin request from <code>anotherexample.com</code> to <code>cors.anotherexample.com</code> and inspect what your browser allows this page to read.</p>
@@ -268,7 +254,6 @@ curl -i 'https://anotherexample.com/api/redirect?target=example&amp;status=302'<
 </section>
 
 <div id="acceptable-use" class="notice"><h2>Use test data only.</h2> Request-inspection endpoints may reflect headers and bodies. <b><i>Never</i></b> send production passwords, API keys, session tokens, personal data, or other secrets.</div>
-
 
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
