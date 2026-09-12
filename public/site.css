@@ -8,7 +8,7 @@
 .nav-dropdown>summary::-webkit-details-marker{display:none}
 .nav-dropdown>summary::after{content:"▾";margin-left:6px;font-size:.8em}
 .nav-dropdown[open]>summary,.nav-dropdown>summary:hover{border-color:var(--accent);color:var(--text)}
-.nav-dropdown-menu{display:none;position:absolute;z-index:10;top:calc(100% + 4px);right:0;width:min(360px,calc(100vw - 28px));padding:7px;background:var(--card);border:1px solid var(--accent);border-radius:8px;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.nav-dropdown-menu{display:none;position:absolute;z-index:10;top:calc(100% + 4px);left:0;right:auto;width:min(360px,calc(100vw - 28px));padding:7px;background:var(--card);border:1px solid var(--accent);border-radius:8px;box-shadow:0 10px 24px rgba(0,0,0,.3)}
 .nav-dropdown[open]>.nav-dropdown-menu,.nav-dropdown:hover>.nav-dropdown-menu{display:grid}
 .site-nav .nav-dropdown-menu a{display:block;min-height:0;padding:9px 10px;line-height:1.35}
 .nav-dropdown>summary:focus-visible{color:var(--text);outline:2px solid var(--accent);outline-offset:3px}

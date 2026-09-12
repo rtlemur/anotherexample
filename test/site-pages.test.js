@@ -177,6 +177,7 @@ test('debugger links to error explainer and homepage greeting is removed', async
 test('shared styles explicitly cover visited links, hover, focus, and wrapping navigation', async () => {
   const {text} = await request(app).get('/site.css').expect(200);
   assert.match(text, /\.site-nav\{[^}]*flex-wrap:wrap/);
+  assert.match(text, /\.nav-dropdown-menu\{[^}]*left:0;right:auto/);
   assert.match(text, /\.site-footer a:link,\.site-footer a:visited\{color:var\(--accent\)\}/);
   assert.match(text, /\.site-footer a:hover\{[^}]*color:var\(--text\)/);
   assert.match(text, /\.site-footer a:focus-visible\{[^}]*outline:2px solid var\(--accent\)/);
