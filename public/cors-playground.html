@@ -11,8 +11,8 @@
 </head>
 <body>
 <main class="wrap">
-<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
-<h1>CORS Playground</h1>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
+<h1 class="page-title">CORS Playground</h1>
 <p class="tag">Explore common CORS failures using AnotherExample’s controlled endpoint. These scenarios intentionally reproduce common browser successes and failures without affecting your own API.</p>
 <section id="corsScenarios" aria-label="Controlled scenarios">    <div id="scenarioState" class="status"><strong>Scenario:</strong> None selected</div>
   <div class="scenarios" id="scenarios"></div>

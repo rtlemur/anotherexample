@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="/cors.css">
 <link rel="stylesheet" href="/site.css">
 <style>
-.guide-page .page-title{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.2;max-width:900px}
 .guide-page .page-intro{font-size:1rem;max-width:850px}
 .guide-page .page-panel h2{font-size:1.1rem}
 .guide-page .page-panel p,.guide-page .page-panel li{font-size:.96rem}
@@ -17,7 +16,7 @@
 </head>
 <body>
 <main class="wrap guide-page">
-<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy" aria-current="page">Blocked by CORS policy</a></nav></details></nav>
 
 <h1 class="page-title">Blocked by CORS policy: what it means and what to check</h1>
 <p class="page-intro">“Blocked by CORS policy” is a broad browser message, not one single configuration error. The useful clue is the rest of the Console message and the request details in DevTools.</p>

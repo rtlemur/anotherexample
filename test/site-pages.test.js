@@ -3,12 +3,25 @@ const assert = require('node:assert/strict');
 const request = require('supertest');
 const app = require('../server');
 
-for (const [route, active] of [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors'], ['/contact', '/contact']]) {
-  test(`${route} has shared navigation, active state, and contact footer`, async () => {
+const primaryPages = [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors']];
+const guidePages = [
+  ['/cors/no-access-control-allow-origin', 'No Access-Control-Allow-Origin header'],
+  ['/cors/preflight-failed', 'CORS preflight / OPTIONS request failed'],
+  ['/cors/works-locally-but-not-in-production', 'CORS works locally but fails in production'],
+  ['/cors/blocked-by-cors-policy', 'Blocked by CORS policy']
+];
+const troubleshootingUrls = guidePages.map(([url]) => url);
+
+for (const [route, active] of [...primaryPages, ['/contact', null], ...guidePages.map(([route]) => [route, route])]) {
+  test(`${route} has the shared navigation dropdown and contact footer`, async () => {
     const response = await request(app).get(route).expect(200);
     assert.match(response.text, /class="site-nav" aria-label="Main navigation"/);
-    assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
-    for (const url of ['/', '/cors', '/cors/playground', '/cors/errors', '/contact']) assert.ok(response.text.includes(`href="${url}"`));
+    if (active) assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
+    for (const url of ['/', '/cors', '/cors/playground', '/cors/errors']) assert.ok(response.text.includes(`href="${url}"`));
+    assert.match(response.text, /<details class="nav-dropdown"><summary>CORS Errors<\/summary>/);
+    assert.match(response.text, /<nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides">/);
+    for (const url of troubleshootingUrls) assert.ok(response.text.includes(`href="${url}"`));
+    assert.doesNotMatch(response.text.match(/<nav class="site-nav"[\s\S]*?<\/nav><\/details><\/nav>/)[0], /href="\/contact"/);
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
   });
 }
@@ -36,21 +49,31 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   }
 });
 
-test('error explainer offers a keyboard-friendly dropdown of common troubleshooting guides', async () => {
+test('troubleshooting dropdown lives in the shared navigation rather than page content', async () => {
   const {text} = await request(app).get('/cors/errors').expect(200);
-  const explainButton = text.indexOf('id="explainBrowserResult"');
-  const dropdown = text.indexOf('<details class="common-errors">');
-  assert.ok(explainButton >= 0 && dropdown > explainButton);
-  assert.match(text, /<summary>Common CORS errors<\/summary>/);
-  assert.match(text, /<nav aria-label="Common CORS error guides">/);
-  for (const [label, url] of [
-    ['No <code>Access-Control-Allow-Origin<\/code> header', '/cors/no-access-control-allow-origin'],
-    ['CORS preflight \/ OPTIONS request failed', '/cors/preflight-failed'],
-    ['CORS works locally but fails in production', '/cors/works-locally-but-not-in-production'],
-    ['Blocked by CORS policy', '/cors/blocked-by-cors-policy']
-  ]) {
-    assert.match(text, new RegExp(`href="${url}">${label}<\/a>`));
+  assert.doesNotMatch(text, /class="common-errors"|<summary>Common CORS errors<\/summary>/);
+  const sharedNav = text.match(/<nav class="site-nav"[\s\S]*?<\/nav><\/details><\/nav>/)[0];
+  for (const [url, label] of guidePages) {
+    assert.ok(sharedNav.includes(`href="${url}">${label}</a>`));
     await request(app).get(url).expect(200);
+  }
+});
+
+test('primary pages and guides use the same responsive page title treatment', async () => {
+  for (const route of [...primaryPages.map(([route]) => route), ...guidePages.map(([route]) => route)]) {
+    const {text} = await request(app).get(route).expect(200);
+    assert.match(text, /<h1 class="page-title">/);
+  }
+  const css = (await request(app).get('/site.css').expect(200)).text;
+  assert.match(css, /\.page-title\{max-width:none;font-size:clamp\(1\.65rem,3\.2vw,2\.3rem\);line-height:1\.17/);
+  for (const [, filename] of [
+    ['/cors/no-access-control-allow-origin', 'cors-no-allow-origin.html'],
+    ['/cors/preflight-failed', 'cors-preflight-failed.html'],
+    ['/cors/works-locally-but-not-in-production', 'cors-works-locally-not-production.html'],
+    ['/cors/blocked-by-cors-policy', 'cors-blocked-by-policy.html']
+  ]) {
+    const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'public', filename), 'utf8');
+    assert.doesNotMatch(source, /guide-page \.page-title|max-width:900px/);
   }
 });
 
