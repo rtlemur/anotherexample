@@ -3,16 +3,30 @@ const assert = require('node:assert/strict');
 const request = require('supertest');
 const app = require('../server');
 
-for (const [route, active] of [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors'], ['/contact', '/contact']]) {
+for (const [route, active] of [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors'], ['/contact', null]]) {
   test(`${route} has shared navigation, active state, and contact footer`, async () => {
     const response = await request(app).get(route).expect(200);
     assert.match(response.text, /class="site-nav" aria-label="Main navigation"/);
-    assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
+    if (active) assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
     for (const url of ['/', '/cors', '/cors/playground', '/cors/errors', '/contact']) assert.ok(response.text.includes(`href="${url}"`));
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
     assert.match(response.text, /<script src="\/nav-dropdown\.js"><\/script>/);
   });
 }
+
+test('shared navigation exposes CORS guides as real links and keeps Contact in the footer', async () => {
+  const {text} = await request(app).get('/').expect(200);
+  const nav = text.slice(text.indexOf('<nav class="site-nav"'), text.indexOf('</nav>') + 6);
+  assert.match(nav, /<details class="nav-dropdown"><summary>CORS Errors<\/summary>/);
+  for (const url of [
+    '/cors/no-access-control-allow-origin',
+    '/cors/preflight-failed',
+    '/cors/works-locally-but-not-in-production',
+    '/cors/blocked-by-cors-policy'
+  ]) assert.ok(nav.includes(`href="${url}"`));
+  assert.doesNotMatch(nav, /href="\/contact"/);
+  assert.match(text, /<footer class="site-footer"><a href="\/contact">Contact AnotherExample<\/a><\/footer>/);
+});
 test('unknown URL returns branded HTML with 404 status and recovery links', async () => {
   const response = await request(app).get('/missing-page').expect(404);
   assert.match(response.text, /404 — Page not found/);

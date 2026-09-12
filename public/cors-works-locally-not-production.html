@@ -17,7 +17,7 @@
 </head>
 <body>
 <main class="wrap guide-page">
-<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><div class="nav-dropdown-menu"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production" aria-current="page">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></div></details></nav>
 
 <h1 class="page-title">CORS works locally but fails in production</h1>
 <p class="page-intro">If the same browser request works on localhost but fails after deployment, compare what changed between the two environments before changing your fetch code. CORS decisions depend on the exact requesting origin and the response the browser actually receives.</p>

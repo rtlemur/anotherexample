@@ -17,7 +17,7 @@
 </head>
 <body>
 <main class="wrap guide-page">
-<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><a href="/contact">Contact</a></nav>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><div class="nav-dropdown-menu"><a href="/cors/no-access-control-allow-origin" aria-current="page">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></div></details></nav>
 
 <h1 class="page-title">No ‘Access-Control-Allow-Origin’ header is present</h1>
 <p class="page-intro">If your browser says a request was blocked because no <code>Access-Control-Allow-Origin</code> header is present, the server response did not give your page permission to read it cross-origin.</p>
