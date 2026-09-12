@@ -36,6 +36,24 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   }
 });
 
+test('error explainer offers a keyboard-friendly dropdown of common troubleshooting guides', async () => {
+  const {text} = await request(app).get('/cors/errors').expect(200);
+  const explainButton = text.indexOf('id="explainBrowserResult"');
+  const dropdown = text.indexOf('<details class="common-errors">');
+  assert.ok(explainButton >= 0 && dropdown > explainButton);
+  assert.match(text, /<summary>Common CORS errors<\/summary>/);
+  assert.match(text, /<nav aria-label="Common CORS error guides">/);
+  for (const [label, url] of [
+    ['No <code>Access-Control-Allow-Origin<\/code> header', '/cors/no-access-control-allow-origin'],
+    ['CORS preflight \/ OPTIONS request failed', '/cors/preflight-failed'],
+    ['CORS works locally but fails in production', '/cors/works-locally-but-not-in-production'],
+    ['Blocked by CORS policy', '/cors/blocked-by-cors-policy']
+  ]) {
+    assert.match(text, new RegExp(`href="${url}">${label}<\/a>`));
+    await request(app).get(url).expect(200);
+  }
+});
+
 test('missing Allow-Origin guide is reachable and routes into the tools', async () => {
   const {text} = await request(app).get('/cors/no-access-control-allow-origin').expect(200);
   assert.match(text, /No ‘Access-Control-Allow-Origin’ header is present/);
