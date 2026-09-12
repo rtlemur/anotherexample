@@ -20,11 +20,24 @@ for (const [route, active] of [...primaryPages, ['/contact', null], ...guidePage
     for (const url of ['/', '/cors', '/cors/playground', '/cors/errors']) assert.ok(response.text.includes(`href="${url}"`));
     assert.match(response.text, /<details class="nav-dropdown"><summary>CORS Errors<\/summary>/);
     assert.match(response.text, /<nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides">/);
+    assert.match(response.text, /<script src="\/nav-dropdown\.js"><\/script>/);
     for (const url of troubleshootingUrls) assert.ok(response.text.includes(`href="${url}"`));
     assert.doesNotMatch(response.text.match(/<nav class="site-nav"[\s\S]*?<\/nav><\/details><\/nav>/)[0], /href="\/contact"/);
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
   });
 }
+
+test('shared dropdown behavior is available as a public script', async () => {
+  const response = await request(app).get('/nav-dropdown.js').expect(200);
+  assert.match(response.headers['content-type'], /javascript/);
+});
+
+test('troubleshooting pages do not include legacy Related CORS guides panels', async () => {
+  for (const route of troubleshootingUrls) {
+    const {text} = await request(app).get(route).expect(200);
+    assert.doesNotMatch(text, /<h2>Related CORS guides<\/h2>/);
+  }
+});
 test('unknown URL returns branded HTML with 404 status and recovery links', async () => {
   const response = await request(app).get('/missing-page').expect(404);
   assert.match(response.text, /404 — Page not found/);
