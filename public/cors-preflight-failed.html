@@ -60,12 +60,15 @@
 <p>Do not try to solve a preflight failure with <code>mode: 'no-cors'</code>. That produces an opaque response that normal JavaScript cannot inspect, so it is not a substitute for a correct CORS response.</p>
 </section>
 
-<section class="page-panel page-section">
-<h2>Related CORS guides</h2>
-<p><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header →</a></p>
-<p><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production →</a></p>
-<p><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy →</a></p>
-</section>
+<details class="common-errors page-section">
+  <summary>Common CORS errors</summary>
+  <nav aria-label="Common CORS error guides">
+    <a href="/cors/no-access-control-allow-origin">No <code>Access-Control-Allow-Origin</code> header</a>
+    <a href="/cors/preflight-failed" aria-current="page">CORS preflight / OPTIONS request failed</a>
+    <a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a>
+    <a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a>
+  </nav>
+</details>
 
 <section class="page-panel page-section">
 <h2>Still stuck?</h2>
