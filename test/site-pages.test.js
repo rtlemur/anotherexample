@@ -10,6 +10,7 @@ for (const [route, active] of [['/', '/'], ['/index.html', '/'], ['/cors', '/cor
     assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
     for (const url of ['/', '/cors', '/cors/playground', '/cors/errors', '/contact']) assert.ok(response.text.includes(`href="${url}"`));
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
+    assert.match(response.text, /<script src="\/nav-dropdown\.js"><\/script>/);
   });
 }
 test('unknown URL returns branded HTML with 404 status and recovery links', async () => {
