@@ -36,6 +36,13 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   }
 });
 
+const corsGuides = [
+  ['/cors/no-access-control-allow-origin', 'No <code>Access-Control-Allow-Origin</code> header'],
+  ['/cors/preflight-failed', 'CORS preflight / OPTIONS request failed'],
+  ['/cors/works-locally-but-not-in-production', 'CORS works locally but fails in production'],
+  ['/cors/blocked-by-cors-policy', 'Blocked by CORS policy']
+];
+
 test('error explainer offers a keyboard-friendly dropdown of common troubleshooting guides', async () => {
   const {text} = await request(app).get('/cors/errors').expect(200);
   const explainButton = text.indexOf('id="explainBrowserResult"');
@@ -43,15 +50,37 @@ test('error explainer offers a keyboard-friendly dropdown of common troubleshoot
   assert.ok(explainButton >= 0 && dropdown > explainButton);
   assert.match(text, /<summary>Common CORS errors<\/summary>/);
   assert.match(text, /<nav aria-label="Common CORS error guides">/);
-  for (const [label, url] of [
-    ['No <code>Access-Control-Allow-Origin<\/code> header', '/cors/no-access-control-allow-origin'],
-    ['CORS preflight \/ OPTIONS request failed', '/cors/preflight-failed'],
-    ['CORS works locally but fails in production', '/cors/works-locally-but-not-in-production'],
-    ['Blocked by CORS policy', '/cors/blocked-by-cors-policy']
-  ]) {
-    assert.match(text, new RegExp(`href="${url}">${label}<\/a>`));
+  for (const [url, label] of corsGuides) {
+    assert.ok(text.includes(`href="${url}">${label}</a>`));
     await request(app).get(url).expect(200);
   }
+});
+
+test('each troubleshooting guide replaces related guides with the accessible common-errors dropdown', async () => {
+  for (const [route] of corsGuides) {
+    const {text} = await request(app).get(route).expect(200);
+    assert.match(text, /<details class="common-errors page-section">/);
+    assert.match(text, /<summary>Common CORS errors<\/summary>/);
+    assert.match(text, /<nav aria-label="Common CORS error guides">/);
+    assert.doesNotMatch(text, /Related CORS guides/);
+
+    for (const [destination, label] of corsGuides) {
+      const current = destination === route ? ' aria-current="page"' : '';
+      assert.ok(text.includes(`href="${destination}"${current}>${label}</a>`));
+    }
+    assert.equal((text.match(/aria-current="page"/g) || []).length, 1);
+  }
+});
+
+test('common-errors styles provide a contained vertical menu with hover and focus states', async () => {
+  const {text} = await request(app).get('/cors.css').expect(200);
+  assert.match(text, /\.common-errors nav\{[^}]*position:absolute[^}]*display:flex[^}]*flex-direction:column[^}]*width:100%/);
+  assert.match(text, /\.common-errors summary:hover\{/);
+  assert.match(text, /\.common-errors summary:focus-visible\{/);
+  assert.match(text, /\.common-errors a\{[^}]*display:block[^}]*width:100%/);
+  assert.match(text, /\.common-errors a:hover\{/);
+  assert.match(text, /\.common-errors a:focus-visible\{/);
+  assert.match(text, /\.common-errors a\[aria-current=page\]\{/);
 });
 
 test('missing Allow-Origin guide is reachable and routes into the tools', async () => {

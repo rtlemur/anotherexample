@@ -54,12 +54,15 @@
 <p>Do not “fix” this by disabling browser security or adding a public CORS proxy in front of a private API. Fix the server response that your browser is actually receiving.</p>
 </section>
 
-<section class="page-panel page-section">
-<h2>Related CORS guides</h2>
-<p><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed →</a></p>
-<p><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production →</a></p>
-<p><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy →</a></p>
-</section>
+<details class="common-errors page-section">
+  <summary>Common CORS errors</summary>
+  <nav aria-label="Common CORS error guides">
+    <a href="/cors/no-access-control-allow-origin" aria-current="page">No <code>Access-Control-Allow-Origin</code> header</a>
+    <a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a>
+    <a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a>
+    <a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a>
+  </nav>
+</details>
 
 <section class="page-panel page-section">
 <h2>Still stuck?</h2>
