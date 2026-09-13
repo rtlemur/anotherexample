@@ -12,15 +12,16 @@ function bodyObject(){
   return JSON.parse($('requestBody').value||'{}');
 }
 function validatedBody(){
-  const field=$('requestBody'), error=$('requestBodyError');
+  const field=$('requestBody'), status=$('diagnosticStatus');
   try{
     const body=bodyObject();
     field.removeAttribute('aria-invalid');
-    error.textContent='';
+    status.classList.remove('validation-error');
     return {valid:true,body};
   }catch{
     field.setAttribute('aria-invalid','true');
-    error.textContent='Enter valid JSON before starting the diagnosis.';
+    status.textContent='Invalid JSON — fix the request body before starting diagnosis.';
+    status.classList.add('validation-error');
     return {valid:false};
   }
 }
