@@ -27,7 +27,7 @@ function requestSnippet(destination){
     opts.push("credentials: 'include'");
   }
 
-  return `fetch('${destination}'${opts.length ? `, {\n  ${opts.join(',\n  ')}\n}` : ''})
+  return `fetch(${JSON.stringify(destination)}${opts.length ? `, {\n  ${opts.join(',\n  ')}\n}` : ''})
   .then(async r => ({
     status: r.status,
     headers: Object.fromEntries(r.headers),
@@ -56,6 +56,8 @@ function combinedDiagnosticSnippet(target, control) {
   const options = optionLines.length
     ? `{\n      ${optionLines.join(',\n      ')}\n    }`
     : '{}';
+  const serializedTarget = JSON.stringify(target);
+  const serializedControl = JSON.stringify(control);
 
   return `(async () => {
   async function runTest(label, url) {
@@ -87,12 +89,12 @@ function combinedDiagnosticSnippet(target, control) {
 
   const testA = await runTest(
     'TEST A — Your API',
-    '${target}'
+    ${serializedTarget}
   );
 
   const testB = await runTest(
     'TEST B — Controlled baseline',
-    '${control}'
+    ${serializedControl}
   );
 
  console.log('\\n=== AnotherExample comparison ===');
