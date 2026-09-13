@@ -9,7 +9,6 @@ const contactLimiter = rateLimit({windowMs: 15 * 60 * 1000,limit: 5,standardHead
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MAX_DELAY_MS = 10000;
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -86,7 +85,15 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     });
   }
 
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    return res.status(503).json({
+      error: 'Email sending is currently unavailable.'
+    });
+  }
+
   try {
+  const resend = new Resend(resendApiKey);
   await resend.emails.send({
     from: 'AnotherExample Contact <contact@anotherexample.com>',
     to: 'hello@anotherexample.com',
