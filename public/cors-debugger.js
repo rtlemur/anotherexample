@@ -9,9 +9,23 @@ function targetUrl(){
   return u ? u.href : 'https://api.example.com/data';
 }
 function bodyObject(){
-  try{return JSON.parse($('requestBody').value||'{}')}catch{return {playground:'test'}}
+  return JSON.parse($('requestBody').value||'{}');
 }
-function requestSnippet(destination){
+function validatedBody(){
+  const field=$('requestBody'), status=$('diagnosticStatus');
+  try{
+    const body=bodyObject();
+    field.removeAttribute('aria-invalid');
+    status.classList.remove('status','bad');
+    return {valid:true,body};
+  }catch{
+    field.setAttribute('aria-invalid','true');
+    status.classList.add('status','bad');
+    status.textContent='Invalid JSON — fix the request body before starting diagnosis.';
+    return {valid:false};
+  }
+}
+function requestSnippet(destination, body=bodyObject()){
   const method = $('method').value;
   const opts = [];
 
@@ -19,7 +33,7 @@ function requestSnippet(destination){
     opts.push(
       `method: '${method}'`,
       "headers: { 'Content-Type': 'application/json' }",
-      `body: JSON.stringify(${JSON.stringify(bodyObject())})`
+      `body: JSON.stringify(${JSON.stringify(body)})`
     );
   }
 
@@ -37,7 +51,7 @@ function requestSnippet(destination){
   .catch(console.error);`;
 }
 
-function combinedDiagnosticSnippet(target, control) {
+function combinedDiagnosticSnippet(target, control, body=bodyObject()) {
   const method = $('method').value;
   const optionLines = [];
 
@@ -45,7 +59,7 @@ function combinedDiagnosticSnippet(target, control) {
     optionLines.push(
       `method: '${method}'`,
       "headers: { 'Content-Type': 'application/json' }",
-      `body: JSON.stringify(${JSON.stringify(bodyObject())})`
+      `body: JSON.stringify(${JSON.stringify(body)})`
     );
   }
 
@@ -137,10 +151,17 @@ function updateDiagnostic(){
   enteredOrigin();
   const target=targetUrl();
   const control=diagnosticControlUrl();
-  highlightCode($('targetFetch'),requestSnippet(target));
-  highlightCode($('controlFetch'),requestSnippet(control));
+  const validation=validatedBody();
+  if(!validation.valid){
+    highlightCode($('targetFetch'),'');
+    highlightCode($('controlFetch'),'');
+    return false;
+  }
+  highlightCode($('targetFetch'),requestSnippet(target,validation.body));
+  highlightCode($('controlFetch'),requestSnippet(control,validation.body));
   if($('targetSummary')) $('targetSummary').textContent=`${target} · ${requestShapeSummary()}`;
   if($('controlSummary')) $('controlSummary').textContent=`${new URL(control).origin}/api/cors/lab · ${requestShapeSummary()}`;
+  return true;
 }
 function enteredOrigin(){
   const value=$('siteUrl').value.trim();
@@ -202,7 +223,7 @@ $('startDiagnosis').onclick=()=>{
   const source=validHttpUrl($('siteUrl').value.trim()), target=validHttpUrl($('targetUrl').value.trim());
   enteredOrigin();targetUrl();
   if(!source||!target){$('diagnostic').style.display='none';return;}
-  updateDiagnostic();
+  if(!updateDiagnostic()){$('diagnostic').style.display='none';return;}
   $('diagnostic').style.display='block';
   $('diagnosticStatus').textContent='Diagnostic ready';
   $('startDiagnosis').textContent='Start CORS diagnosis';
@@ -229,4 +250,7 @@ $('toggleControl').onclick=()=>{
 updateDiagnostic();
 copyControl('copyTarget', () => $('targetFetch').textContent);
 copyControl('copyControl', () => $('controlFetch').textContent);
-copyControl('copyCombined', () => combinedDiagnosticSnippet(targetUrl(), diagnosticControlUrl()));
+copyControl('copyCombined', () => {
+  const validation=validatedBody();
+  return validation.valid ? combinedDiagnosticSnippet(targetUrl(), diagnosticControlUrl(), validation.body) : '';
+});
