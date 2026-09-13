@@ -29,6 +29,12 @@ function loadDebugger() {
   const element = (overrides = {}) => ({
     value: '', checked: false, disabled: false, textContent: '', innerHTML: '',
     style: {display: 'none'}, attributes: {},
+    classList: {
+      classes: new Set(),
+      add(name) { this.classes.add(name); },
+      remove(name) { this.classes.delete(name); },
+      contains(name) { return this.classes.has(name); },
+    },
     addEventListener(type, listener) { listeners[`${this.id}:${type}`] = listener; },
     setAttribute(name, value) { this.attributes[name] = value; },
     removeAttribute(name) { delete this.attributes[name]; },
@@ -36,7 +42,7 @@ function loadDebugger() {
     ...overrides,
   });
   const ids = ['method', 'allowOrigin', 'methods', 'headers', 'credentials', 'preflight',
-    'delay', 'siteUrl', 'targetUrl', 'requestBody', 'requestBodyError', 'diagnosticStatus',
+    'delay', 'siteUrl', 'targetUrl', 'requestBody', 'diagnosticStatus',
     'diagnostic', 'startDiagnosis', 'targetFetch', 'controlFetch', 'targetSummary',
     'controlSummary', 'toggleTarget', 'toggleControl', 'copyTarget', 'copyControl',
     'copyCombined', 'originResult', 'targetResult'];
@@ -126,7 +132,8 @@ test('diagnosis is prevented while JSON is invalid', () => {
   elements.startDiagnosis.onclick();
 
   assert.equal(elements.requestBody.attributes['aria-invalid'], 'true');
-  assert.equal(elements.requestBodyError.textContent, 'Enter valid JSON before starting the diagnosis.');
+  assert.equal(elements.diagnosticStatus.textContent, 'Invalid JSON — fix the request body before starting diagnosis.');
+  assert.equal(elements.diagnosticStatus.classList.contains('validation-error'), true);
   assert.equal(elements.targetFetch.textContent, '');
   assert.equal(elements.controlFetch.textContent, '');
   assert.equal(elements.diagnostic.style.display, 'none');
@@ -140,7 +147,8 @@ test('valid JSON works and correcting invalid JSON clears validation', () => {
   listeners['requestBody:input']();
 
   assert.equal(elements.requestBody.attributes['aria-invalid'], undefined);
-  assert.equal(elements.requestBodyError.textContent, '');
+  assert.equal(elements.diagnosticStatus.textContent, 'Inputs changed — run diagnosis again');
+  assert.equal(elements.diagnosticStatus.classList.contains('validation-error'), false);
   assert.match(elements.targetFetch.textContent, /"corrected":true/);
   elements.startDiagnosis.onclick();
   assert.equal(elements.diagnostic.style.display, 'block');
