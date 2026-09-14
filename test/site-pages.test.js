@@ -139,21 +139,37 @@ test('blocked-by-policy guide is reachable and routes to specific CORS causes', 
   assert.match(text, /href="\/cors\/errors"/);
 });
 
-test('sitemap lists the public pages intended for search discovery', async () => {
+test('sitemap pages are served from public HTML with matching canonical URLs', async () => {
   const response = await request(app).get('/sitemap.xml').expect(200);
   assert.match(response.headers['content-type'], /xml/);
-  const urls = [
-    'https://anotherexample.com/',
-    'https://anotherexample.com/cors',
-    'https://anotherexample.com/cors/playground',
-    'https://anotherexample.com/cors/errors',
-    'https://anotherexample.com/cors/no-access-control-allow-origin',
-    'https://anotherexample.com/cors/preflight-failed',
-    'https://anotherexample.com/cors/works-locally-but-not-in-production',
-    'https://anotherexample.com/cors/blocked-by-cors-policy',
-    'https://anotherexample.com/contact'
-  ];
-  for (const url of urls) assert.ok(response.text.includes(`<loc>${url}</loc>`));
+  const pageFiles = new Map([
+    ['https://anotherexample.com/', 'index.html'],
+    ['https://anotherexample.com/cors', 'cors.html'],
+    ['https://anotherexample.com/cors/playground', 'cors-playground.html'],
+    ['https://anotherexample.com/cors/errors', 'cors-errors.html'],
+    ['https://anotherexample.com/cors/no-access-control-allow-origin', 'cors-no-allow-origin.html'],
+    ['https://anotherexample.com/cors/preflight-failed', 'cors-preflight-failed.html'],
+    ['https://anotherexample.com/cors/works-locally-but-not-in-production', 'cors-works-locally-not-production.html'],
+    ['https://anotherexample.com/cors/blocked-by-cors-policy', 'cors-blocked-by-policy.html'],
+    ['https://anotherexample.com/contact', 'contact.html']
+  ]);
+  const sitemapUrls = [...response.text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+  assert.deepEqual(sitemapUrls, [...pageFiles.keys()]);
+
+  for (const url of sitemapUrls) {
+    const pathname = new URL(url).pathname;
+    const filename = pageFiles.get(url);
+    const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'public', filename), 'utf8');
+    const servedPage = await request(app).get(pathname).expect('Content-Type', /html/).expect(200);
+    assert.equal(servedPage.text, source, `${pathname} must serve public/${filename}`);
+
+    const canonicalTags = servedPage.text.match(/<link\b[^>]*\brel=["']canonical["'][^>]*>/gi) || [];
+    assert.equal(canonicalTags.length, 1, `${pathname} must contain exactly one canonical tag`);
+    const href = canonicalTags[0].match(/\bhref=["']([^"']+)["']/i);
+    assert.ok(href, `${pathname} canonical tag must have an href`);
+    assert.equal(href[1], url);
+    assert.doesNotMatch(href[1], /www\.anotherexample\.com/i);
+  }
 });
 
 test('robots.txt allows crawling and advertises the sitemap', async () => {
