@@ -1,6 +1,7 @@
 // anotherexample.com — a permanent second origin for browser and integration testing.
 const express = require('express');
 const path = require('path');
+const { validateHeaderValue } = require('node:http');
 const rateLimit = require('express-rate-limit');
 const { Resend } = require('resend');
 
@@ -34,6 +35,14 @@ app.use('/api', apiLimiter);
 app.use('/api/delay', slowLimiter);
 
 function noStore(res) { res.set('Cache-Control', 'no-store'); }
+function isValidResponseHeaderValue(value) {
+  try {
+    validateHeaderValue('configured-response-header', value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 function publicHeaders(req) {
   const hiddenExact = new Set(['authorization','proxy-authorization','cookie','forwarded','x-real-ip','x-invocation-id']);
   const hiddenPrefixes = ['x-vercel-','x-forwarded-','x-middleware-'];
@@ -147,17 +156,30 @@ app.all('/api/cors/credentials',(req,res)=>{noStore(res);res.json({mode:'credent
 // Configurable CORS laboratory endpoint. Query parameters deliberately control response behavior.
 app.all('/api/cors/lab', async (req,res)=>{
   const q=req.query;
-  const delay=Math.min(Math.max(Number(q.delay)||0,0),3000);
-  if(delay) await new Promise(resolve=>setTimeout(resolve,delay));
   const origin=req.get('Origin');
   const allowOrigin=String(q.allowOrigin||'*');
+  const methods=String(q.methods||'GET, POST, OPTIONS');
+  const headers=String(q.headers||req.get('Access-Control-Request-Headers')||'Content-Type');
+  const configuredHeaders = [
+    ['allowOrigin', allowOrigin === 'none' ? null : allowOrigin === 'echo' ? origin : allowOrigin],
+    ['methods', q.methods === 'none' ? null : methods],
+    ['headers', q.headers === 'none' ? null : headers],
+    ['expose', q.expose ? String(q.expose) : null],
+    ['maxAge', q.maxAge ? String(q.maxAge) : null]
+  ];
+  const invalidParameter = configuredHeaders.find(([, value]) => value !== null && value !== undefined && !isValidResponseHeaderValue(value));
+  if(invalidParameter) {
+    return res.status(400).json({error:`Invalid ${invalidParameter[0]} query parameter: value cannot be used as an HTTP response header.`});
+  }
+  const delay=Math.min(Math.max(Number(q.delay)||0,0),3000);
+  if(delay) await new Promise(resolve=>setTimeout(resolve,delay));
   if(allowOrigin !== 'none') {
     const value=allowOrigin==='echo' ? origin : allowOrigin;
     if(value) res.set('Access-Control-Allow-Origin',value);
   }
   if(q.credentials==='true') res.set('Access-Control-Allow-Credentials','true');
-  if(q.methods !== 'none') res.set('Access-Control-Allow-Methods',String(q.methods||'GET, POST, OPTIONS'));
-  if(q.headers !== 'none') res.set('Access-Control-Allow-Headers',String(q.headers||req.get('Access-Control-Request-Headers')||'Content-Type'));
+  if(q.methods !== 'none') res.set('Access-Control-Allow-Methods',methods);
+  if(q.headers !== 'none') res.set('Access-Control-Allow-Headers',headers);
   if(q.expose) res.set('Access-Control-Expose-Headers',String(q.expose));
   if(q.maxAge) res.set('Access-Control-Max-Age',String(q.maxAge));
   res.set('Vary','Origin'); noStore(res);
