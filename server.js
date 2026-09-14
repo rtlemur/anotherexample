@@ -13,8 +13,6 @@ const MAX_DELAY_MS = 10000;
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
-app.use(express.json({ limit: '64kb', strict: false }));
-app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -31,7 +29,13 @@ const slowLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Delay endpoint rate limit exceeded. Please wait a minute and try again.' },
 });
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 app.use('/api', apiLimiter);
+app.use('/api', express.json({ limit: '64kb', strict: false }));
+app.use('/api', express.urlencoded({ extended: false, limit: '64kb' }));
 app.use('/api/delay', slowLimiter);
 
 function noStore(res) { res.set('Cache-Control', 'no-store'); }
