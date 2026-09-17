@@ -172,6 +172,36 @@ test('sitemap pages are served from public HTML with matching canonical URLs', a
   }
 });
 
+test('public pages include consistent Open Graph and Twitter sharing metadata', async () => {
+  const routes = ['/', '/cors', '/cors/playground', '/cors/errors', ...troubleshootingUrls, '/contact'];
+
+  for (const route of routes) {
+    const {text} = await request(app).get(route).expect(200);
+    const canonical = text.match(/<link\b[^>]*\brel=["']canonical["'][^>]*\bhref=["']([^"']+)["'][^>]*>/i);
+    const ogUrl = text.match(/<meta\b[^>]*\bproperty=["']og:url["'][^>]*\bcontent=["']([^"']+)["'][^>]*>/i);
+
+    assert.ok(canonical, `${route} needs a canonical URL`);
+    assert.ok(ogUrl, `${route} needs an og:url`);
+    assert.equal(ogUrl[1], canonical[1], `${route} og:url must match its canonical URL`);
+    assert.match(text, /<meta\b[^>]*\bproperty=["']og:title["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bproperty=["']og:description["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bproperty=["']og:image["'][^>]*\bcontent=["']https:\/\/anotherexample\.com\/og-anotherexample\.png["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bname=["']twitter:card["'][^>]*\bcontent=["']summary_large_image["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bname=["']twitter:title["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bname=["']twitter:description["'][^>]*>/i);
+    assert.match(text, /<meta\b[^>]*\bname=["']twitter:image["'][^>]*>/i);
+  }
+
+  const image = await request(app).get('/og-anotherexample.png').expect(200);
+  assert.match(image.headers['content-type'], /image\/png/);
+});
+
+test('homepage accurately describes the echo endpoint privacy behavior', async () => {
+  const {text} = await request(app).get('/').expect(200);
+  assert.match(text, /Sensitive headers and client IP information are omitted\./);
+  assert.doesNotMatch(text, /Returns method, headers, query parameters, body, IP, and timestamp\./);
+});
+
 test('robots.txt allows crawling and advertises the sitemap', async () => {
   const response = await request(app).get('/robots.txt').expect(200);
   assert.match(response.headers['content-type'], /text\/plain/);

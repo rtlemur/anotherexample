@@ -6,6 +6,18 @@
 <link rel="canonical" href="https://anotherexample.com/">
     <link rel="icon" href="/aefavicon.ico" sizes="any">
 <meta name="description" content="A stable HTTPS second origin for testing CORS, credentialed requests, cookies, redirects, preflight failures, and browser fetch behavior.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AnotherExample">
+<meta property="og:title" content="AnotherExample.com — Real Second Origin for CORS Testing">
+<meta property="og:description" content="A stable HTTPS second origin for testing CORS, credentials, cookies, redirects, preflight failures, and browser fetch behavior.">
+<meta property="og:url" content="https://anotherexample.com/">
+<meta property="og:image" content="https://anotherexample.com/og-anotherexample.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AnotherExample.com — Real Second Origin for CORS Testing">
+<meta name="twitter:description" content="A stable HTTPS second origin for testing CORS and browser fetch behavior.">
+<meta name="twitter:image" content="https://anotherexample.com/og-anotherexample.png">
 <title>AnotherExample.com — Real Second Origin for CORS Testing</title>
   
 <style>
@@ -215,7 +227,7 @@
 <section>
 <h2>Endpoints</h2>
 <div class="grid">
-<div class="card"><code class="path">ANY /api/echo</code><p>Returns method, headers, query parameters, body, IP, and timestamp.</p></div>
+<div class="card"><code class="path">ANY /api/echo</code><p>Returns method, safe request headers, query parameters, body, and timestamp. Sensitive headers and client IP information are omitted.</p></div>
 <div class="card"><code class="path">ANY /api/cors/open</code><p>Permissive CORS with <code>Access-Control-Allow-Origin: *</code> for non-credentialed testing. The wildcard does not enable credentialed requests or expose non-safelisted response headers by itself.</p></div>
 <div class="card"><code class="path">ANY /api/cors/credentials</code><p>Reflects the request Origin and sends <code>Access-Control-Allow-Credentials: true</code> for credentialed CORS testing. This is a test endpoint; production APIs should allowlist trusted origins rather than reflect arbitrary origins.</p></div>
 <div class="card"><code class="path">ANY /api/status/:code</code><p>Return an intentional HTTP status from 200–599.</p></div>
