@@ -38,7 +38,24 @@ test('lab preserves default response header behavior',async()=>{
   assert.equal(r.headers['access-control-expose-headers'],undefined);
   assert.equal(r.headers['access-control-max-age'],undefined);
 });
-test('sensitive headers are omitted',async()=>{const r=await request(app).get('/api/echo').set('Authorization','Bearer secret').set('x-vercel-test','secret');assert.equal(r.body.headers.authorization,undefined);assert.equal(r.body.headers['x-vercel-test'],undefined);});
+test('sensitive headers are omitted',async()=>{
+  const r=await request(app)
+    .get('/api/echo')
+    .set('Authorization','Bearer secret')
+    .set('Proxy-Authorization','Basic secret')
+    .set('Cookie','session=secret')
+    .set('X-API-Key','secret')
+    .set('API-Key','secret')
+    .set('X-Auth-Token','secret')
+    .set('Referer','https://private.example/path?token=secret')
+    .set('x-vercel-test','secret')
+    .set('X-Safe-Debug-Header','visible');
+
+  for(const header of ['authorization','proxy-authorization','cookie','x-api-key','api-key','x-auth-token','referer','x-vercel-test']){
+    assert.equal(r.body.headers[header],undefined,`${header} should be omitted`);
+  }
+  assert.equal(r.body.headers['x-safe-debug-header'],'visible');
+});
 test('status endpoint',async()=>{const r=await request(app).get('/api/status/418');assert.equal(r.status,418);});
 
 test('open CORS preflight returns the permissive OPTIONS contract',async()=>{

@@ -48,7 +48,10 @@ function isValidResponseHeaderValue(value) {
   }
 }
 function publicHeaders(req) {
-  const hiddenExact = new Set(['authorization','proxy-authorization','cookie','forwarded','x-real-ip','x-invocation-id']);
+  const hiddenExact = new Set([
+    'authorization','proxy-authorization','cookie','forwarded','x-real-ip','x-invocation-id',
+    'x-api-key','api-key','x-auth-token','referer'
+  ]);
   const hiddenPrefixes = ['x-vercel-','x-forwarded-','x-middleware-'];
   return Object.fromEntries(Object.entries(req.headers).filter(([name]) => {
     const lower = name.toLowerCase();
