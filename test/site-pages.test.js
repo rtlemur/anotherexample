@@ -210,10 +210,21 @@ test('robots.txt allows crawling and advertises the sitemap', async () => {
   assert.match(response.text, /Sitemap: https:\/\/anotherexample\.com\/sitemap\.xml/);
 });
 
-test('debugger links to error explainer and homepage greeting is removed', async () => {
+test('debugger integrates the guided comparison and keeps the standalone error explainer', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
-  assert.doesNotMatch(debuggerPage.text, /id="browserResult"/);
+  assert.match(debuggerPage.text, /Run your request beside a known-good control/);
+  assert.match(debuggerPage.text, /Test B is configured to accept the same origin, method, headers, and credentials as your request/);
+  assert.match(debuggerPage.text, /It will not correct broken code, malformed requests, or network problems/);
+  assert.match(debuggerPage.text, /id="browserResult"/);
+  assert.match(debuggerPage.text, /id="fixPanel"/);
+  assert.match(debuggerPage.text, /data-stack="express"/);
+  assert.match(debuggerPage.text, /data-stack="nginx"/);
+  assert.match(debuggerPage.text, /data-stack="fastapi"/);
+  assert.ok(debuggerPage.text.indexOf('src="/cors-diagnosis.js"') < debuggerPage.text.indexOf('src="/cors-debugger.js"'));
+  const outcomes = [...debuggerPage.text.matchAll(/class="outcome-button"/g)];
+  assert.equal(outcomes.length, 4);
+  assert.doesNotMatch(debuggerPage.text, /id="allowOrigin"|id="preflight"|id="delay"/);
   for (const route of ['/']) {
     const page = await request(app).get(route).expect(200);
     assert.doesNotMatch(page.text, /Hi and Welcome/);
