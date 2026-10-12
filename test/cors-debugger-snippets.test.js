@@ -22,7 +22,16 @@ function field(overrides = {}) {
   };
 }
 
-function loadGenerators({body = '{}', headers = '', method = 'GET', credentials = false} = {}) {
+function storage(initial = {}) {
+  const values = new Map(Object.entries(initial));
+  return {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { values.set(key, String(value)); },
+    removeItem(key) { values.delete(key); }
+  };
+}
+
+function loadGenerators({body = '{}', headers = '', method = 'GET', credentials = false, stored = {}} = {}) {
   const elements = {
     method: field({value: method}),
     credentials: field({checked: credentials}),
@@ -40,10 +49,12 @@ function loadGenerators({body = '{}', headers = '', method = 'GET', credentials 
     URL,
     URLSearchParams,
     Set,
-    console
+    console,
+    localStorage: storage(stored),
+    sessionStorage: storage()
   });
   vm.runInContext(
-    `${generatorSource}\nthis.generators = {bodyObject, parseHeaderLines, requestHeaders, validatedRequest, controlHeaders, requestSnippet, combinedDiagnosticSnippet, diagnosticControlUrl};`,
+    `${generatorSource}\nthis.generators = {bodyObject, parseHeaderLines, requestHeaders, validatedRequest, controlHeaders, requestSnippet, combinedDiagnosticSnippet, diagnosticControlUrl, storedUrlMemory};`,
     context
   );
   return {generators: context.generators, elements};
@@ -173,4 +184,31 @@ test('the combined result prints exactly one of the four interface outcomes', ()
     'A failed · B failed',
     'A worked · B failed'
   ]) assert.match(snippet, new RegExp(outcome.replace('·', '·')));
+});
+
+test('saved URL memory rejects invalid entries, removes duplicates, and stays bounded', () => {
+  const storedUrls = JSON.stringify({
+    siteUrl: 'https://app.example.test/page',
+    targetUrls: [
+      'not a URL',
+      'https://api.example.test/one',
+      'https://api.example.test/one',
+      'https://api.example.test/two',
+      'https://api.example.test/three',
+      'https://api.example.test/four',
+      'https://api.example.test/five',
+      'https://api.example.test/six'
+    ]
+  });
+  const {generators} = loadGenerators({stored: {'anotherexample.corsDebugger.urls.v1': storedUrls}});
+  const memory = JSON.parse(JSON.stringify(generators.storedUrlMemory()));
+
+  assert.equal(memory.siteUrl, 'https://app.example.test/page');
+  assert.deepEqual(memory.targetUrls, [
+    'https://api.example.test/one',
+    'https://api.example.test/two',
+    'https://api.example.test/three',
+    'https://api.example.test/four',
+    'https://api.example.test/five'
+  ]);
 });

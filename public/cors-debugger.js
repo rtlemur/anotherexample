@@ -5,6 +5,9 @@ const LAB_ORIGIN = location.hostname === 'anotherexample.com' || location.hostna
   : 'https://cors-preview.anotherexample.com';
 
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const URL_MEMORY_KEY = 'anotherexample.corsDebugger.urls.v1';
+const SESSION_MEMORY_KEY = 'anotherexample.corsDebugger.session.v1';
+const MAX_RECENT_TARGETS = 5;
 const SENSITIVE_HEADERS = new Set([
   'authorization', 'proxy-authorization', 'cookie', 'set-cookie',
   'x-api-key', 'api-key', 'x-auth-token', 'x-access-token'
@@ -94,6 +97,87 @@ function targetUrl() {
       ? 'Target origin: ' + url.origin
       : 'Enter a complete URL beginning with http:// or https://';
   return url ? url.href : 'https://api.example.com/data';
+}
+
+function readStoredJson(storage, key, fallback) {
+  try {
+    const value = JSON.parse(storage.getItem(key));
+    return value && typeof value === 'object' ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStoredJson(storage, key, value) {
+  try {
+    storage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function storedUrlMemory() {
+  const memory = readStoredJson(localStorage, URL_MEMORY_KEY, {});
+  const siteUrl = validHttpUrl(memory.siteUrl || '');
+  const targetUrls = Array.isArray(memory.targetUrls)
+    ? memory.targetUrls.map(value => validHttpUrl(value)).filter(Boolean).map(url => url.href)
+    : [];
+  return {
+    siteUrl: siteUrl ? siteUrl.href : '',
+    targetUrls: [...new Set(targetUrls)].slice(0, MAX_RECENT_TARGETS)
+  };
+}
+
+function renderRecentTargets(memory = storedUrlMemory()) {
+  const select = $('recentTargetUrls');
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Choose a recent URL…';
+  select.replaceChildren(placeholder, ...memory.targetUrls.map(value => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    return option;
+  }));
+  select.value = '';
+  $('recentTargetsWrap').hidden = memory.targetUrls.length < 2;
+  $('clearSavedUrls').hidden = !memory.siteUrl && !memory.targetUrls.length;
+}
+
+function rememberRequestContext(source, target) {
+  const memory = storedUrlMemory();
+  const targetUrls = [target, ...memory.targetUrls.filter(value => value !== target)].slice(0, MAX_RECENT_TARGETS);
+  const saved = writeStoredJson(localStorage, URL_MEMORY_KEY, {siteUrl: source, targetUrls});
+  renderRecentTargets({siteUrl: source, targetUrls});
+  $('memoryStatus').textContent = saved ? 'URLs remembered on this device.' : 'This browser did not allow URL memory.';
+}
+
+function rememberSessionPreferences() {
+  writeStoredJson(sessionStorage, SESSION_MEMORY_KEY, {
+    method: currentMethod(),
+    credentials: $('credentials').checked
+  });
+}
+
+function restoreRequestContext() {
+  const memory = storedUrlMemory();
+  if (memory.siteUrl) $('siteUrl').value = memory.siteUrl;
+  if (memory.targetUrls.length) $('targetUrl').value = memory.targetUrls[0];
+
+  const session = readStoredJson(sessionStorage, SESSION_MEMORY_KEY, {});
+  if ([...$('method').options].some(option => option.value === session.method)) $('method').value = session.method;
+  if (typeof session.credentials === 'boolean') $('credentials').checked = session.credentials;
+  renderRecentTargets(memory);
+}
+
+function clearStoredUrls() {
+  try { localStorage.removeItem(URL_MEMORY_KEY); } catch {}
+  $('siteUrl').value = '';
+  $('targetUrl').value = '';
+  renderRecentTargets({siteUrl: '', targetUrls: []});
+  $('memoryStatus').textContent = 'Saved URLs cleared.';
+  markDiagnosticStale();
 }
 
 function bodyObject() {
@@ -261,6 +345,13 @@ function setProgress(step) {
   document.querySelectorAll('[data-progress]').forEach(item => {
     item.classList.toggle('active', Number(item.dataset.progress) <= step);
   });
+  document.querySelectorAll('[data-step-link]').forEach(link => {
+    const target = document.querySelector(link.getAttribute('href'));
+    const available = Number(link.dataset.stepLink) <= step && target && !target.hidden;
+    link.setAttribute('aria-disabled', String(!available));
+    if (available) link.removeAttribute('tabindex');
+    else link.setAttribute('tabindex', '-1');
+  });
 }
 
 function reveal(panel, step, scroll = true) {
@@ -332,6 +423,12 @@ function renderOutcome(key) {
   $('suggestsText').textContent = outcome.suggests;
   $('unknownText').textContent = outcome.unknown;
   $('nextText').textContent = outcome.next;
+  $('pasteGuidance').textContent = outcome.clue
+    ? 'Paste the red Test A Console error—not the fetch code—to sharpen this diagnosis.'
+    : key === 'both-work'
+      ? 'Nothing to paste—both tests worked. Continue with the diagnosis below.'
+      : 'Nothing from Test A to paste—the target worked. Review the diagnosis below.';
+  $('pasteGuidance').className = outcome.clue ? 'status' : 'status ok';
   $('showBrowserClue').hidden = !outcome.clue;
   $('browserCluePanel').hidden = true;
   $('fixPanel').hidden = true;
@@ -465,8 +562,34 @@ for (const id of ['siteUrl', 'targetUrl', 'requestHeaders', 'requestBody']) {
   $(id).addEventListener('input', markDiagnosticStale);
 }
 for (const id of ['method', 'credentials']) {
-  $(id).addEventListener('change', markDiagnosticStale);
+  $(id).addEventListener('change', () => {
+    rememberSessionPreferences();
+    markDiagnosticStale();
+  });
 }
+
+document.querySelectorAll('[data-step-link]').forEach(link => {
+  link.addEventListener('click', event => {
+    if (link.getAttribute('aria-disabled') === 'true') {
+      event.preventDefault();
+      return;
+    }
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    event.preventDefault();
+    target.focus({preventScroll: true});
+    target.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
+
+$('recentTargetUrls').addEventListener('change', event => {
+  if (!event.target.value) return;
+  $('targetUrl').value = event.target.value;
+  markDiagnosticStale();
+  $('targetUrl').focus();
+});
+
+$('clearSavedUrls').addEventListener('click', clearStoredUrls);
 
 $('startDiagnosis').onclick = () => {
   const source = validHttpUrl($('siteUrl').value.trim());
@@ -478,6 +601,8 @@ $('startDiagnosis').onclick = () => {
     return;
   }
   if (!updateDiagnosticCode()) return;
+  rememberRequestContext(source.href, target.href);
+  rememberSessionPreferences();
   $('diagnosticStatus').textContent = 'Comparison ready.';
   reveal($('diagnostic'), 2);
 };
@@ -521,4 +646,5 @@ copyControl('copyCombined', () => $('combinedFetch').textContent);
 copyControl('copyFix', () => $('fixCode').textContent);
 copyControl('retest', () => $('combinedFetch').textContent);
 
+restoreRequestContext();
 updateControlSummary();

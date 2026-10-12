@@ -225,6 +225,15 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   const outcomes = [...debuggerPage.text.matchAll(/class="outcome-button"/g)];
   assert.equal(outcomes.length, 4);
   assert.doesNotMatch(debuggerPage.text, /id="allowOrigin"|id="preflight"|id="delay"/);
+  for (const [step, target] of [[1, 'requestPanel'], [2, 'diagnostic'], [3, 'diagnosisPanel'], [4, 'fixPanel']]) {
+    assert.ok(debuggerPage.text.includes(`href="#${target}" data-step-link="${step}"`));
+  }
+  assert.match(debuggerPage.text, /If a test failed, you can paste the red Console error—not the fetch code—in the next step/);
+  assert.match(debuggerPage.text, /id="pasteGuidance"/);
+  assert.match(debuggerPage.text, /id="recentTargetUrls"/);
+  assert.match(debuggerPage.text, /id="clearSavedUrls"/);
+  assert.equal((debuggerPage.text.match(/data-form-type="other"/g) || []).length, 2);
+  assert.equal((debuggerPage.text.match(/autocomplete="off"/g) || []).length, 2);
   for (const route of ['/']) {
     const page = await request(app).get(route).expect(200);
     assert.doesNotMatch(page.text, /Hi and Welcome/);

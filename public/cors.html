@@ -29,15 +29,15 @@
 <p class="tag debugger-promise">Run your request beside a known-good control. Tell us what happened, and AnotherExample will guide you toward the likely cause, a possible fix, and a retest.</p>
 
 <ol class="diagnostic-progress" aria-label="CORS diagnosis steps">
-  <li class="active" data-progress="1"><span>1</span> Request</li>
-  <li data-progress="2"><span>2</span> Compare</li>
-  <li data-progress="3"><span>3</span> Diagnose</li>
-  <li data-progress="4"><span>4</span> Fix</li>
+  <li class="active" data-progress="1"><a href="#requestPanel" data-step-link="1"><span>1</span> Request</a></li>
+  <li data-progress="2"><a href="#diagnostic" data-step-link="2" aria-disabled="true" tabindex="-1"><span>2</span> Compare</a></li>
+  <li data-progress="3"><a href="#diagnosisPanel" data-step-link="3" aria-disabled="true" tabindex="-1"><span>3</span> Diagnose</a></li>
+  <li data-progress="4"><a href="#fixPanel" data-step-link="4" aria-disabled="true" tabindex="-1"><span>4</span> Fix</a></li>
 </ol>
 
 <!-- Keyboard navigation intentionally follows natural DOM order.
      No positive tabindex values are used, so Tab moves through controls in the same order they appear visually. -->
-<section class="panel hero" id="requestPanel">
+<section class="panel hero" id="requestPanel" tabindex="-1">
   <div class="section-heading">
     <p class="eyebrow">STEP 1</p>
     <h2>Match the failing request</h2>
@@ -49,14 +49,24 @@
       <div class="two compact-fields">
         <section>
           <label for="siteUrl">Page where the request starts</label>
-          <input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
+          <input id="siteUrl" name="debugger-page-url" type="url" placeholder="https://your-site.com/page" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-form-type="other">
           <div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
         </section>
         <section>
           <label for="targetUrl">API URL that fails</label>
-          <input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
+          <input id="targetUrl" name="debugger-api-url" type="url" placeholder="https://api.example.com/data" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-form-type="other">
           <div id="targetResult" class="origin">Test A uses this URL exactly as entered.</div>
+          <div id="recentTargetsWrap" class="recent-targets" hidden>
+            <label for="recentTargetUrls">Recent API URLs</label>
+            <select id="recentTargetUrls"><option value="">Choose a recent URL…</option></select>
+          </div>
         </section>
+      </div>
+
+      <div class="request-memory">
+        <span>URLs are remembered only in this browser. Avoid URLs containing private tokens.</span>
+        <button type="button" class="text-button" id="clearSavedUrls" hidden>Clear saved URLs</button>
+        <span id="memoryStatus" class="small" aria-live="polite"></span>
       </div>
 
       <div class="two compact-fields">
@@ -139,7 +149,7 @@
 
   <hr class="divider compact-divider">
   <h2>What did the Console report?</h2>
-  <p>Choose the outcome printed at the end. You do not need to paste an error yet.</p>
+  <p>Choose the outcome printed at the end. If a test failed, you can paste the red Console error—not the fetch code—in the next step.</p>
   <div class="outcome-grid" role="group" aria-label="Comparison outcome">
     <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A failed · B worked</strong><span>The controlled request succeeded.</span></button>
     <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A worked · B worked</strong><span>Both responses were readable.</span></button>
@@ -156,6 +166,7 @@
     <div class="test-result" id="aResult"><strong>Test A</strong><span></span></div>
     <div class="test-result" id="bResult"><strong>Test B</strong><span></span></div>
   </div>
+  <p id="pasteGuidance" class="status ok" aria-live="polite"></p>
   <div class="reasoning-grid">
     <section><h3>Observed</h3><p id="observedText"></p></section>
     <section><h3>What it suggests</h3><p id="suggestsText"></p></section>
@@ -163,7 +174,7 @@
     <section><h3>Next action</h3><p id="nextText"></p></section>
   </div>
   <div class="actions">
-    <button id="showBrowserClue">Add the browser clue</button>
+    <button id="showBrowserClue">Paste Test A Console error</button>
     <button class="secondary" id="chooseAgain">Choose a different outcome</button>
   </div>
 </section>

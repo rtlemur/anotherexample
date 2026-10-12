@@ -39,13 +39,21 @@ body{overflow-wrap:anywhere}pre{max-width:100%;white-space:pre;overflow-x:auto;o
 [hidden]{display:none!important}
 .debugger-promise{max-width:900px;font-size:1.1rem}
 .diagnostic-progress{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);padding:0;margin:26px 0;border:1px solid var(--border);border-radius:9px;overflow:hidden}
-.diagnostic-progress li{padding:10px 13px;color:var(--muted);border-right:1px solid var(--border)}
+.diagnostic-progress li{padding:0;color:var(--muted);border-right:1px solid var(--border)}
 .diagnostic-progress li:last-child{border-right:0}
 .diagnostic-progress li.active{color:var(--text);background:#1d242b}
+.diagnostic-progress a{display:block;padding:10px 13px;color:inherit;text-decoration:none}
+.diagnostic-progress a:hover{color:var(--accent);text-decoration:underline;text-underline-offset:4px}
+.diagnostic-progress a[aria-disabled=true]{cursor:default;color:var(--muted);text-decoration:none;opacity:.7}
 .diagnostic-progress span{color:var(--accent);font-weight:800;margin-right:6px}
+.panel[id]{scroll-margin-top:18px}
 .section-heading h2{margin:4px 0}.section-heading>p:last-child{color:var(--muted);margin-top:5px}
 .debugger-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.75fr);gap:18px;margin-top:18px}
 .compact-fields{margin-top:0}.compact-fields+.compact-fields{margin-top:4px}
+.recent-targets{margin-top:8px}.recent-targets label{margin-top:0}
+.request-memory{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;margin:9px 0 2px;color:var(--muted);font-size:.82rem}
+.text-button{padding:0;background:transparent;color:var(--accent);border:0;text-decoration:underline;text-underline-offset:3px;font-weight:650}
+.text-button:hover{color:var(--text)}
 .credentials-field{display:flex;align-items:flex-end;padding-bottom:10px}
 .request-details{margin-top:16px;border-top:1px solid var(--border);padding-top:14px}
 .request-details summary,.individual-tests summary{cursor:pointer;color:var(--accent);font-weight:750}
