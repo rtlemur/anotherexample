@@ -213,7 +213,7 @@ test('robots.txt allows crawling and advertises the sitemap', async () => {
 test('debugger integrates the guided comparison and keeps the standalone error explainer', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
-  assert.match(debuggerPage.text, /Run your request beside a known-good control/);
+  assert.match(debuggerPage.text, /Compare your request with a known-good control/);
   assert.match(debuggerPage.text, /Test B is configured to accept the same origin, method, headers, and credentials as your request/);
   assert.match(debuggerPage.text, /It will not correct broken code, malformed requests, or network problems/);
   assert.match(debuggerPage.text, /id="browserResult"/);
