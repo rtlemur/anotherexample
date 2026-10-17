@@ -151,10 +151,10 @@
   <h2>What did the Console report?</h2>
   <p>Choose the outcome printed at the end. If a test failed, you can paste the red Console error—not the fetch code—in the next step.</p>
   <div class="outcome-grid" role="group" aria-label="Comparison outcome">
-    <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A failed · B worked</strong><span>The controlled request succeeded.</span></button>
-    <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A worked · B worked</strong><span>Both responses were readable.</span></button>
-    <button class="outcome-button" data-outcome="both-fail" aria-pressed="false"><strong>A failed · B failed</strong><span>Neither response was readable.</span></button>
-    <button class="outcome-button" data-outcome="a-work-b-fail" aria-pressed="false"><strong>A worked · B failed</strong><span>The control behaved unexpectedly.</span></button>
+    <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-worked">worked</b></strong><span>The controlled request succeeded.</span></button>
+    <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-worked">worked</b></strong><span>Both responses were readable.</span></button>
+    <button class="outcome-button" data-outcome="both-fail" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-failed">failed</b></strong><span>Neither response was readable.</span></button>
+    <button class="outcome-button" data-outcome="a-work-b-fail" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-failed">failed</b></strong><span>The control behaved unexpectedly.</span></button>
   </div>
 </section>
 
