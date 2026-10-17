@@ -495,11 +495,13 @@ function renderBrowserFlow(diagnosis) {
   flow.append(flowStep('4', 'Send actual request', diagnosis.mainRequest === 'NO' ? 'The browser likely stopped before the main request.' : 'Check the matching Network entry.', mainState[0], mainState[1]));
 }
 
-function fixExamples() {
+let activeFixDiagnosis = null;
+
+function fixExamples(diagnosis = activeFixDiagnosis) {
   const origin = enteredOrigin();
   const method = currentMethod();
   const headers = Object.keys(requestHeaders().headers);
-  const credentials = $('credentials').checked;
+  const credentials = $('credentials').checked || ['credentials-wildcard', 'allow-credentials'].includes(diagnosis?.family);
   const expressFields = [
     `  origin: ${JSON.stringify(origin)}`,
     `  methods: [${JSON.stringify(method)}]`,
@@ -520,6 +522,11 @@ function fixExamples() {
 }
 
 function renderFix(diagnosis) {
+  activeFixDiagnosis = diagnosis;
+  const credentialError = ['credentials-wildcard', 'allow-credentials'].includes(diagnosis.family);
+  $('fixContextNote').textContent = credentialError && !$('credentials').checked
+    ? 'This example enables credentials because the pasted browser error identifies a credentialed request, even though Include credentials was unchecked in Step 1. Verify the request settings before applying it.'
+    : 'This example uses your Step 1 request settings. Confirm them before applying it.';
   $('fixDiagnosis').replaceChildren();
   const title = document.createElement('strong');
   const detail = document.createElement('span');
