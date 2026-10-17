@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const app = require('../server');
 
 const primaryPages = [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors']];
@@ -210,10 +212,32 @@ test('robots.txt allows crawling and advertises the sitemap', async () => {
   assert.match(response.text, /Sitemap: https:\/\/anotherexample\.com\/sitemap\.xml/);
 });
 
-test('debugger links to error explainer and homepage greeting is removed', async () => {
+test('debugger integrates the guided comparison and keeps the standalone error explainer', async () => {
   const debuggerPage = await request(app).get('/cors').expect(200);
   assert.match(debuggerPage.text, /href="\/cors\/errors"/);
-  assert.doesNotMatch(debuggerPage.text, /id="browserResult"/);
+  assert.match(debuggerPage.text, /Compare your request with a known-good control/);
+  assert.match(debuggerPage.text, /Test B is configured to accept the same origin, method, headers, and credentials as your request/);
+  assert.match(debuggerPage.text, /It will not correct broken code, malformed requests, or network problems/);
+  assert.match(debuggerPage.text, /id="browserResult"/);
+  assert.match(debuggerPage.text, /id="fixPanel"/);
+  assert.match(debuggerPage.text, /data-stack="express"/);
+  assert.match(debuggerPage.text, /data-stack="nginx"/);
+  assert.match(debuggerPage.text, /data-stack="fastapi"/);
+  assert.ok(debuggerPage.text.indexOf('src="/cors-diagnosis.js"') < debuggerPage.text.indexOf('src="/cors-debugger.js"'));
+  assert.match(debuggerPage.text, /class="outcome-failed">failed<\/b>/);
+  assert.match(debuggerPage.text, /class="outcome-worked">worked<\/b>/);
+  const outcomes = [...debuggerPage.text.matchAll(/class="outcome-button"/g)];
+  assert.equal(outcomes.length, 4);
+  assert.doesNotMatch(debuggerPage.text, /id="allowOrigin"|id="preflight"|id="delay"/);
+  for (const [step, target] of [[1, 'requestPanel'], [2, 'diagnostic'], [3, 'diagnosisPanel'], [4, 'fixPanel']]) {
+    assert.ok(debuggerPage.text.includes(`href="#${target}" data-step-link="${step}"`));
+  }
+  assert.match(debuggerPage.text, /If a test failed, you can paste the red Console error—not the fetch code—in the next step/);
+  assert.match(debuggerPage.text, /id="pasteGuidance"/);
+  assert.match(debuggerPage.text, /id="recentTargetUrls"/);
+  assert.match(debuggerPage.text, /id="clearSavedUrls"/);
+  assert.equal((debuggerPage.text.match(/data-form-type="other"/g) || []).length, 2);
+  assert.equal((debuggerPage.text.match(/autocomplete="off"/g) || []).length, 2);
   for (const route of ['/']) {
     const page = await request(app).get(route).expect(200);
     assert.doesNotMatch(page.text, /Hi and Welcome/);
@@ -227,4 +251,26 @@ test('shared styles explicitly cover visited links, hover, focus, and wrapping n
   assert.match(text, /\.site-footer a:link,\.site-footer a:visited\{color:var\(--accent\)\}/);
   assert.match(text, /\.site-footer a:hover\{[^}]*color:var\(--text\)/);
   assert.match(text, /\.site-footer a:focus-visible\{[^}]*outline:2px solid var\(--accent\)/);
+});
+
+
+test('browser diagnosis distinguishes a missing ACAO header from an ambiguous origin rejection', () => {
+  const parser = fs.readFileSync(require.resolve('../public/cors-diagnosis.js'), 'utf8');
+  const diagnosis = message => vm.runInNewContext(parser + '\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')');
+  const explicit = diagnosis("Access to fetch at 'https://example.com/' from origin 'https://preview.example/' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.");
+  assert.equal(explicit.title, 'Missing Access-Control-Allow-Origin header');
+  assert.match(explicit.explanation, /missing the Access-Control-Allow-Origin header/);
+  const ambiguous = diagnosis("Access-Control-Allow-Origin: origin is not allowed by server");
+  assert.equal(ambiguous.title, 'Origin not allowed by server');
+  assert.doesNotMatch(ambiguous.explanation, /response is missing the/);
+});
+
+
+test('credentialed CORS diagnoses drive credentialed fix examples', () => {
+  const debuggerSource = fs.readFileSync(require.resolve('../public/cors-debugger.js'), 'utf8');
+  const debuggerMarkup = fs.readFileSync(require.resolve('../public/cors.html'), 'utf8');
+  assert.match(debuggerSource, /\['credentials-wildcard', 'allow-credentials'\]\.includes\(diagnosis\?\.family\)/);
+  assert.match(debuggerSource, /activeFixDiagnosis = diagnosis/);
+  assert.match(debuggerSource, /const credentials = \$\('credentials'\)\.checked \|\|/);
+  assert.match(debuggerMarkup, /id="fixContextNote"/);
 });

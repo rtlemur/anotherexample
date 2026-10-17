@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="canonical" href="https://anotherexample.com/cors">
-<meta name="description" content="Test your URL against a real second origin and understand browser CORS behavior.">
+<meta name="description" content="Compare a failing CORS request with a known-good second origin, understand the result, and get a practical next step.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="AnotherExample">
 <meta property="og:title" content="CORS Debugger — AnotherExample">
@@ -26,124 +26,209 @@
 <main class="wrap">
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors" aria-current="page">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
 <h1 class="page-title">CORS Debugger</h1>
-<p class="tag">Why won’t my CORS work? Compare your failing request with a controlled second origin to narrow down where the problem is.</p>
+<p class="tag debugger-promise">Compare your request with a known-good control. Tell us what happened, and AnotherExample will guide you toward the likely cause, a possible fix, and a retest.</p>
+
+<ol class="diagnostic-progress" aria-label="CORS diagnosis steps">
+  <li class="active" data-progress="1"><a href="#requestPanel" data-step-link="1"><span>1</span> Request</a></li>
+  <li data-progress="2"><a href="#diagnostic" data-step-link="2" aria-disabled="true" tabindex="-1"><span>2</span> Compare</a></li>
+  <li data-progress="3"><a href="#diagnosisPanel" data-step-link="3" aria-disabled="true" tabindex="-1"><span>3</span> Diagnose</a></li>
+  <li data-progress="4"><a href="#fixPanel" data-step-link="4" aria-disabled="true" tabindex="-1"><span>4</span> Fix</a></li>
+</ol>
 
 <!-- Keyboard navigation intentionally follows natural DOM order.
      No positive tabindex values are used, so Tab moves through controls in the same order they appear visually. -->
-<section class="panel hero">
-<h2>Find out why your CORS request is failing</h2>
-<p>Tell us where the request starts and what API it is trying to reach. AnotherExample will build two browser tests: your real API request and a controlled comparison against our second origin.</p>
-
-<div class="step">
-  <div class="step-head"><span class="step-number">1</span><div><h2>What are you testing?</h2><p class="small">Tell us where the browser request starts and what API or resource it is trying to reach.</p></div></div>
-  <div class="two">
-    <section>
-      <label for="siteUrl">Request origin / page URL</label>
-      <input id="siteUrl" type="url" placeholder="https://your-site.com/page" autocomplete="url">
-      <div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
-    </section>
-    <section>
-      <label for="targetUrl">Target API URL</label>
-      <input id="targetUrl" type="url" placeholder="https://api.example.com/data" autocomplete="url">
-      <div id="targetResult" class="origin">The API/resource your page is trying to reach. Test A uses this URL exactly as entered.</div>
-    </section>
+<section class="panel hero" id="requestPanel" tabindex="-1">
+  <div class="section-heading">
+    <p class="eyebrow">STEP 1</p>
+    <h2>Match the failing request</h2>
+    <p>Tell us where the request starts and what it is trying to reach. AnotherExample will build your real request and a controlled comparison.</p>
   </div>
-</div>
 
-<div class="step">
-  <div class="step-head"><span class="step-number">2</span><div><h2>Describe the request</h2><p class="small">Match the request that is giving you trouble. These settings are used for both diagnostic tests.</p></div></div>
-  <div class="two">
-    <section>
-      <label for="method">Method</label><select id="method"><option>GET</option><option>POST</option><option>PUT</option></select>
-      <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
-    </section>
-    <section>
-      <label for="requestBody">JSON body for POST/PUT</label><input id="requestBody" aria-describedby="requestBodyHelp diagnosticStatus" value='{"playground":"test"}'>
-      <p id="requestBodyHelp" class="small">POST/PUT uses <code>Content-Type: application/json</code>, which normally triggers a browser preflight.</p>
-    </section>
+  <div class="debugger-grid">
+    <div>
+      <div class="two compact-fields">
+        <section>
+          <label for="siteUrl">Page where the request starts</label>
+          <input id="siteUrl" name="debugger-page-url" type="url" placeholder="https://your-site.com/page" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-form-type="other">
+          <div id="originResult" class="origin">We’ll identify the browser origin automatically.</div>
+        </section>
+        <section>
+          <label for="targetUrl">API URL that fails</label>
+          <input id="targetUrl" name="debugger-api-url" type="url" placeholder="https://api.example.com/data" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" data-form-type="other">
+          <div id="targetResult" class="origin">Test A uses this URL exactly as entered.</div>
+          <div id="recentTargetsWrap" class="recent-targets" hidden>
+            <label for="recentTargetUrls">Recent API URLs</label>
+            <select id="recentTargetUrls"><option value="">Choose a recent URL…</option></select>
+          </div>
+        </section>
+      </div>
+
+      <div class="request-memory">
+        <span>URLs are remembered only in this browser. Avoid URLs containing private tokens.</span>
+        <button type="button" class="text-button" id="clearSavedUrls" hidden>Clear saved URLs</button>
+        <span id="memoryStatus" class="small" aria-live="polite"></span>
+      </div>
+
+      <div class="two compact-fields">
+        <section>
+          <label for="method">Method</label>
+          <select id="method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option></select>
+        </section>
+        <section class="credentials-field">
+          <div class="checkbox"><input id="credentials" type="checkbox"><label for="credentials">Include credentials</label></div>
+        </section>
+      </div>
+
+      <details class="request-details" id="requestDetails">
+        <summary>Match headers and body</summary>
+        <div class="privacy-warning compact-warning" id="requestPrivacy">
+          <strong>Keep secrets out</strong>
+          <span>Remove tokens, cookies, API keys, and private payload data. These inputs stay in your browser.</span>
+        </div>
+        <label for="requestHeaders">Request headers <span class="small">— one per line, Name: value</span></label>
+        <textarea id="requestHeaders" rows="3" aria-describedby="requestPrivacy headerHelp" spellcheck="false" placeholder="Content-Type: application/json"></textarea>
+        <p id="headerHelp" class="small">Test B replaces sensitive header values and body content with harmless placeholders while preserving the CORS request shape.</p>
+        <label for="requestBody">JSON body for methods that send one</label>
+        <textarea id="requestBody" rows="3" aria-describedby="requestBodyHelp diagnosticStatus" spellcheck="false">{"playground":"test"}</textarea>
+        <p id="requestBodyHelp" class="small">A JSON body automatically adds <code>Content-Type: application/json</code> unless you enter another Content-Type above.</p>
+      </details>
+    </div>
+
+    <aside class="known-good-control" aria-labelledby="controlTitle">
+      <p class="control-label">FIXED KNOWN-GOOD CONTROL</p>
+      <h3 id="controlTitle">Why Test B is expected to work</h3>
+      <p><strong>Test B is configured to accept the same origin, method, headers, and credentials as your request.</strong></p>
+      <p>It will not correct broken code, malformed requests, or network problems. If those affect both tests, both may fail.</p>
+      <dl>
+        <dt>Page origin</dt><dd id="controlOrigin">Waiting for a page URL</dd>
+        <dt>Method</dt><dd id="controlMethod">GET</dd>
+        <dt>Endpoint</dt><dd><code>cors.anotherexample.com</code></dd>
+      </dl>
+      <p class="small">Want to intentionally break CORS settings? Use the <a href="/cors/playground">Playground</a>. The Debugger keeps this control trustworthy.</p>
+    </aside>
   </div>
-</div>
 
-<details class="step" id="advancedOptions">
-  <summary style="cursor:pointer"><span class="step-number" style="margin-right:10px">3</span><strong>Controlled comparison</strong> <span class="small">— optional settings</span></summary>
-  <div style="margin-top:16px">
-    <p class="small">AnotherExample uses a controlled second origin as a working baseline. These optional settings affect that comparison only; they do not change your Target API.</p>
+  <div class="actions">
+    <button id="startDiagnosis">Build the A + B comparison</button>
+    <span id="diagnosticStatus" class="small" aria-live="polite"></span>
+  </div>
+  <p class="small">AnotherExample does not crawl, proxy, or modify your API. The generated tests run from your own page, where the browser actually enforces CORS.</p>
+</section>
+
+<section class="panel guided-panel" id="diagnostic" hidden tabindex="-1">
+  <p class="eyebrow">STEP 2</p>
+  <h2>Run one check from your page</h2>
+  <p>Open Developer Tools on <strong id="runOrigin">your page</strong>, switch to the Console, and paste the combined comparison. Where you run it matters.</p>
+
+  <div class="actions">
+    <button id="copyCombined">Copy A + B comparison</button>
+    <button class="secondary" id="toggleCombined" aria-controls="combinedFetch" aria-expanded="false">View generated code</button>
+  </div>
+  <span id="copyStatus" class="small copy-status" aria-live="polite"></span>
+  <pre id="combinedFetch" hidden tabindex="0"></pre>
+
+  <details class="individual-tests" id="individualTests">
+    <summary>View individual tests</summary>
     <div class="two">
       <section>
-        <label for="allowOrigin">Allow-Origin response</label>
-        <select id="allowOrigin">
-          <option value="*">*</option>
-          <option value="echo">Reflect requesting origin</option>
-          <option value="none">Omit header</option>
-          <option value="https://wrong.example">Wrong origin</option>
-        </select>
-        <label for="methods">Allowed methods</label><input id="methods" value="GET, POST, OPTIONS">
+        <h3>Test A — Your API</h3>
+        <p class="small">Your target request.</p>
+        <div class="status"><strong id="targetSummary">Target API</strong></div>
+        <div class="actions"><button id="copyTarget">Copy Test A</button><button class="secondary" id="toggleTarget" aria-controls="targetFetch" aria-expanded="false">View code</button></div>
+        <pre id="targetFetch" hidden tabindex="0"></pre>
       </section>
       <section>
-        <label for="headers">Allowed request headers</label><input id="headers" value="Content-Type">
-        <label for="preflight">Preflight status</label><select id="preflight"><option>204</option><option>403</option></select>
-        <label for="delay">Response delay (ms, max 3000)</label><input id="delay" type="number" min="0" max="3000" value="0">
+        <h3>Test B — Known-good control</h3>
+        <p class="small">The same CORS-related request shape against AnotherExample.</p>
+        <div class="status ok"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
+        <div class="actions"><button id="copyControl">Copy Test B</button><button class="secondary" id="toggleControl" aria-controls="controlFetch" aria-expanded="false">View code</button></div>
+        <pre id="controlFetch" hidden tabindex="0"></pre>
       </section>
     </div>
+  </details>
+
+  <hr class="divider compact-divider">
+  <h2>What did the Console report?</h2>
+  <p>Choose the outcome printed at the end. If a test failed, you can paste the red Console error—not the fetch code—in the next step.</p>
+  <div class="outcome-grid" role="group" aria-label="Comparison outcome">
+    <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-worked">worked</b></strong><span>The controlled request succeeded.</span></button>
+    <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-worked">worked</b></strong><span>Both responses were readable.</span></button>
+    <button class="outcome-button" data-outcome="both-fail" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-failed">failed</b></strong><span>Neither response was readable.</span></button>
+    <button class="outcome-button" data-outcome="a-work-b-fail" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-failed">failed</b></strong><span>The control behaved unexpectedly.</span></button>
   </div>
-</details>
-
-
-
-<div class="actions">
-  <button id="startDiagnosis">Start CORS diagnosis</button>
-  <span id="diagnosticStatus" class="small" style="margin-left:12px" aria-live="polite"></span>
-</div>
-<p class="small">AnotherExample does not crawl, proxy, or modify either URL. The generated tests run in your browser from your own page, where CORS is actually enforced.</p>
 </section>
 
-<div id="diagnostic" style="display:none">
-<div class="panel" style="border-color:#65e6b8">
-<p class="eyebrow" style="margin-top:0">DIAGNOSTIC READY</p>
-<h2 style="margin-top:6px">Run the check from your page</h2>
-<p>Open Developer Tools on the page URL you entered, switch to the Console, then run Test A and Test B there. CORS is enforced in that page's browser origin, so where you run the tests matters.</p>
-<div class="actions">
-  <button id="copyCombined">
-    Copy code — combined A + B test
-  </button>
-</div>
-
-<p class="small">
-  Recommended: copy one diagnostic snippet that runs both tests and labels the results automatically.
-</p>
-<div class="two">
-<section>
-<h3>Test A — Your real API</h3>
-<p class="small">Your target request.</p>
-<div class="status"><strong id="targetSummary">Target API</strong></div>
-<div class="actions"><button id="copyTarget">Copy code — Test A</button><button class="secondary" id="toggleTarget" aria-controls="targetFetch" aria-expanded="false">View generated code</button></div>
-<pre id="targetFetch" style="display:none"></pre>
+<section class="panel guided-panel" id="diagnosisPanel" hidden tabindex="-1">
+  <p class="eyebrow">STEP 3</p>
+  <h2 id="diagnosisTitle">Comparison result</h2>
+  <p id="diagnosisIntro"></p>
+  <div class="result-pair">
+    <div class="test-result" id="aResult"><strong>Test A</strong><span></span></div>
+    <div class="test-result" id="bResult"><strong>Test B</strong><span></span></div>
+  </div>
+  <p id="pasteGuidance" class="status ok" aria-live="polite"></p>
+  <div class="reasoning-grid">
+    <section><h3>Observed</h3><p id="observedText"></p></section>
+    <section><h3>What it suggests</h3><p id="suggestsText"></p></section>
+    <section><h3>Still unknown</h3><p id="unknownText"></p></section>
+    <section><h3>Next action</h3><p id="nextText"></p></section>
+  </div>
+  <div class="actions">
+    <button id="showBrowserClue">Paste Test A Console error</button>
+    <button class="secondary" id="chooseAgain">Choose a different outcome</button>
+  </div>
 </section>
 
-<section>
-<h3>Test B — Controlled origin</h3>
-<p class="small">The same request shape against AnotherExample's known-good controlled CORS endpoint. Its CORS response is generated automatically from your request.</p>
-<div class="status"><strong id="controlSummary">Controlled CORS endpoint</strong></div>
-<div class="actions"><button id="copyControl">Copy code — Test B</button><button class="secondary" id="toggleControl" aria-controls="controlFetch" aria-expanded="false">View generated code</button></div>
-<pre id="controlFetch" style="display:none"></pre>
+<section class="panel guided-panel" id="browserCluePanel" hidden tabindex="-1">
+  <p class="eyebrow">OPTIONAL BROWSER CLUE</p>
+  <h2>What exactly did the browser object to?</h2>
+  <p>Paste Test A’s red Console message. This extra evidence can support a specific next check or server fix.</p>
+  <div class="privacy-warning" id="errorPrivacy">
+    <strong>Before you paste</strong>
+    <span>Console errors may contain tokens, internal URLs, or other sensitive information. Remove anything private first. Analysis stays local in your browser.</span>
+  </div>
+  <label for="browserResult">Test A Console message</label>
+  <textarea id="browserResult" rows="4" aria-describedby="errorPrivacy" spellcheck="false" placeholder="Paste the red Console message for Test A..."></textarea>
+  <p id="errorContext" class="small" hidden></p>
+  <div class="actions"><button id="explainBrowserResult">Explain this clue</button></div>
+  <div id="browserExplanation" class="status" hidden aria-live="polite"></div>
 </section>
-</div>
 
-<hr>
-<h3>How to interpret the comparison</h3>
-<p><strong>A fails, B works:</strong> investigate the target API's CORS configuration or response first. The controlled endpoint accepted the same request shape.</p>
-<p><strong>A works, B works:</strong> basic cross-origin access works. Reproduce the exact failing method, headers, body, and credentials.</p>
-<p><strong>A fails, B fails:</strong> compare the browser Console errors and verify the request shape, credentials, browser policy, extensions, and environment.</p>
-<p class="small">This comparison narrows the investigation; it does not prove a single root cause. AnotherExample does not crawl, proxy, or modify your target URL.</p>
-</div>
-</div>
+<section class="panel guided-panel" id="fixPanel" hidden tabindex="-1">
+  <p class="eyebrow">STEP 4</p>
+  <h2>Use the evidence to choose the next fix</h2>
+  <div class="diagnosis-banner" id="fixDiagnosis"></div>
+  <div class="fix-grid">
+    <section>
+      <h3>Browser decision</h3>
+      <div class="browser-flow" id="browserFlow"></div>
+      <h3>Check first</h3>
+      <ul id="fixChecks"></ul>
+    </section>
+    <section id="codeFixSection">
+      <h3>Example server configuration</h3>
+      <p class="small">Use this only after confirming the browser evidence. The change belongs on the API or reverse proxy—not in <code>fetch()</code>.</p>
+      <p id="fixContextNote" class="small" aria-live="polite"></p>
+      <div class="framework-tabs" role="tablist" aria-label="Server framework">
+        <button class="framework-tab" role="tab" data-stack="express" aria-selected="true">Express</button>
+        <button class="framework-tab" role="tab" data-stack="nginx" aria-selected="false">Nginx</button>
+        <button class="framework-tab" role="tab" data-stack="fastapi" aria-selected="false">FastAPI</button>
+      </div>
+      <pre id="fixCode" tabindex="0"></pre>
+      <div class="actions"><button id="copyFix">Copy example</button><button class="secondary" id="retest">Copy comparison again</button></div>
+      <span id="fixStatus" class="small copy-status" aria-live="polite"></span>
+    </section>
+  </div>
+</section>
+
 <section class="panel" style="margin-top:24px">
-<h2>Got a browser error?</h2>
-<p><a href="/cors/errors">Open the Error Explainer →</a> Paste your Console message for a local explanation and suggested next steps.</p>
+  <h2>Want to start with an error message?</h2>
+  <p><a href="/cors/errors">Open the standalone Error Explainer →</a></p>
 </section>
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/cors-ui.js"></script>
+<script src="/cors-diagnosis.js"></script>
 <script src="/cors-debugger.js"></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
