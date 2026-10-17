@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const app = require('../server');
 
 const primaryPages = [['/', '/'], ['/index.html', '/'], ['/cors', '/cors'], ['/cors/playground', '/cors/playground'], ['/cors/errors', '/cors/errors']];
@@ -249,4 +251,16 @@ test('shared styles explicitly cover visited links, hover, focus, and wrapping n
   assert.match(text, /\.site-footer a:link,\.site-footer a:visited\{color:var\(--accent\)\}/);
   assert.match(text, /\.site-footer a:hover\{[^}]*color:var\(--text\)/);
   assert.match(text, /\.site-footer a:focus-visible\{[^}]*outline:2px solid var\(--accent\)/);
+});
+
+
+test('browser diagnosis distinguishes a missing ACAO header from an ambiguous origin rejection', () => {
+  const parser = fs.readFileSync(require.resolve('../public/cors-diagnosis.js'), 'utf8');
+  const diagnosis = message => vm.runInNewContext(parser + '\\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')');
+  const explicit = diagnosis("Access to fetch at 'https://example.com/' from origin 'https://preview.example/' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.");
+  assert.equal(explicit.title, 'Missing Access-Control-Allow-Origin header');
+  assert.match(explicit.explanation, /missing the Access-Control-Allow-Origin header/);
+  const ambiguous = diagnosis("Access-Control-Allow-Origin: origin is not allowed by server");
+  assert.equal(ambiguous.title, 'Origin not allowed by server');
+  assert.doesNotMatch(ambiguous.explanation, /response is missing the/);
 });
