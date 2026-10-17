@@ -71,6 +71,9 @@ body{overflow-wrap:anywhere}pre{max-width:100%;white-space:pre;overflow-x:auto;o
 .outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .outcome-button{display:block;text-align:left;min-height:84px;background:#202630;color:var(--text);border:1px solid #49515f}
 .outcome-button strong,.outcome-button span{display:block}.outcome-button span{color:var(--muted);font-size:.86rem;font-weight:500;margin-top:5px}
+/* Both words and colors communicate each test outcome; maintain contrast on the dark buttons. */
+.outcome-button .outcome-failed{color:#ff929b}
+.outcome-button .outcome-worked{color:#6ee7b7}
 .outcome-button:hover,.outcome-button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px #164e3d}
 .result-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
 .test-result{background:var(--code);border:1px solid var(--border);border-left-width:5px;padding:14px}
