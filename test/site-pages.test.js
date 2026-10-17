@@ -256,7 +256,7 @@ test('shared styles explicitly cover visited links, hover, focus, and wrapping n
 
 test('browser diagnosis distinguishes a missing ACAO header from an ambiguous origin rejection', () => {
   const parser = fs.readFileSync(require.resolve('../public/cors-diagnosis.js'), 'utf8');
-  const diagnosis = message => vm.runInNewContext(parser + '\\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')');
+  const diagnosis = message => vm.runInNewContext(parser + '\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')');
   const explicit = diagnosis("Access to fetch at 'https://example.com/' from origin 'https://preview.example/' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.");
   assert.equal(explicit.title, 'Missing Access-Control-Allow-Origin header');
   assert.match(explicit.explanation, /missing the Access-Control-Allow-Origin header/);
