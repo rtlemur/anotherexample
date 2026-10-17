@@ -50,9 +50,19 @@ const browserDiagnosisRules = [
       ['Compare the page origin with the response header in DevTools', 'Check scheme, hostname, and port', 'Check proxy configuration and cached responses for the wrong origin'])
   },
   {
+    // Be precise only when the browser explicitly identifies a missing header.
+    matches: t => /access-control-allow-origin/.test(t) &&
+      (/no ['"]?access-control-allow-origin['"]? header is present/.test(t) ||
+        /(?:missing|absent) ['"]?access-control-allow-origin['"]? header/.test(t) ||
+        /access-control-allow-origin['"]? header (?:is )?(?:missing|absent|not present)/.test(t)),
+    diagnosis: browserDiagnosis('missing-origin', 'Missing Access-Control-Allow-Origin header', 'server',
+      'The browser reports that the API response is missing the Access-Control-Allow-Origin header. Without it, your browser cannot make the response available to JavaScript on your page.',
+      ['Check the API server or reverse proxy response headers', 'Return Access-Control-Allow-Origin with the exact permitted page origin (or * for non-credentialed public resources)', 'Check error responses and proxy responses, which may omit CORS headers'])
+  },
+  {
     matches: t => /access-control-allow-origin/.test(t) && /missing|no ["']?access-control-allow-origin["']? header|origin .*not allowed by/.test(t),
     diagnosis: browserDiagnosis('missing-origin', 'Origin not allowed by server', 'server',
-      'The browser reports a missing allowed-origin header or an origin it does not permit. “Origin is not allowed” alone does not distinguish a missing header from a mismatched value.',
+      'The browser reports an origin that the server may not permit. This message alone does not establish whether the allowed-origin header is missing or has the wrong value.',
       ['Inspect the OPTIONS and final response headers in DevTools or server logs', 'Ensure the server permits the exact page origin', 'Check error responses and proxy responses for missing headers'])
   },
   {
