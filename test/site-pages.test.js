@@ -264,3 +264,13 @@ test('browser diagnosis distinguishes a missing ACAO header from an ambiguous or
   assert.equal(ambiguous.title, 'Origin not allowed by server');
   assert.doesNotMatch(ambiguous.explanation, /response is missing the/);
 });
+
+
+test('credentialed CORS diagnoses drive credentialed fix examples', () => {
+  const debuggerSource = fs.readFileSync(require.resolve('../public/cors-debugger.js'), 'utf8');
+  const debuggerMarkup = fs.readFileSync(require.resolve('../public/cors.html'), 'utf8');
+  assert.match(debuggerSource, /\['credentials-wildcard', 'allow-credentials'\]\.includes\(diagnosis\?\.family\)/);
+  assert.match(debuggerSource, /activeFixDiagnosis = diagnosis/);
+  assert.match(debuggerSource, /const credentials = \$\('credentials'\)\.checked \|\|/);
+  assert.match(debuggerMarkup, /id="fixContextNote"/);
+});
