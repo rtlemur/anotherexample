@@ -222,6 +222,8 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   assert.match(debuggerPage.text, /data-stack="nginx"/);
   assert.match(debuggerPage.text, /data-stack="fastapi"/);
   assert.ok(debuggerPage.text.indexOf('src="/cors-diagnosis.js"') < debuggerPage.text.indexOf('src="/cors-debugger.js"'));
+  assert.match(debuggerPage.text, /class="outcome-failed">failed<\/b>/);
+  assert.match(debuggerPage.text, /class="outcome-worked">worked<\/b>/);
   const outcomes = [...debuggerPage.text.matchAll(/class="outcome-button"/g)];
   assert.equal(outcomes.length, 4);
   assert.doesNotMatch(debuggerPage.text, /id="allowOrigin"|id="preflight"|id="delay"/);
