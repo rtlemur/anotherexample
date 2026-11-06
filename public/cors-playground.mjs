@@ -1,4 +1,4 @@
-import { checkPreflight, compare, controlOriginFor, diagnosis, evidenceHeaders, fetchSnippet, makeConfig, makeControl, parseEvidence, preflightCommand, scenariosFor, supportsProbe } from "/cors-playground-core.mjs";
+import { checkPreflight, compare, controlOriginFor, diagnosis, evidenceHeaders, fetchSnippet, makeConfig, makeControl, parseEvidence, preflightCommand, scenariosFor, supportsProbe } from "/cors-playground-core.mjs?v=2";
 
 const get = id => document.getElementById(id);
 const form = get("request-form");
