@@ -21,6 +21,7 @@
 <title>CORS Playground — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
 <link rel="stylesheet" href="/site.css">
+<link rel="stylesheet" href="/cors-playground.css">
 </head>
 <body>
 <main class="wrap">
@@ -33,24 +34,101 @@
 </div>
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
 <h1 class="page-title">CORS Playground</h1>
-<p class="tag">Explore common CORS failures using AnotherExample’s controlled endpoint. These scenarios intentionally reproduce common browser successes and failures without affecting your own API.</p>
-<section id="corsScenarios" aria-label="Controlled scenarios">    <div id="scenarioState" class="status"><strong>Scenario:</strong> None selected</div>
-  <div class="scenarios" id="scenarios"></div>
-  <div class="two" style="margin-top:14px">
-    <section class="panel">
-      <h3>Expected browser result</h3><div id="expected" class="status" aria-live="polite">Choose a scenario.</div>
+<p class="tag">Run the same request shape against a known-good second origin and a target. Compare what you expected with what the browser can read.</p>
+<noscript><p class="small">Enable JavaScript to run a browser comparison.</p></noscript>
+<div class="playground">
+    <form id="request-form" class="card" novalidate>
+      <div class="section-head">
+        <span class="step" aria-hidden="true">01</span>
+        <div><h2>Configure a request</h2><p class="muted">Start with a test case or use your own endpoint.</p></div>
+      </div>
+      <div class="config">
+        <label class="preset">Test case
+          <select id="scenario">
+            <option value="simple">Simple GET · readable</option>
+            <option value="json">JSON POST · preflight passes</option>
+            <option value="origin" selected>Missing allow-origin · blocked</option>
+            <option value="wrong-origin">Wrong allow-origin · blocked</option>
+            <option value="options">OPTIONS rejected · blocked</option>
+            <option value="headers">Custom header denied · blocked</option>
+            <option value="credentials">Credentials + wildcard · blocked</option>
+            <option value="reflected">Reflected origin + credentials · readable</option>
+            <option value="http">HTTP 401 · readable</option>
+            <option value="custom">Use my own URL</option>
+          </select>
+        </label>
+        <div class="target-row">
+          <label>Method<select id="method">
+            <option>GET</option><option>HEAD</option><option>POST</option><option>PUT</option>
+            <option>PATCH</option><option>DELETE</option><option>OPTIONS</option>
+          </select></label>
+          <label>Target URL
+            <input id="target" type="url" required spellcheck="false" autocomplete="off" placeholder="https://api.example.com/resource" aria-describedby="source-note">
+          </label>
+        </div>
+        <div class="origin-line" id="source-note">Request origin <code id="page-origin"></code></div>
+        <div class="triple">
+          <label>Credentials
+            <select id="credentials"><option value="omit">Omit (default)</option><option value="same-origin">Same origin only</option><option value="include">Include cross-origin</option></select>
+          </label>
+          <label>Expect the target to
+            <select id="expected"><option value="readable">Return a readable response</option><option value="failed">Fail or block browser access</option></select>
+          </label>
+          <label>Expected HTTP status <small>optional</small>
+            <input id="expected-status" type="number" min="200" max="599" step="1" placeholder="Any status">
+          </label>
+        </div>
+        <details id="options">
+          <summary>Headers, body, and redirects</summary>
+          <div class="extra-grid">
+            <label>Request headers <small>one per line</small>
+              <textarea id="headers" rows="3" spellcheck="false" autocomplete="off" placeholder="X-Client: playground"></textarea>
+            </label>
+            <label>Redirects
+              <select id="redirect"><option value="follow">Follow redirects</option><option value="error">Fail on redirect</option></select>
+            </label>
+          </div>
+          <div id="body-options" class="extra-grid" hidden>
+            <label>Request body
+              <textarea id="body" rows="3" spellcheck="false" autocomplete="off" placeholder='{"example":true}'></textarea>
+            </label>
+            <label>Content-Type
+              <select id="content-type"><option value="">Automatic (text/plain for a body)</option><option value="application/json">application/json</option><option value="text/plain;charset=UTF-8">text/plain</option><option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option></select>
+            </label>
+          </div>
+          <p class="muted small">A Content-Type in request headers overrides the menu. Control requests use sample header values and a sample body.</p>
+        </details>
+        <p id="form-error" class="error" role="alert" hidden></p>
+      </div>
+      <div class="run-bar">
+        <div><p id="prediction" class="run-hint">Checking request shape…</p><p class="muted small">Use test data. Run write methods only on endpoints you’re willing to modify.</p></div>
+        <button class="primary" id="run" type="submit">Run comparison <span aria-hidden="true">→</span></button>
+      </div>
+    </form>
+    <section id="results" class="results" aria-labelledby="results-heading" aria-busy="false">
+      <div class="section-head">
+        <span class="step" aria-hidden="true">02</span>
+        <div><h2 id="results-heading">Compare the results</h2><p id="run-status" class="muted" role="status">Run a comparison to see the control and target side by side.</p></div>
+      </div>
+      <div class="result-grid">
+        <article id="control-result" class="result-card card"><div class="result-top"><h3>Known-good control</h3><span class="badge neutral">Ready</span></div><p id="control-host" class="endpoint mono">cors.anotherexample.com</p><p class="muted">The same request shape on AnotherExample’s second origin.</p></article>
+        <article id="target-result" class="result-card card"><div class="result-top"><h3>Target</h3><span class="badge neutral">Ready</span></div><p class="endpoint mono">Your selected endpoint</p><p class="muted">Your expected outcome beside what the browser actually sees.</p></article>
+      </div>
+      <div id="diagnosis" class="diagnosis" hidden></div>
     </section>
-    <section class="panel">
-      <h3>Scenario endpoint</h3><pre id="fetchCode"></pre>
-      <div class="actions"><button id="copyFetch" class="secondary">Copy code</button><button id="copyUrl" class="secondary">Copy endpoint URL</button></div>
-    </section>
+    <details class="reproduce">
+      <summary>Reproduce from another origin</summary>
+      <p class="muted small">Run this code in DevTools on the page that normally sends the request. The browser uses that page’s origin.</p>
+      <pre id="fetchCode"></pre>
+      <div class="actions">
+        <button id="copyFetch" type="button">Copy code</button>
+        <button id="copyUrl" type="button">Copy endpoint URL</button>
+      </div>
+    </details>
 </div>
-</section>
-
-<p class="small">Copy the code and run it in your browser Console from another origin. Results below are expected outcomes, not live measurements.</p>
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/cors-ui.js"></script>
-<script src="/cors-playground.js"></script>
+<script type="module" src="/cors-playground.mjs"></script>
 <script src="/nav-dropdown.js"></script>
 </body></html>

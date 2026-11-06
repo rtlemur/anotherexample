@@ -25,7 +25,7 @@ npm test
 - `GET /api/health`
 
 ## CORS playground
-Visit `/cors`. The current V1.1 playground configures and inspects CORS responses. Because the page and lab endpoint share an origin, it explains the browser behavior that a real cross-origin caller should expect. V1.2 will add a deliberately separate host so the browser can enforce the scenarios live inside the playground.
+Visit `/cors/playground` to compare a target with AnotherExample’s known-good control in the browser. The control uses sample header values and body content. The optional OPTIONS probe checks only AnotherExample’s built-in endpoints. For other targets, inspect OPTIONS in DevTools or paste the output from the generated curl command. The separate CORS Debugger at `/cors` guides tests from the application’s own origin.
 
 ## Safety
 Public API requests are rate limited. Reflected request data omits authorization, cookies, Vercel/internal proxy headers, and related infrastructure metadata. Use test data only.

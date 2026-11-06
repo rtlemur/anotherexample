@@ -160,6 +160,12 @@ next();
 });
 app.all('/api/cors/credentials',(req,res)=>{noStore(res);res.json({mode:'credentials',message:'Credentialed CORS response. The request Origin is reflected when present.',...requestSnapshot(req)});});
 
+app.post('/api/cors/preflight-probe', async (req, res) => {
+  const { runPreflightProbe } = await import('./lib/cors-playground-probe.mjs');
+  const { status, body } = await runPreflightProbe(req.body);
+  res.status(status).json(body);
+});
+
 // Configurable CORS laboratory endpoint. Query parameters deliberately control response behavior.
 app.all('/api/cors/lab', async (req,res)=>{
   const q=req.query;
