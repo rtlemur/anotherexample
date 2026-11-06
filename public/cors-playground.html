@@ -66,7 +66,9 @@
             <input id="target" type="url" required spellcheck="false" autocomplete="off" placeholder="https://api.example.com/resource" aria-describedby="source-note">
           </label>
         </div>
-        <div class="origin-line" id="source-note">Request origin <code id="page-origin"></code></div>
+        <div class="origin-line" id="source-note">
+          The Playground sends requests from <code id="page-origin">this page</code>. To test from your app’s origin, use the <a href="/cors">CORS Debugger</a>.
+        </div>
         <div class="triple">
           <label>Credentials
             <select id="credentials"><option value="omit">Omit (default)</option><option value="same-origin">Same origin only</option><option value="include">Include cross-origin</option></select>
@@ -74,7 +76,7 @@
           <label>Expect the target to
             <select id="expected"><option value="readable">Return a readable response</option><option value="failed">Fail or block browser access</option></select>
           </label>
-          <label>Expected HTTP status <small>optional</small>
+          <label>Expected HTTP status <small>(optional)</small>
             <input id="expected-status" type="number" min="200" max="599" step="1" placeholder="Any status">
           </label>
         </div>

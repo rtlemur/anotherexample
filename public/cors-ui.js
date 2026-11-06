@@ -21,7 +21,7 @@ function resultBadge(label, style) {
   badge.textContent = label;
   return badge;
 }
-function copyControl(id, getText) {
+function copyControl(id, getText, successMessage = id === 'copyUrl' ? 'Endpoint URL copied.' : 'Code copied.') {
   const button = document.getElementById(id);
   const label = button.textContent.trim();
   const feedback = document.createElement('span');
@@ -34,7 +34,7 @@ function copyControl(id, getText) {
     try {
       await navigator.clipboard.writeText(getText());
       button.textContent = 'Copied';
-      feedback.textContent = id === 'copyUrl' ? 'Endpoint URL copied.' : 'Code copied.';
+      feedback.textContent = successMessage;
     } catch {
       feedback.textContent = 'Copy failed. Allow clipboard access and try again.';
     }
