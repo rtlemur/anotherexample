@@ -14,9 +14,13 @@ const guidePages = [
 ];
 const troubleshootingUrls = guidePages.map(([url]) => url);
 
-for (const [route, active] of [...primaryPages, ['/contact', null], ...guidePages.map(([route]) => [route, route])]) {
-  test(`${route} has the shared navigation dropdown and contact footer`, async () => {
-    const response = await request(app).get(route).expect(200);
+const brandedPages = [...primaryPages, ['/contact', null], ...guidePages.map(([route]) => [route, route]), ['/missing-page', null, 404]];
+for (const [route, active, status = 200] of brandedPages) {
+  test(`${route} has the shared branding, navigation dropdown, and contact footer`, async () => {
+    const response = await request(app).get(route).expect(status);
+    assert.match(response.text, /<a class="site-wordmark" href="\/" aria-label="AnotherExample\.com home">/);
+    assert.match(response.text, /Another<span class="site-wordmark-accent">Example<\/span><span class="site-wordmark-domain">\.com<\/span>/);
+    assert.match(response.text, /<span class="site-brand-tagline">The Second Origin<\/span>/);
     assert.match(response.text, /class="site-nav" aria-label="Main navigation"/);
     if (active) assert.ok(response.text.includes(`href="${active}" aria-current="page"`));
     for (const url of ['/', '/cors', '/cors/playground', '/cors/errors']) assert.ok(response.text.includes(`href="${url}"`));
