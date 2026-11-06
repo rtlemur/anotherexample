@@ -191,7 +191,7 @@ export function diagnosis(config, control, target, evidence, origin) {
       config.expected === "failed" ? "This origin was allowed. The original application may send from a different origin or use different credentials." : "The browser received HTTP " + target.status + " instead of the expected HTTP " + config.expectedStatus + ".",
       config.expected === "failed" ? "Compare the original app’s Origin, headers, and credentials in DevTools." : "Check the target’s response body, authentication, and URL, then rerun."];
     if (target.status >= 400) return ["Readable HTTP " + target.status, "The browser could read the server’s error response.", "Use the response details to check the application’s authentication, route, or input."];
-    return ["Target matched the expectation", "The browser could read the target response from this origin.", "Compare the original app’s origin and request settings if it still fails."];
+    return ["Target matched the expectation", "The browser could read the target response from this origin."];
   }
   if (control.kind !== "readable") {
     return ["Control also failed", "A shared network, browser, or request issue may be involved.", "Try the Simple GET test case first. Check network access and DevTools if it fails."];
