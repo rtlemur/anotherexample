@@ -21,7 +21,8 @@ test("Playground serves the live comparison and retains the code and URL copy co
   assert.match(text, /Run comparison/);
   assert.match(text, /id="copyFetch"/);
   assert.match(text, /id="copyUrl"/);
-  assert.match(text, /type="module" src="\/cors-playground\.js"/);
+  assert.match(text, /type="module" src="\/cors-playground\.mjs"/);
+  await request(app).get("/cors-playground.mjs").expect("Content-Type", /javascript/).expect(200);
   await request(app).get("/cors-playground-core.mjs").expect("Content-Type", /javascript/).expect(200);
 });
 
