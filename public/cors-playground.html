@@ -45,9 +45,9 @@
       <div class="config">
         <label class="preset">Test case
           <select id="scenario">
+            <option value="origin" selected>Missing allow-origin · blocked</option>
             <option value="simple">Simple GET · readable</option>
             <option value="json">JSON POST · preflight passes</option>
-            <option value="origin" selected>Missing allow-origin · blocked</option>
             <option value="wrong-origin">Wrong allow-origin · blocked</option>
             <option value="options">OPTIONS rejected · blocked</option>
             <option value="headers">Custom header denied · blocked</option>
@@ -110,7 +110,11 @@
     <section id="results" class="results" aria-labelledby="results-heading" aria-busy="false">
       <div class="section-head">
         <span class="step" aria-hidden="true">02</span>
-        <div><h2 id="results-heading">Compare the results</h2><p id="run-status" class="muted" role="status">Run a comparison to see the control and target side by side.</p></div>
+        <div>
+          <h2 id="results-heading">Compare the results</h2>
+          <p id="run-status" class="muted" role="status">Run a comparison to see the control and target side by side.</p>
+          <p id="preflight-note" class="muted" hidden>The control and target set their own allowed methods. Different lists can still allow the same request.</p>
+        </div>
       </div>
       <div class="result-grid">
         <article id="control-result" class="result-card card"><div class="result-top"><h3>Known-good control</h3><span class="badge neutral">Ready</span></div><p id="control-host" class="endpoint mono">cors.anotherexample.com</p><p class="muted">The same request shape on AnotherExample’s second origin.</p></article>

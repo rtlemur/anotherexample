@@ -283,9 +283,12 @@ function renderDiagnosis(evidence) {
   const [title, detail, retest] = diagnosis(target, baseline, observation, evidence?.error ? null : evidence, origin);
   const panel = get("diagnosis");
   panel.classList.toggle("good", observation.kind === "readable" && compare(target, observation).tone === "good");
-  const next = el("p");
-  next.append(el("strong", "Retest "), document.createTextNode(retest));
-  panel.replaceChildren(el("h3", title), el("p", detail), next);
+  panel.replaceChildren(el("h3", title), el("p", detail));
+  if (retest) {
+    const next = el("p");
+    next.append(el("strong", "Retest "), document.createTextNode(retest));
+    panel.append(next);
+  }
   panel.hidden = false;
 }
 
@@ -315,6 +318,7 @@ form.addEventListener("submit", async event => {
     renderResult("control-result", "Known-good control", control, baseline, controlEvidence, false);
     renderResult("target-result", "Target", target, observation, targetEvidence, true);
     renderDiagnosis(targetEvidence);
+    get("preflight-note").hidden = !control.shape.required || !target.shape.required;
     statusLine.textContent = edited ? "Results reflect the submitted request. Run again to test your changes." : "Comparison complete · requests sent from this page’s origin.";
   } catch {
     statusLine.textContent = "The comparison could not be displayed. Try the Simple GET test case.";
