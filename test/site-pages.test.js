@@ -62,7 +62,7 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   assert.match(text, /Remove anything private first\. Analysis stays local in your browser\./);
   assert.ok(text.indexOf('id="errorPrivacy"') < text.indexOf('<textarea'));
   assert.match(text, /id="explainBrowserResult"/);
-  for (const script of ['/cors-diagnosis.js?v=2', '/cors-error-interpreter.js']) {
+  for (const script of ['/cors-diagnosis.js?v=2', '/cors-error-interpreter.js?v=2']) {
     assert.ok(text.includes(`src="${script}"`));
     await request(app).get(script).expect(200);
   }
@@ -229,7 +229,7 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   assert.match(debuggerPage.text, /data-stack="nginx"/);
   assert.match(debuggerPage.text, /data-stack="fastapi"/);
   const diagnosisScript = '/cors-diagnosis.js?v=2';
-  const debuggerScript = '/cors-debugger.js?v=3';
+  const debuggerScript = '/cors-debugger.js?v=4';
   const diagnosisIndex = debuggerPage.text.indexOf(`src="${diagnosisScript}"`);
   assert.ok(diagnosisIndex >= 0 && diagnosisIndex < debuggerPage.text.indexOf(`src="${debuggerScript}"`));
   for (const script of [diagnosisScript, debuggerScript]) {

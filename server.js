@@ -250,7 +250,7 @@ app.get('/docs', (req, res) => res.sendFile(path.join(__dirname, 'public', 'docs
 app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(path.join(__dirname,'public','.well-known','security.txt'),{dotfiles:'allow'}));
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
 const uncachedToolScripts = new Set([
-  'cors-playground.mjs', 'cors-playground-core.mjs', 'cors-diagnosis.js', 'cors-debugger.js',
+  'cors-playground.mjs', 'cors-playground-core.mjs', 'cors-diagnosis.js', 'cors-debugger.js', 'cors-error-interpreter.js',
 ]);
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1h',

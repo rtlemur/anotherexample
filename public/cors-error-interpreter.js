@@ -57,6 +57,7 @@ function bindBrowserResultInterpreter() {
   function update() {
     clearTimeout(timer);
     updateContext();
+    $('continueDebugger').disabled = !input.value.trim();
     if (!input.value.trim()) {
       lastDiagnosis = null;
       $('browserExplanation').style.display = 'none';
@@ -73,6 +74,8 @@ function bindBrowserResultInterpreter() {
 
   function schedule() {
     resizeInput();
+    $('continueDebugger').disabled = !input.value.trim();
+    $('handoffStatus').textContent = '';
     clearTimeout(timer);
     if (!input.value.trim()) {
       update();
@@ -91,5 +94,20 @@ function bindBrowserResultInterpreter() {
     schedule();
   });
   $('explainBrowserResult').onclick = update;
+  $('continueDebugger').onclick = () => {
+    const error = input.value.trim();
+    if (!error) return;
+    if (error.length > 16384) {
+      $('handoffStatus').textContent = 'Keep the Console error under 16 KB before continuing.';
+      return;
+    }
+    try {
+      sessionStorage.setItem('anotherexample.corsDebugger.error.v1', error);
+    } catch {
+      $('handoffStatus').textContent = 'This browser could not carry the error over. Copy it and open the CORS Debugger from the navigation.';
+      return;
+    }
+    location.assign('/cors?from=explainer');
+  };
 }
 bindBrowserResultInterpreter();

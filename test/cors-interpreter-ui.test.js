@@ -8,13 +8,15 @@ const parser = fs.readFileSync(path.join(__dirname, '../public/cors-diagnosis.js
 const source = fs.readFileSync(path.join(__dirname, '../public/cors-error-interpreter.js'), 'utf8');
 const interpreter = parser + source.slice(source.indexOf('function renderDiagnosis('));
 
-function setup() {
+function setup({storageBlocked = false} = {}) {
   const elements = new Map();
   let writes = 0;
   let parses = 0;
   let now = 0;
   let nextTimer = 0;
   const timers = new Map();
+  const carried = new Map();
+  const destinations = [];
   const $ = id => {
     if (!elements.has(id)) {
       let html = '';
@@ -35,6 +37,13 @@ function setup() {
     $, URL, resultBadge: () => ({}),
     setTimeout(fn, delay) { const id = ++nextTimer; timers.set(id, {fn, due: now + delay}); return id; },
     clearTimeout(id) { timers.delete(id); },
+    sessionStorage: {
+      setItem(key, value) {
+        if (storageBlocked) throw new Error('Storage blocked');
+        carried.set(key, value);
+      }
+    },
+    location: {assign(url) { destinations.push(url); }},
   });
   vm.runInContext(interpreter, context);
   const parser = context.findBrowserDiagnosis;
@@ -49,8 +58,27 @@ function setup() {
     $('browserResult').value = value;
     $('browserResult').listeners.input();
   }
-  return { $, input, advance, get writes() { return writes; }, get parses() { return parses; } };
+  return { $, input, advance, carried, destinations, get writes() { return writes; }, get parses() { return parses; } };
 }
+
+test('the error handoff stores the current error in the tab and uses a URL without the error', () => {
+  const ui = setup();
+  ui.input('First error');
+  ui.input('net::ERR_NAME_NOT_RESOLVED');
+  ui.$('continueDebugger').onclick();
+  assert.equal(ui.carried.get('anotherexample.corsDebugger.error.v1'), 'net::ERR_NAME_NOT_RESOLVED');
+  assert.deepEqual(ui.destinations, ['/cors?from=explainer']);
+  ui.input('');
+  assert.equal(ui.$('continueDebugger').disabled, true);
+});
+
+test('a blocked handoff explains recovery and stays on the Explainer', () => {
+  const ui = setup({storageBlocked: true});
+  ui.input('Failed to fetch');
+  ui.$('continueDebugger').onclick();
+  assert.equal(ui.destinations.length, 0);
+  assert.match(ui.$('handoffStatus').textContent, /Copy it/);
+});
 
 test('paste automatically diagnoses after 400ms; edits restart the debounce', () => {
   const ui = setup();

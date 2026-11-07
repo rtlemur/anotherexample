@@ -8,6 +8,7 @@ const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const URL_MEMORY_KEY = 'anotherexample.corsDebugger.urls.v1';
 const SESSION_MEMORY_KEY = 'anotherexample.corsDebugger.session.v1';
 const MAX_RECENT_TARGETS = 5;
+let carriedError = false;
 const SENSITIVE_HEADERS = new Set([
   'authorization', 'proxy-authorization', 'cookie', 'set-cookie',
   'x-api-key', 'api-key', 'x-auth-token', 'x-access-token'
@@ -392,6 +393,16 @@ function updateControlSummary() {
 }
 
 function markDiagnosticStale() {
+  if (carriedError) {
+    const context = extractBrowserContext($('browserResult').value);
+    const source = validHttpUrl($('siteUrl').value.trim());
+    const target = validHttpUrl($('targetUrl').value.trim());
+    if ((context.origin && source?.origin !== context.origin) ||
+        (context.target && target?.href !== validHttpUrl(context.target)?.href)) {
+      carriedError = false;
+      $('carriedErrorStatus').textContent = 'The request URLs changed. Check the carried Console error against the new request before using it.';
+    }
+  }
   hideLaterPanels();
   const status = $('diagnosticStatus');
   status.textContent = 'Inputs changed — build the comparison again.';
@@ -450,6 +461,10 @@ function renderOutcome(key, imported) {
   $('browserCluePanel').hidden = true;
   $('fixPanel').hidden = true;
   reveal($('diagnosisPanel'), 3);
+  if (carriedError && outcome.clue && $('browserResult').value.trim()) {
+    reveal($('browserCluePanel'), 3, false);
+    explainBrowserResult();
+  }
 }
 
 function renderBrowserExplanation(diagnosis) {
@@ -667,6 +682,7 @@ $('chooseAgain').onclick = () => $('diagnostic').scrollIntoView({behavior: 'smoo
 $('showBrowserClue').onclick = () => reveal($('browserCluePanel'), 3);
 $('explainBrowserResult').onclick = explainBrowserResult;
 $('browserResult').addEventListener('input', () => {
+  carriedError = false;
   $('browserExplanation').hidden = true;
   $('fixPanel').hidden = true;
   setProgress(3);
@@ -686,4 +702,20 @@ copyControl('copyFix', () => $('fixCode').textContent);
 copyControl('retest', () => $('combinedFetch').textContent);
 
 restoreRequestContext();
+if (new URLSearchParams(location.search).get('from') === 'explainer') {
+  let error;
+  try {
+    error = sessionStorage.getItem('anotherexample.corsDebugger.error.v1');
+    sessionStorage.removeItem('anotherexample.corsDebugger.error.v1');
+  } catch {}
+  if (typeof error === 'string' && error.trim() && error.length <= 16384) {
+    const context = extractBrowserContext(error);
+    $('siteUrl').value = context.origin || '';
+    $('targetUrl').value = context.target || '';
+    $('browserResult').value = error;
+    carriedError = true;
+    $('carriedErrorStatus').hidden = false;
+    $('carriedErrorStatus').textContent = 'Your Console error is ready for Step 3. Confirm the page URL, API URL, method, headers, and credentials before building the comparison.';
+  }
+}
 updateControlSummary();
