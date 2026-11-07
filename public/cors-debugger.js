@@ -316,7 +316,24 @@ function combinedDiagnosticSnippet(target, control, body = bodyObject(), headers
   console.log('\\n=== AnotherExample outcome ===');
   console.log(conclusion);
   console.log({testA, testB, conclusion});
+  console.log('AE-RESULT ' + JSON.stringify({a: testA.status ?? null, b: testB.status ?? null}));
 })();`;
+}
+
+function parseComparisonResult(value) {
+  const line = value.trim();
+  if (!line.startsWith('AE-RESULT ')) return null;
+  try {
+    const {a, b} = JSON.parse(line.slice('AE-RESULT '.length));
+    const validStatus = status => status === null || Number.isInteger(status) && status >= 200 && status <= 599;
+    if (!validStatus(a) || !validStatus(b)) return null;
+    const outcome = a === null
+      ? (b === null ? 'both-fail' : 'a-fail-b-work')
+      : (b === null ? 'a-work-b-fail' : 'both-work');
+    return {outcome, a, b};
+  } catch {
+    return null;
+  }
 }
 
 function diagnosticControlUrl(headers = requestHeaders().headers) {
@@ -400,25 +417,25 @@ function updateDiagnosticCode() {
   return true;
 }
 
-function setResultBox(element, result) {
+function setResultBox(element, result, status) {
   element.className = 'test-result ' + result[0];
   element.replaceChildren();
   const heading = document.createElement('strong');
   const detail = document.createElement('span');
   heading.textContent = result[1];
-  detail.textContent = result[2];
+  detail.textContent = typeof status === 'number' ? 'Browser read HTTP ' + status + '.' : result[2];
   element.append(heading, detail);
 }
 
-function renderOutcome(key) {
+function renderOutcome(key, imported) {
   const outcome = outcomeCopy[key];
   document.querySelectorAll('.outcome-button').forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.outcome === key));
   });
   $('diagnosisTitle').textContent = outcome.title;
   $('diagnosisIntro').textContent = outcome.intro;
-  setResultBox($('aResult'), outcome.a);
-  setResultBox($('bResult'), outcome.b);
+  setResultBox($('aResult'), outcome.a, imported?.a);
+  setResultBox($('bResult'), outcome.b, imported?.b);
   $('observedText').textContent = outcome.observed;
   $('suggestsText').textContent = outcome.suggests;
   $('unknownText').textContent = outcome.unknown;
@@ -608,6 +625,8 @@ $('startDiagnosis').onclick = () => {
     return;
   }
   if (!updateDiagnosticCode()) return;
+  $('comparisonResult').value = '';
+  $('comparisonImportStatus').textContent = '';
   rememberRequestContext(source.href, target.href);
   rememberSessionPreferences();
   $('diagnosticStatus').textContent = 'Comparison ready.';
@@ -626,6 +645,19 @@ function bindCodeToggle(buttonId, codeId, shownLabel = 'Hide generated code', hi
 bindCodeToggle('toggleCombined', 'combinedFetch');
 bindCodeToggle('toggleTarget', 'targetFetch', 'Hide code', 'View code');
 bindCodeToggle('toggleControl', 'controlFetch', 'Hide code', 'View code');
+
+$('importComparison').addEventListener('submit', event => {
+  event.preventDefault();
+  const result = parseComparisonResult($('comparisonResult').value);
+  $('comparisonImportStatus').textContent = result
+    ? ''
+    : 'Copy the line starting with AE-RESULT from the Console, or choose the outcome below.';
+  if (result) renderOutcome(result.outcome, result);
+});
+
+$('comparisonResult').addEventListener('input', () => {
+  $('comparisonImportStatus').textContent = '';
+});
 
 document.querySelectorAll('.outcome-button').forEach(button => {
   button.addEventListener('click', () => renderOutcome(button.dataset.outcome));

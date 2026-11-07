@@ -156,7 +156,14 @@
 
   <hr class="divider compact-divider">
   <h2>What did the Console report?</h2>
-  <p>Choose the outcome printed at the end. If a test failed, you can paste the red Console error—not the fetch code—in the next step.</p>
+  <p id="comparisonImportHelp">Copy the final line starting with <code>AE-RESULT</code>. It contains the status of each test and is read locally in your browser.</p>
+  <form id="importComparison">
+    <label for="comparisonResult">Comparison result from the Console</label>
+    <input id="comparisonResult" type="text" maxlength="512" autocomplete="off" spellcheck="false" aria-describedby="comparisonImportHelp">
+    <div class="actions"><button type="submit">Use comparison result</button></div>
+    <p id="comparisonImportStatus" class="small" role="status"></p>
+  </form>
+  <p>You can also choose the outcome printed in the Console. If a test failed, paste the red Console error in the next step.</p>
   <div class="outcome-grid" role="group" aria-label="Comparison outcome">
     <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-worked">worked</b></strong><span>The controlled request succeeded.</span></button>
     <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-worked">worked</b></strong><span>Both responses were readable.</span></button>
@@ -236,7 +243,7 @@
 </main>
 <script src="/cors-ui.js"></script>
 <script src="/cors-diagnosis.js?v=2"></script>
-<script src="/cors-debugger.js?v=2"></script>
+<script src="/cors-debugger.js?v=3"></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="/nav-dropdown.js"></script>

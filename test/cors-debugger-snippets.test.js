@@ -54,7 +54,7 @@ function loadGenerators({body = '{}', headers = '', method = 'GET', credentials 
     sessionStorage: storage()
   });
   vm.runInContext(
-    `${generatorSource}\nthis.generators = {bodyObject, parseHeaderLines, requestHeaders, validatedRequest, controlHeaders, requestSnippet, combinedDiagnosticSnippet, diagnosticControlUrl, storedUrlMemory};`,
+    `${generatorSource}\nthis.generators = {bodyObject, parseHeaderLines, requestHeaders, validatedRequest, controlHeaders, requestSnippet, combinedDiagnosticSnippet, parseComparisonResult, diagnosticControlUrl, storedUrlMemory};`,
     context
   );
   return {generators: context.generators, elements};
@@ -211,4 +211,35 @@ test('saved URL memory rejects invalid entries, removes duplicates, and stays bo
     'https://api.example.test/four',
     'https://api.example.test/five'
   ]);
+});
+
+test('the generated comparison emits an importable line containing only two statuses', async () => {
+  const {generators} = loadGenerators();
+  const target = 'https://target.test/private';
+  const control = 'https://control.test/';
+  const output = [];
+  await new vm.Script(generators.combinedDiagnosticSnippet(target, control)).runInNewContext({
+    console: {log(value) { output.push(value); }, error() {}},
+    fetch: async url => {
+      if (url === target) throw new TypeError('Failed to fetch');
+      return new Response('example body', {status: 401});
+    }
+  });
+  const line = output.find(value => typeof value === 'string' && value.startsWith('AE-RESULT '));
+  assert.equal(line, 'AE-RESULT {"a":null,"b":401}');
+  const result = generators.parseComparisonResult(line);
+  assert.equal(result.outcome, 'a-fail-b-work');
+  assert.equal(result.a, null);
+  assert.equal(result.b, 401);
+});
+
+test('comparison import distinguishes readable HTTP errors from failed fetches', () => {
+  const {generators} = loadGenerators();
+  for (const [a, b, outcome] of [
+    [500, 200, 'both-work'], [null, 200, 'a-fail-b-work'],
+    [200, null, 'a-work-b-fail'], [null, null, 'both-fail']
+  ]) assert.equal(generators.parseComparisonResult('AE-RESULT ' + JSON.stringify({a, b})).outcome, outcome);
+  for (const invalid of ['A failed · B worked', 'AE-RESULT {', 'AE-RESULT {"a":200}', 'AE-RESULT {"a":0,"b":200}']) {
+    assert.equal(generators.parseComparisonResult(invalid), null);
+  }
 });
