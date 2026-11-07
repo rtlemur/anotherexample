@@ -23,17 +23,11 @@ function config() {
 
 function applyScenario() {
   const example = scenarios[get("scenario").value];
-  if (!example) {
-    field.url.value = "";
-    field.status.value = "";
-    field.expected.value = "readable";
-    field.url.focus();
-    return;
-  }
-  for (const [key, value] of Object.entries({ method: "GET", credentials: "omit", redirect: "follow", status: "", headers: "", body: "", contentType: "", ...example })) {
+  for (const [key, value] of Object.entries({ url: "", expected: "readable", method: "GET", credentials: "omit", redirect: "follow", status: "", headers: "", body: "", contentType: "", ...example })) {
     field[key].value = value;
   }
-  get("options").open = Boolean(example.headers || example.body);
+  get("options").open = Boolean(example?.headers || example?.body);
+  if (!example) field.url.focus();
 }
 
 function prediction(request) {
