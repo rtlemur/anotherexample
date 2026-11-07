@@ -238,13 +238,13 @@ app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html'
 app.get('/contact',(req,res)=>res.sendFile(path.join(__dirname,'public','contact.html')));
 app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(path.join(__dirname,'public','.well-known','security.txt'),{dotfiles:'allow'}));
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
+const uncachedToolScripts = new Set([
+  'cors-playground.mjs', 'cors-playground-core.mjs', 'cors-diagnosis.js', 'cors-debugger.js',
+]);
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1h',
   setHeaders(res, filePath) {
-    const file = path.basename(filePath);
-    if (file === 'cors-playground.mjs' || file === 'cors-playground-core.mjs') {
-      noStore(res);
-    }
+    if (uncachedToolScripts.has(path.basename(filePath))) noStore(res);
   },
 }));
 

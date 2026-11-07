@@ -20,9 +20,9 @@ const outcomeCopy = {
     a: ['bad', '✕ Test A — Your API', 'Browser JavaScript could not read the response.'],
     b: ['ok', '✓ Test B — Known-good control', 'The same CORS-related request shape was readable.'],
     observed: 'A failed and B worked in the same page and browser.',
-    suggests: 'Cross-origin access works for this request shape. Inspect the target API response or its CORS configuration first.',
-    unknown: 'The comparison alone does not identify the missing or incorrect response header.',
-    next: 'Paste Test A’s red Console message to narrow it down.',
+    suggests: 'Cross-origin access worked against the control from this page.',
+    unknown: 'Test A may have hit a CORS rule, a connection problem, or another browser restriction.',
+    next: 'Check Test A in the Network tab and paste its full Console error to narrow down the cause.',
     clue: true
   },
   'both-work': {
@@ -480,14 +480,14 @@ function renderBrowserFlow(diagnosis) {
   flow.append(flowStep('1', 'Prepare request', `${currentMethod()}${headerNames.length ? ' with ' + headerNames.join(', ') : ''}`, 'Known', 'ok'));
 
   if (diagnosis.preflight === 'YES') {
-    flow.append(flowStep('2', 'OPTIONS preflight', 'The browser message identifies a preflight.', 'Sent', 'ok'));
+    flow.append(flowStep('2', 'OPTIONS preflight', 'The browser message identifies a failed preflight.', 'Failed', 'bad'));
   } else if (diagnosis.preflight === 'NO') {
     flow.append(flowStep('2', 'OPTIONS preflight', 'This request did not require one.', 'Skipped', 'muted'));
   } else {
     flow.append(flowStep('2', 'OPTIONS preflight', 'The message does not establish this.', 'Unknown'));
   }
 
-  const corsFamilies = new Set(['multiple-origin', 'credentials-wildcard', 'allow-credentials', 'method', 'header', 'origin-mismatch', 'missing-origin', 'redirect', 'preflight']);
+  const corsFamilies = new Set(['multiple-origin', 'credentials-wildcard', 'allow-credentials', 'method', 'header', 'origin-mismatch', 'missing-origin', 'redirect']);
   const corsFailure = corsFamilies.has(diagnosis.family);
   flow.append(flowStep('3', 'Check CORS response', corsFailure ? diagnosis.title : 'The available evidence is incomplete.', corsFailure ? 'Failed' : 'Unknown', corsFailure ? 'bad' : ''));
 
@@ -543,7 +543,7 @@ function renderFix(diagnosis) {
 
   const supportedFamilies = new Set([
     'multiple-origin', 'credentials-wildcard', 'allow-credentials', 'method',
-    'header', 'origin-mismatch', 'missing-origin', 'preflight'
+    'header', 'origin-mismatch', 'missing-origin'
   ]);
   $('codeFixSection').hidden = !supportedFamilies.has(diagnosis.family);
   if (!$('codeFixSection').hidden) {
