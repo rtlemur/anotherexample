@@ -8,6 +8,7 @@ const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const URL_MEMORY_KEY = 'anotherexample.corsDebugger.urls.v1';
 const SESSION_MEMORY_KEY = 'anotherexample.corsDebugger.session.v1';
 const MAX_RECENT_TARGETS = 5;
+let carriedError = false;
 const SENSITIVE_HEADERS = new Set([
   'authorization', 'proxy-authorization', 'cookie', 'set-cookie',
   'x-api-key', 'api-key', 'x-auth-token', 'x-access-token'
@@ -316,7 +317,24 @@ function combinedDiagnosticSnippet(target, control, body = bodyObject(), headers
   console.log('\\n=== AnotherExample outcome ===');
   console.log(conclusion);
   console.log({testA, testB, conclusion});
+  console.log('AE-RESULT ' + JSON.stringify({a: testA.status ?? null, b: testB.status ?? null}));
 })();`;
+}
+
+function parseComparisonResult(value) {
+  const line = value.trim();
+  if (!line.startsWith('AE-RESULT ')) return null;
+  try {
+    const {a, b} = JSON.parse(line.slice('AE-RESULT '.length));
+    const validStatus = status => status === null || Number.isInteger(status) && status >= 200 && status <= 599;
+    if (!validStatus(a) || !validStatus(b)) return null;
+    const outcome = a === null
+      ? (b === null ? 'both-fail' : 'a-fail-b-work')
+      : (b === null ? 'a-work-b-fail' : 'both-work');
+    return {outcome, a, b};
+  } catch {
+    return null;
+  }
 }
 
 function diagnosticControlUrl(headers = requestHeaders().headers) {
@@ -375,6 +393,16 @@ function updateControlSummary() {
 }
 
 function markDiagnosticStale() {
+  if (carriedError) {
+    const context = extractBrowserContext($('browserResult').value);
+    const source = validHttpUrl($('siteUrl').value.trim());
+    const target = validHttpUrl($('targetUrl').value.trim());
+    if ((context.origin && source?.origin !== context.origin) ||
+        (context.target && target?.href !== validHttpUrl(context.target)?.href)) {
+      carriedError = false;
+      $('carriedErrorStatus').textContent = 'The request URLs changed. Check the carried Console error against the new request before using it.';
+    }
+  }
   hideLaterPanels();
   const status = $('diagnosticStatus');
   status.textContent = 'Inputs changed — build the comparison again.';
@@ -400,25 +428,25 @@ function updateDiagnosticCode() {
   return true;
 }
 
-function setResultBox(element, result) {
+function setResultBox(element, result, status) {
   element.className = 'test-result ' + result[0];
   element.replaceChildren();
   const heading = document.createElement('strong');
   const detail = document.createElement('span');
   heading.textContent = result[1];
-  detail.textContent = result[2];
+  detail.textContent = typeof status === 'number' ? 'Browser read HTTP ' + status + '.' : result[2];
   element.append(heading, detail);
 }
 
-function renderOutcome(key) {
+function renderOutcome(key, imported) {
   const outcome = outcomeCopy[key];
   document.querySelectorAll('.outcome-button').forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.outcome === key));
   });
   $('diagnosisTitle').textContent = outcome.title;
   $('diagnosisIntro').textContent = outcome.intro;
-  setResultBox($('aResult'), outcome.a);
-  setResultBox($('bResult'), outcome.b);
+  setResultBox($('aResult'), outcome.a, imported?.a);
+  setResultBox($('bResult'), outcome.b, imported?.b);
   $('observedText').textContent = outcome.observed;
   $('suggestsText').textContent = outcome.suggests;
   $('unknownText').textContent = outcome.unknown;
@@ -433,6 +461,10 @@ function renderOutcome(key) {
   $('browserCluePanel').hidden = true;
   $('fixPanel').hidden = true;
   reveal($('diagnosisPanel'), 3);
+  if (carriedError && outcome.clue && $('browserResult').value.trim()) {
+    reveal($('browserCluePanel'), 3, false);
+    explainBrowserResult();
+  }
 }
 
 function renderBrowserExplanation(diagnosis) {
@@ -608,6 +640,8 @@ $('startDiagnosis').onclick = () => {
     return;
   }
   if (!updateDiagnosticCode()) return;
+  $('comparisonResult').value = '';
+  $('comparisonImportStatus').textContent = '';
   rememberRequestContext(source.href, target.href);
   rememberSessionPreferences();
   $('diagnosticStatus').textContent = 'Comparison ready.';
@@ -627,6 +661,19 @@ bindCodeToggle('toggleCombined', 'combinedFetch');
 bindCodeToggle('toggleTarget', 'targetFetch', 'Hide code', 'View code');
 bindCodeToggle('toggleControl', 'controlFetch', 'Hide code', 'View code');
 
+$('importComparison').addEventListener('submit', event => {
+  event.preventDefault();
+  const result = parseComparisonResult($('comparisonResult').value);
+  $('comparisonImportStatus').textContent = result
+    ? ''
+    : 'Copy the line starting with AE-RESULT from the Console, or choose the outcome below.';
+  if (result) renderOutcome(result.outcome, result);
+});
+
+$('comparisonResult').addEventListener('input', () => {
+  $('comparisonImportStatus').textContent = '';
+});
+
 document.querySelectorAll('.outcome-button').forEach(button => {
   button.addEventListener('click', () => renderOutcome(button.dataset.outcome));
 });
@@ -635,6 +682,7 @@ $('chooseAgain').onclick = () => $('diagnostic').scrollIntoView({behavior: 'smoo
 $('showBrowserClue').onclick = () => reveal($('browserCluePanel'), 3);
 $('explainBrowserResult').onclick = explainBrowserResult;
 $('browserResult').addEventListener('input', () => {
+  carriedError = false;
   $('browserExplanation').hidden = true;
   $('fixPanel').hidden = true;
   setProgress(3);
@@ -654,4 +702,20 @@ copyControl('copyFix', () => $('fixCode').textContent);
 copyControl('retest', () => $('combinedFetch').textContent);
 
 restoreRequestContext();
+if (new URLSearchParams(location.search).get('from') === 'explainer') {
+  let error;
+  try {
+    error = sessionStorage.getItem('anotherexample.corsDebugger.error.v1');
+    sessionStorage.removeItem('anotherexample.corsDebugger.error.v1');
+  } catch {}
+  if (typeof error === 'string' && error.trim() && error.length <= 16384) {
+    const context = extractBrowserContext(error);
+    $('siteUrl').value = context.origin || '';
+    $('targetUrl').value = context.target || '';
+    $('browserResult').value = error;
+    carriedError = true;
+    $('carriedErrorStatus').hidden = false;
+    $('carriedErrorStatus').textContent = 'Your Console error is ready for Step 3. Confirm the page URL, API URL, method, headers, and credentials before building the comparison.';
+  }
+}
 updateControlSummary();

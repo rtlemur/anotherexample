@@ -62,7 +62,7 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   assert.match(text, /Remove anything private first\. Analysis stays local in your browser\./);
   assert.ok(text.indexOf('id="errorPrivacy"') < text.indexOf('<textarea'));
   assert.match(text, /id="explainBrowserResult"/);
-  for (const script of ['/cors-diagnosis.js?v=2', '/cors-error-interpreter.js']) {
+  for (const script of ['/cors-diagnosis.js?v=2', '/cors-error-interpreter.js?v=2']) {
     assert.ok(text.includes(`src="${script}"`));
     await request(app).get(script).expect(200);
   }
@@ -229,7 +229,7 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   assert.match(debuggerPage.text, /data-stack="nginx"/);
   assert.match(debuggerPage.text, /data-stack="fastapi"/);
   const diagnosisScript = '/cors-diagnosis.js?v=2';
-  const debuggerScript = '/cors-debugger.js?v=2';
+  const debuggerScript = '/cors-debugger.js?v=4';
   const diagnosisIndex = debuggerPage.text.indexOf(`src="${diagnosisScript}"`);
   assert.ok(diagnosisIndex >= 0 && diagnosisIndex < debuggerPage.text.indexOf(`src="${debuggerScript}"`));
   for (const script of [diagnosisScript, debuggerScript]) {
@@ -243,12 +243,15 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   for (const [step, target] of [[1, 'requestPanel'], [2, 'diagnostic'], [3, 'diagnosisPanel'], [4, 'fixPanel']]) {
     assert.ok(debuggerPage.text.includes(`href="#${target}" data-step-link="${step}"`));
   }
-  assert.match(debuggerPage.text, /If a test failed, you can paste the red Console error—not the fetch code—in the next step/);
+  assert.match(debuggerPage.text, /id="importComparison"/);
+  assert.match(debuggerPage.text, /If a test failed, paste the red Console error in the next step/);
   assert.match(debuggerPage.text, /id="pasteGuidance"/);
   assert.match(debuggerPage.text, /id="recentTargetUrls"/);
   assert.match(debuggerPage.text, /id="clearSavedUrls"/);
   assert.equal((debuggerPage.text.match(/data-form-type="other"/g) || []).length, 2);
-  assert.equal((debuggerPage.text.match(/autocomplete="off"/g) || []).length, 2);
+  for (const id of ['siteUrl', 'targetUrl', 'comparisonResult']) {
+    assert.match(debuggerPage.text, new RegExp('id="' + id + '"[^>]*autocomplete="off"'));
+  }
   for (const route of ['/']) {
     const page = await request(app).get(route).expect(200);
     assert.doesNotMatch(page.text, /Hi and Welcome/);
