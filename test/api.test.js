@@ -8,6 +8,28 @@ test('oversized API bodies receive 413 and are not cached',async()=>{const r=awa
 test('API validation errors are not cached',async()=>{const r=await request(app).get('/api/status/not-a-code');assert.equal(r.status,400);assert.deepEqual(r.body,{error:'Status code must be an integer from 200 to 599.'});assert.equal(r.headers['cache-control'],'no-store');});
 test('successful API responses preserve their behavior and are not cached',async()=>{const r=await request(app).get('/api/health');assert.equal(r.status,200);assert.deepEqual(r.body,{status:'ok',domain:'anotherexample.com'});assert.equal(r.headers['cache-control'],'no-store');});
 test('open CORS',async()=>{const r=await request(app).get('/api/cors/open').set('Origin','https://client.example');assert.equal(r.headers['access-control-allow-origin'],'*');});
+test('echo preserves plain-text request bodies for POST and PUT', async () => {
+  for (const method of ['post', 'put']) {
+    const response = await request(app)[method]('/api/echo')
+      .type('text').send('plain text\nsecond line').expect(200);
+    assert.equal(response.body.body, 'plain text\nsecond line');
+  }
+  await request(app).post('/api/echo').type('text').send('a'.repeat(65537)).expect(413);
+});
+test('unknown API routes return a JSON 404', async () => {
+  const response = await request(app).get('/api/no-such-endpoint')
+    .expect('Content-Type', /json/).expect('Cache-Control', 'no-store').expect(404);
+  assert.deepEqual(response.body, {error:'API endpoint not found.'});
+});
+test('lab explains invalid origin and credential settings', async () => {
+  const origin = await request(app).get('/api/cors/lab?allowOrigin=reflect').expect(400);
+  assert.match(origin.body.error, /echo/);
+  const credentials = await request(app).get('/api/cors/lab?credentials=maybe').expect(400);
+  assert.equal(credentials.body.error, 'credentials must be true or false.');
+  const valid = await request(app).get('/api/cors/lab?allowOrigin=null&credentials=false').expect(200);
+  assert.equal(valid.headers['access-control-allow-origin'], 'null');
+  assert.equal(valid.headers['access-control-allow-credentials'], undefined);
+});
 test('credentialed CORS reflects origin',async()=>{const r=await request(app).get('/api/cors/credentials').set('Origin','https://client.example');assert.equal(r.headers['access-control-allow-origin'],'https://client.example');assert.equal(r.headers['access-control-allow-credentials'],'true');});
 test('lab can omit origin',async()=>{const r=await request(app).get('/api/cors/lab?allowOrigin=none').set('Origin','https://client.example');assert.equal(r.headers['access-control-allow-origin'],undefined);});
 test('lab rejects invalid configured response header values',async()=>{

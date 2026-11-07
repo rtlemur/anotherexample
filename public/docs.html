@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="canonical" href="https://anotherexample.com/docs">
+<meta name="description" content="API reference for AnotherExample's cross-origin testing endpoints, with lab parameters and copyable examples.">
+<title>API Reference — AnotherExample</title>
+<link rel="icon" href="/aefavicon.ico" sizes="any">
+<link rel="stylesheet" href="/cors.css">
+<link rel="stylesheet" href="/site.css">
+</head>
+<body>
+<main class="wrap guide-page">
+<div class="site-brand">
+  <a class="site-wordmark" href="/" aria-label="AnotherExample.com home">
+    <span class="site-wordmark-mark" aria-hidden="true">↔</span>
+    <span class="site-wordmark-name">Another<span class="site-wordmark-accent">Example</span><span class="site-wordmark-domain">.com</span></span>
+  </a>
+  <span class="site-brand-tagline">The Second Origin</span>
+</div>
+<nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
+
+
+<h1 class="page-title">API reference</h1>
+<p class="page-intro">Both hosts serve the same endpoints. Choose the host that differs from your page’s origin when testing CORS.</p>
+
+<section class="page-panel" aria-labelledby="start">
+  <h2 id="start">Start with a browser request</h2>
+  <p>Use <code>/api/cors/open</code> for a public cross-origin fetch without credentials. This example runs from <code>anotherexample.com</code> or another origin.</p>
+  <pre id="fetch-example">const response = await fetch('https://cors.anotherexample.com/api/cors/open');
+console.log(response.status, await response.json());</pre>
+  <button id="copy-fetch" type="button">Copy fetch example</button>
+
+  <h3>Inspect a request with curl</h3>
+  <p><code>/api/echo</code> returns the request method, path, query, safe headers, body, and timestamp. Use curl or a same-origin page. JSON, URL-encoded form data, and plain text are supported up to 64 KB. Use sample data.</p>
+  <pre id="echo-example">curl -i 'https://anotherexample.com/api/echo' \
+  -H 'Content-Type: text/plain' --data-binary 'hello from curl'</pre>
+  <button id="copy-echo" type="button">Copy echo example</button>
+</section>
+
+<section class="page-panel" aria-labelledby="lab">
+  <h2 id="lab">Configure a CORS response</h2>
+  <p><code>/api/cors/lab</code> accepts any method. An OPTIONS request returns the configured preflight status and headers with an empty body. Other requests normally return JSON with the lab settings and the echoed request.</p>
+  <dl>
+    <dt><code>allowOrigin</code></dt>
+    <dd>Defaults to <code>*</code>. Use <code>echo</code> to reflect the request Origin, <code>none</code> to omit the header, <code>null</code> for that literal value, or an HTTP(S) origin such as <code>https://app.example</code>.</dd>
+    <dt><code>credentials</code></dt>
+    <dd>Use <code>true</code> to send <code>Access-Control-Allow-Credentials: true</code>. The default is <code>false</code>. For credentialed browser reads, pair it with <code>allowOrigin=echo</code> or the page’s exact origin.</dd>
+    <dt><code>methods</code></dt>
+    <dd>A comma-separated method list. Defaults to <code>GET, POST, OPTIONS</code>. Use <code>none</code> to omit the header.</dd>
+    <dt><code>headers</code></dt>
+    <dd>A comma-separated request header list. Defaults to the requested preflight headers when supplied, otherwise <code>Content-Type</code>. Use <code>none</code> to omit the header.</dd>
+    <dt><code>expose</code> and <code>maxAge</code></dt>
+    <dd>Set exposed response header names and preflight cache duration in seconds. Both headers are omitted by default.</dd>
+    <dt><code>preflightStatus</code> and <code>status</code></dt>
+    <dd>Integer HTTP statuses from 200 to 599. Default to 204 for OPTIONS and 200 for other requests. Out-of-range or invalid values use the defaults.</dd>
+    <dt><code>delay</code></dt>
+    <dd>Response delay in milliseconds, from 0 to 3000. Defaults to 0. Values outside the range are capped at the nearest limit.</dd>
+  </dl>
+  <p>For a credentialed preflight, try this request:</p>
+  <pre id="lab-example">curl -i -X OPTIONS 'https://cors.anotherexample.com/api/cors/lab?allowOrigin=echo&amp;credentials=true' \
+  -H 'Origin: https://app.example' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: Content-Type'</pre>
+  <button id="copy-lab" type="button">Copy preflight example</button>
+  <p>To watch the browser enforce these settings, try the <a href="/cors/playground">CORS Playground</a>.</p>
+</section>
+
+<section class="page-panel" aria-labelledby="errors">
+  <h2 id="errors">Errors and limits</h2>
+  <p>Invalid <code>allowOrigin</code> or <code>credentials</code> values receive HTTP 400 with a JSON <code>error</code> message. Unknown API paths return HTTP 404 with the same JSON shape.</p>
+  <p>The API limit is 120 requests per minute per client IP. <code>/api/health</code> is exempt. <code>/api/delay/:ms</code> also has a limit of 20 requests per minute.</p>
+</section>
+
+<footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
+</main>
+<script src="/cors-ui.js"></script>
+<script>
+copyControl('copy-fetch', () => document.getElementById('fetch-example').textContent);
+copyControl('copy-echo', () => document.getElementById('echo-example').textContent);
+copyControl('copy-lab', () => document.getElementById('lab-example').textContent);
+</script>
+<script src="/nav-dropdown.js"></script>
+</body>
+</html>

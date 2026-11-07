@@ -36,6 +36,7 @@ app.use('/api', (req, res, next) => {
 app.use('/api', apiLimiter);
 app.use('/api', express.json({ limit: '64kb', strict: false }));
 app.use('/api', express.urlencoded({ extended: false, limit: '64kb' }));
+app.use('/api/echo', express.text({ type: 'text/plain', limit: '64kb' }));
 app.use('/api/delay', slowLimiter);
 
 function noStore(res) { res.set('Cache-Control', 'no-store'); }
@@ -184,6 +185,15 @@ app.all('/api/cors/lab', async (req,res)=>{
   if(invalidParameter) {
     return res.status(400).json({error:`Invalid ${invalidParameter[0]} query parameter: value cannot be used as an HTTP response header.`});
   }
+  if (q.credentials !== undefined && !['true', 'false'].includes(q.credentials)) {
+    return res.status(400).json({error:'credentials must be true or false.'});
+  }
+  if (q.allowOrigin !== undefined && !['*', 'none', 'echo', 'null'].includes(q.allowOrigin)) {
+    const url = typeof q.allowOrigin === 'string' && URL.parse(q.allowOrigin);
+    if (!url || !['http:', 'https:'].includes(url.protocol) || url.origin !== q.allowOrigin) {
+      return res.status(400).json({error:'allowOrigin must be *, none, echo, null, or a complete HTTP(S) origin without a path.'});
+    }
+  }
   const delay=Math.min(Math.max(Number(q.delay)||0,0),3000);
   if(delay) await new Promise(resolve=>setTimeout(resolve,delay));
   if(allowOrigin !== 'none') {
@@ -236,6 +246,7 @@ app.get('/cors/errors',(req,res)=>res.sendFile(path.join(__dirname,'public','cor
 app.get('/cors/playground',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-playground.html')));
 app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html')));
 app.get('/contact',(req,res)=>res.sendFile(path.join(__dirname,'public','contact.html')));
+app.get('/docs', (req, res) => res.sendFile(path.join(__dirname, 'public', 'docs.html')));
 app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(path.join(__dirname,'public','.well-known','security.txt'),{dotfiles:'allow'}));
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
 const uncachedToolScripts = new Set([
@@ -248,6 +259,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
   },
 }));
 
+app.use('/api', (req, res) => res.status(404).json({error:'API endpoint not found.'}));
 app.use((req,res)=>res.status(404).sendFile(path.join(__dirname,'public','404.html')));
 
 app.use((err,req,res,next)=>{if(err&&err.type==='entity.too.large')return res.status(413).json({error:'Request body too large. Maximum body size is 64 KB.'});if(err instanceof SyntaxError&&err.status===400&&'body'in err)return res.status(400).json({error:'Invalid JSON body.'});next(err);});

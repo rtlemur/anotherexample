@@ -157,7 +157,8 @@ test('sitemap pages are served from public HTML with matching canonical URLs', a
     ['https://anotherexample.com/cors/preflight-failed', 'cors-preflight-failed.html'],
     ['https://anotherexample.com/cors/works-locally-but-not-in-production', 'cors-works-locally-not-production.html'],
     ['https://anotherexample.com/cors/blocked-by-cors-policy', 'cors-blocked-by-policy.html'],
-    ['https://anotherexample.com/contact', 'contact.html']
+    ['https://anotherexample.com/contact', 'contact.html'],
+    ['https://anotherexample.com/docs', 'docs.html']
   ]);
   const sitemapUrls = [...response.text.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
   assert.deepEqual(sitemapUrls, [...pageFiles.keys()]);

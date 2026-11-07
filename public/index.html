@@ -261,23 +261,24 @@
 
 <section>
 <h2>Endpoints</h2>
+<p><a href="/docs">API reference and copyable examples</a></p>
 <p>Both hosts serve the same endpoints. The examples use <code>https://cors.anotherexample.com</code>, which is a different origin from <code>https://anotherexample.com</code>. If your page is already on the <code>cors.</code> host, use <code>https://anotherexample.com</code> as the other origin.</p>
 <p>For a cross-origin browser request that needs CORS response headers, start with an <code>/api/cors/</code> endpoint.</p>
 <div class="grid">
-  <div class="card">
-    <code class="path">ANY /api/echo</code>
-    <p>Returns method, safe request headers, query parameters, body, and timestamp. Sensitive headers and client IP information are omitted.</p>
-    <div class="endpoint-copy">
-      <code id="endpoint-url-echo">https://cors.anotherexample.com/api/echo</code>
-      <button id="endpoint-copy-echo" type="button" class="secondary" data-copy-endpoint="endpoint-url-echo" aria-label="Copy URL for the echo endpoint">Copy URL</button>
-    </div>
-  </div>
   <div class="card">
     <code class="path">ANY /api/cors/open</code>
     <p>Permissive CORS with <code>Access-Control-Allow-Origin: *</code> for non-credentialed testing. The wildcard does not enable credentialed requests or expose non-safelisted response headers by itself.</p>
     <div class="endpoint-copy">
       <code id="endpoint-url-open">https://cors.anotherexample.com/api/cors/open</code>
       <button id="endpoint-copy-open" type="button" class="secondary" data-copy-endpoint="endpoint-url-open" aria-label="Copy URL for the open CORS endpoint">Copy URL</button>
+    </div>
+  </div>
+  <div class="card">
+    <code class="path">ANY /api/echo</code>
+    <p>Returns method, safe request headers, query parameters, body, and timestamp. Sensitive headers and client IP information are omitted. Use curl or a browser page on the same origin.</p>
+    <div class="endpoint-copy">
+      <code id="endpoint-url-echo">https://cors.anotherexample.com/api/echo</code>
+      <button id="endpoint-copy-echo" type="button" class="secondary" data-copy-endpoint="endpoint-url-echo" aria-label="Copy URL for the echo endpoint">Copy URL</button>
     </div>
   </div>
   <div class="card">
