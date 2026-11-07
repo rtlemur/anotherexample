@@ -70,18 +70,24 @@ const families = {
     "Access to fetch at 'file:///tmp/data.json' blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, https.",
     'Fetch API cannot load custom://resource. URL scheme custom is not supported.',
   ],
-  network: [
-    'CORS request did not succeed. Status code: (null).',
-    'TypeError: Failed to fetch',
-    'TypeError: Load failed',
-    'NetworkError when attempting to fetch resource.',
+  dns: [
     'net::ERR_NAME_NOT_RESOLVED',
+    'NS_ERROR_UNKNOWN_HOST',
+    'A server with the specified hostname could not be found.',
+  ],
+  transport: [
     'net::ERR_CONNECTION_REFUSED',
     'net::ERR_TIMED_OUT',
     'net::ERR_CERT_AUTHORITY_INVALID',
+  ],
+  network: [
+    'CORS request did not succeed. Status code: (null).',
+    'TypeError: Failed to fetch',
+    'TypeError: Failed to fetch https://preflight.example/data',
+    'TypeError: Load failed',
+    'NetworkError when attempting to fetch resource.',
     'TLS connection failed',
     'The network connection was lost.',
-    'A server with the specified hostname could not be found.',
     'Mixed Content: The page requested an insecure resource. This request has been blocked.',
   ],
   'http-error': [
@@ -97,7 +103,8 @@ for (const [family, messages] of Object.entries(families)) {
     test(`${family}: ${message}`, () => {
       const result = diagnose(message);
       assert.equal(result.family, family);
-      assert.ok(['client', 'server', 'network'].includes(result.side));
+      if (family === 'preflight') assert.equal(result.side, null);
+      else assert.ok(['client', 'server', 'network'].includes(result.side));
       assert.ok(result.title && result.explanation);
       assert.ok(result.checks.length >= 2 && result.checks.length <= 4);
       if (family === 'network') {
@@ -136,6 +143,20 @@ test('a status error takes priority over the accompanying header failure', () =>
   assert.equal(result.family, 'http-error');
   assert.match(result.explanation, /primary problem/);
   assert.match(result.explanation, /same request/);
+});
+test('a specific header diagnosis preserves the preflight phase reported by Chrome', () => {
+  const headerError = "No 'Access-Control-Allow-Origin' header is present on the requested resource.";
+  const result = diagnose("Response to preflight request doesn't pass access control check: " + headerError);
+  assert.equal(result.family, 'missing-origin');
+  assert.equal(result.preflight, 'YES');
+  assert.equal(result.mainRequest, 'NO');
+  assert.equal(diagnose(headerError).preflight, 'MAYBE');
+});
+test('a specific transport error takes priority over a generic preflight failure', () => {
+  const result = diagnose('CORS preflight channel did not succeed. net::ERR_CONNECTION_REFUSED');
+  assert.equal(result.family, 'transport');
+  assert.equal(result.side, 'network');
+  assert.equal(result.preflight, 'YES');
 });
 test('a port number is not a server error status', () => {
   assert.equal(diagnose("No 'Access-Control-Allow-Origin' header for https://example.test:500/api").family, 'missing-origin');

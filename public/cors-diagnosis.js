@@ -1,7 +1,7 @@
 function browserDiagnosis(family, title, side, explanation, checks, preflight = 'MAYBE') {
   return {
     family, title, side,
-    explanation: explanation + ' Inspect the ' + side + ' first.',
+    explanation: side ? explanation + ' Inspect the ' + side + ' first.' : explanation,
     summary: preflight === 'YES'
       ? 'The message identifies a failed preflight; the main request may not have been sent.'
       : 'This message alone does not establish whether a preflight occurred.',
@@ -79,13 +79,26 @@ const browserDiagnosisRules = [
       ['Serve local pages through an HTTP or HTTPS development server', 'Check the target URL scheme', 'Use an HTTP or HTTPS API URL'], 'UNKNOWN')
   },
   {
-    matches: t => /preflight/.test(t) && /unsuccessful|did not succeed|fail|reject|non-2xx|not.*(?:ok|successful|2xx)|doesn\'t pass|does not pass/.test(t) || /options request (?:was )?rejected/.test(t),
-    diagnosis: browserDiagnosis('preflight', 'Preflight failed', 'server',
-      'The OPTIONS preflight failed. This message alone may not distinguish a rejected response from a transport failure.',
-      ['Inspect the OPTIONS status and browser network error', 'Ensure OPTIONS returns a successful 2xx response without authentication redirects', 'Check allowed origin, method, and headers', 'If no response arrived, check connectivity and TLS'], 'YES')
+    matches: t => /\b(?:err_name_not_resolved|ns_error_unknown_host|dns_probe_finished_nxdomain)\b|server with the specified hostname could not be found/.test(t),
+    diagnosis: browserDiagnosis('dns', 'DNS lookup failed', 'network',
+      'The browser reports that it could not resolve the target hostname.',
+      ['Check the target URL for a misspelled hostname', 'Check whether the hostname resolves on the same device and network', 'For a private hostname, check whether you need a VPN or internal DNS'], 'UNKNOWN')
   },
   {
-    matches: t => /err_(?:name_not_resolved|connection_[a-z_]+|timed_out|cert_[a-z_]+|ssl_[a-z_]+)|cors request did not succeed|failed to fetch|load failed|networkerror when attempting to fetch resource|network request failed|request timed out|network connection was lost|could not connect to the server|server with the specified hostname could not be found|mixed content.*(?:blocked|insecure)|(?:tls|ssl|certificate|dns|connection).*(?:error|failed|failure|invalid|expired|refused|timed out)/.test(t),
+    matches: t => /\berr_(?:connection_[a-z_]+|timed_out|cert_[a-z_]+|ssl_[a-z_]+)\b/.test(t),
+    diagnosis: browserDiagnosis('transport', 'Connection or TLS failure', 'network',
+      'The browser reports a connection error, timeout, or TLS error.',
+      ['Check the exact error for this request in DevTools → Network', 'Verify that the host and port are reachable and the HTTPS certificate is valid'], 'UNKNOWN')
+  },
+  {
+    matches: t => /\bpreflight (?:request|response|channel|status)\b.*(?:unsuccessful|did not succeed|fail|reject|not.*(?:ok|successful|2xx)|doesn't pass|does not pass)/.test(t) ||
+      /\b(?:non-2xx preflight status|options request (?:was )?rejected|preflight (?:failed|rejected))\b/.test(t),
+    diagnosis: browserDiagnosis('preflight', 'Preflight failed', null,
+      'The OPTIONS preflight failed. Open its Network entry to see whether an HTTP response arrived.',
+      ['Check the OPTIONS status and any browser network error', 'If a response arrived, inspect the HTTP status and CORS response headers', 'If no response arrived, check connectivity and TLS'], 'YES')
+  },
+  {
+    matches: t => /cors request did not succeed|failed to fetch|load failed|networkerror when attempting to fetch resource|network request failed|request timed out|network connection was lost|could not connect to the server|mixed content.*(?:blocked|insecure)|(?:tls|ssl|certificate|dns|connection).*(?:error|failed|failure|invalid|expired|refused|timed out)/.test(t),
     diagnosis: browserDiagnosis('network', 'CORS or network failure — cause unclear', 'network',
       'This may not be a CORS configuration problem. The message alone cannot distinguish CORS from connectivity, DNS, TLS, mixed-content blocking, or another browser restriction.',
       ['Look for a more specific Console or Network error for the same request', 'Check target availability, DNS, and TLS certificates', 'Check for an HTTPS page requesting an insecure HTTP resource', 'Inspect OPTIONS and the main request in DevTools; blocked headers are not available to page JavaScript'], 'UNKNOWN')
@@ -96,17 +109,24 @@ function findBrowserDiagnosis(text) {
   const normalized = String(text || '').trim().toLowerCase()
     .replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ');
   const matched = browserDiagnosisRules.find(rule => rule.matches(normalized));
+  const namesPreflight = /\b(?:response to (?:the )?preflight request|cors preflight channel did not succeed|(?:in|on|from|for) (?:a |the |cors )?preflight (?:request|response|channel))\b/.test(normalized);
   // Require a status label, HTTP prefix, or standard status reason; a URL port
   // or arbitrary number alongside the word CORS is not HTTP-error evidence.
   const httpError = /\b(?:status(?: code| of)?|http(?:\/\d(?:\.\d)?)?)[\s:='"(]+[45]\d{2}\b|\b[45]\d{2}\s+(?:bad request|unauthorized|forbidden|not found|internal server error|bad gateway|service unavailable|gateway timeout)\b/.test(normalized);
-  const corsComplaint = matched && !['network', 'scheme'].includes(matched.diagnosis.family) ||
+  const corsComplaint = matched && !['dns', 'transport', 'network', 'scheme'].includes(matched.diagnosis.family) ||
     /blocked by cors|cors (?:error|request did not succeed)|access.control (?:check|checks).*fail/.test(normalized);
   if (httpError && corsComplaint) {
     return browserDiagnosis('http-error', 'HTTP error with a CORS complaint', 'server',
       'The message includes a 4xx/5xx response and a CORS complaint. The underlying server or upstream error may be the primary problem; its error response may simply lack CORS headers. Confirm both messages refer to the same request.',
-      ['Correlate the status and CORS message with the same URL in DevTools', 'Inspect server and proxy logs for the underlying HTTP error', 'Check CORS headers on error responses as well as successful responses', 'Do not rely on page JavaScript to read a blocked response'], /preflight|options/.test(normalized) ? 'YES' : 'MAYBE');
+      ['Correlate the status and CORS message with the same URL in DevTools', 'Inspect server and proxy logs for the underlying HTTP error', 'Check CORS headers on error responses as well as successful responses', 'Do not rely on page JavaScript to read a blocked response'], namesPreflight || matched?.diagnosis.preflight === 'YES' ? 'YES' : 'MAYBE');
   }
-  if (matched) return matched.diagnosis;
+  if (matched) {
+    const { family, title, side, likelyCause, checks, preflight } = matched.diagnosis;
+    if (preflight !== 'YES' && namesPreflight) {
+      return browserDiagnosis(family, title, side, likelyCause, checks, 'YES');
+    }
+    return matched.diagnosis;
+  }
   if (/^status\s*:\s*200\b/.test(normalized) && !/cors|blocked|error|fail/.test(normalized)) {
     return {
       ...browserDiagnosis('success', 'Successful HTTP response', 'client',
