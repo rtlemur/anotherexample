@@ -166,10 +166,22 @@
   </form>
   <p>You can also choose the outcome printed in the Console. If a test failed, paste the red Console error in the next step.</p>
   <div class="outcome-grid" role="group" aria-label="Comparison outcome">
-    <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-worked">worked</b></strong><span>The controlled request succeeded.</span></button>
-    <button class="outcome-button" data-outcome="both-work" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-worked">worked</b></strong><span>Both responses were readable.</span></button>
-    <button class="outcome-button" data-outcome="both-fail" aria-pressed="false"><strong>A <b class="outcome-failed">failed</b> · B <b class="outcome-failed">failed</b></strong><span>Neither response was readable.</span></button>
-    <button class="outcome-button" data-outcome="a-work-b-fail" aria-pressed="false"><strong>A <b class="outcome-worked">worked</b> · B <b class="outcome-failed">failed</b></strong><span>The control behaved unexpectedly.</span></button>
+    <button class="outcome-button" data-outcome="a-fail-b-work" aria-pressed="false" aria-labelledby="a-fail-b-work-title" aria-describedby="a-fail-b-work-detail">
+      <strong id="a-fail-b-work-title">A <b class="outcome-failed">failed</b> · B <b class="outcome-worked">worked</b></strong>
+      <span id="a-fail-b-work-detail">The controlled request succeeded.</span>
+    </button>
+    <button class="outcome-button" data-outcome="both-work" aria-pressed="false" aria-labelledby="both-work-title" aria-describedby="both-work-detail">
+      <strong id="both-work-title">A <b class="outcome-worked">worked</b> · B <b class="outcome-worked">worked</b></strong>
+      <span id="both-work-detail">Both responses were readable.</span>
+    </button>
+    <button class="outcome-button" data-outcome="both-fail" aria-pressed="false" aria-labelledby="both-fail-title" aria-describedby="both-fail-detail">
+      <strong id="both-fail-title">A <b class="outcome-failed">failed</b> · B <b class="outcome-failed">failed</b></strong>
+      <span id="both-fail-detail">Neither response was readable.</span>
+    </button>
+    <button class="outcome-button" data-outcome="a-work-b-fail" aria-pressed="false" aria-labelledby="a-work-b-fail-title" aria-describedby="a-work-b-fail-detail">
+      <strong id="a-work-b-fail-title">A <b class="outcome-worked">worked</b> · B <b class="outcome-failed">failed</b></strong>
+      <span id="a-work-b-fail-detail">The control behaved unexpectedly.</span>
+    </button>
   </div>
 </section>
 
@@ -243,7 +255,7 @@
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/cors-ui.js"></script>
-<script src="/cors-diagnosis.js?v=2"></script>
+<script src="/cors-diagnosis.js?v=3"></script>
 <script src="/cors-debugger.js?v=4"></script>
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>

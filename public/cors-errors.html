@@ -63,42 +63,24 @@
   <p id="handoffStatus" class="small" role="status"></p>
 
 
-  <div
-    id="browserExplanation"
-    class="status"
-    style="display:none;margin-top:14px"
-    aria-live="polite"
-  ></div>
+  <div id="browserExplanation" aria-live="polite" aria-atomic="true"></div>
 
   <p class="small">
     Recognizes common browser and CORS messages and avoids guessing when the cause is unclear.
   </p>
 </div>
 
-<div
-  class="panel page-panel page-section"
-  id="preflightDiagnosisPanel"
-  style="display:none"
->
+<div class="panel page-panel page-section" id="preflightDiagnosisPanel" hidden>
   <h2>What to check next</h2>
-
- <p id="preflightSummary">
-  AnotherExample found signs that this request involved an OPTIONS preflight. Here’s what the browser result suggests.
- </p>
-
-  <div
-    id="preflightDiagnosis"
-    class="status"
-    aria-live="polite"
-  ></div>
+  <p id="preflightSummary"></p>
+  <ul id="preflightChecks"></ul>
 </div>
 
 
 
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
-<script src="/cors-ui.js"></script>
-<script src="/cors-diagnosis.js?v=2"></script>
-<script src="/cors-error-interpreter.js?v=2"></script>
+<script src="/cors-diagnosis.js?v=3"></script>
+<script src="/cors-error-interpreter.js?v=3"></script>
 <script src="/nav-dropdown.js"></script>
 </body></html>

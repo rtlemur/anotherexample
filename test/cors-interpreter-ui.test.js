@@ -19,14 +19,14 @@ function setup({storageBlocked = false} = {}) {
   const destinations = [];
   const $ = id => {
     if (!elements.has(id)) {
-      let html = '';
       elements.set(id, {
-        value: '', scrollHeight: 90, style: {}, attributes: {}, listeners: {},
-        get innerHTML() { return html; },
-        set innerHTML(value) { html = value; writes++; },
-        setAttribute(name, value) { this.attributes[name] = value; },
+        value: '', scrollHeight: 90, style: {}, listeners: {}, children: [], textContent: '',
+        replaceChildren(...children) {
+          this.children = children;
+          this.textContent = children.map(child => child.textContent).join('\n');
+          writes++;
+        },
         addEventListener(name, listener) { this.listeners[name] = listener; },
-        prepend() {},
         focus() { assert.fail('Must not move focus'); },
         scrollIntoView() { assert.fail('Must not scroll'); },
       });
@@ -34,7 +34,7 @@ function setup({storageBlocked = false} = {}) {
     return elements.get(id);
   };
   const context = vm.createContext({
-    $, URL, resultBadge: () => ({}),
+    $, URL, document: {createElement(localName) { return {localName, textContent: ''}; }},
     setTimeout(fn, delay) { const id = ++nextTimer; timers.set(id, {fn, due: now + delay}); return id; },
     clearTimeout(id) { timers.delete(id); },
     sessionStorage: {
@@ -86,15 +86,15 @@ test('paste automatically diagnoses after 400ms; edits restart the debounce', ()
   ui.advance(399);
   assert.equal(ui.parses, 0);
   ui.advance(1);
-  assert.match(ui.$('browserExplanation').innerHTML, /Origin not allowed by server/);
-  assert.equal(ui.$('browserExplanation').style.display, 'block');
+  assert.match(ui.$('browserExplanation').textContent, /Origin not allowed by server/);
+  assert.equal(ui.$('preflightDiagnosisPanel').hidden, false);
   ui.input('TypeError: Failed to fetch');
   ui.advance(300);
   ui.input('Access-Control-Allow-Origin: * used with credentials');
   ui.advance(399);
   assert.equal(ui.parses, 1);
   ui.advance(1);
-  assert.match(ui.$('browserExplanation').innerHTML, /Credentials cannot use a wildcard origin/);
+  assert.match(ui.$('browserExplanation').textContent, /Credentials cannot use a wildcard origin/);
   assert.equal(ui.parses, 2);
 });
 
@@ -107,18 +107,25 @@ test('clearing hides stale results, cancels pending work, and never diagnoses em
   ui.advance(1000);
   ui.$('explainBrowserResult').onclick();
   assert.equal(ui.parses, 1);
-  assert.equal(ui.$('browserExplanation').style.display, 'none');
-  assert.equal(ui.$('preflightDiagnosisPanel').style.display, 'none');
+  assert.equal(ui.$('browserExplanation').textContent, '');
+  assert.equal(ui.$('preflightDiagnosisPanel').hidden, true);
   ui.input('Failed to fetch');
   ui.advance(400);
-  assert.equal(ui.$('browserExplanation').style.display, 'block');
+  assert.match(ui.$('browserExplanation').textContent, /cause unclear/);
 });
 
-test('manual button diagnoses immediately and cancels the pending automatic update', () => {
+test('manual diagnosis renders one heading and a checklist and cancels the automatic update', () => {
   const ui = setup();
   ui.input('CORS preflight channel did not succeed');
   ui.$('explainBrowserResult').onclick();
-  assert.match(ui.$('browserExplanation').innerHTML, /Preflight failed/);
+  const [heading, description] = ui.$('browserExplanation').children;
+  assert.deepEqual([heading.localName, heading.textContent], ['h3', 'Preflight failed']);
+  assert.equal(description.localName, 'p');
+  assert.equal(ui.$('browserExplanation').children.length, 2);
+  const checklist = ui.$('preflightChecks');
+  assert.ok(checklist.children.length && checklist.children.every(item => item.localName === 'li'));
+  assert.doesNotMatch(checklist.textContent, /Likely cause|Preflight failed/);
+  assert.ok(!checklist.textContent.includes(description.textContent));
   assert.equal(ui.parses, 1);
   ui.advance(1000);
   assert.equal(ui.parses, 1);
@@ -132,9 +139,9 @@ test('equivalent diagnoses do not rewrite live regions or repeat announcements',
   ui.input('TypeError: Failed to fetch');
   ui.advance(400);
   assert.equal(ui.writes, writes);
-  assert.equal(ui.$('preflightDiagnosis').attributes['aria-live'], 'off');
   const markup = fs.readFileSync(path.join(__dirname, '../public/cors-errors.html'), 'utf8');
-  assert.match(markup, /id="browserExplanation"[^>]*aria-live="polite"/);
+  assert.match(markup, /id="browserExplanation" aria-live="polite" aria-atomic="true"><\/div>/);
+  assert.match(markup, /<ul id="preflightChecks"><\/ul>/);
 });
 
 test('IME composition waits until composition ends before scheduling', () => {
