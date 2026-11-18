@@ -26,6 +26,15 @@
 .site-nav a:link,.site-nav a:visited,.site-footer a:link,.site-footer a:visited{color:var(--accent)}
 .site-nav a:hover,.site-footer a:hover{color:var(--text);text-decoration:underline;text-underline-offset:4px}
 .site-nav a:focus-visible,.site-footer a:focus-visible{color:var(--text);outline:2px solid var(--accent);outline-offset:3px}
+.page-feedback{margin:0 0 14px}
+.page-feedback-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}
+#page-feedback-question{margin:0;color:var(--text);font-weight:700}
+.page-feedback-options{display:inline-flex;gap:8px}
+.page-feedback-vote{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:44px;margin:0;padding:6px 12px;border:1px solid var(--muted);border-radius:7px;background:var(--card);color:var(--text);font:inherit;font-weight:650;cursor:pointer}
+.page-feedback-vote:not([aria-disabled=true]):hover,.page-feedback-vote[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.page-feedback-vote[aria-disabled=true]{cursor:default}
+.page-feedback-status{margin:8px 0 0}
+.page-feedback-status:empty{margin:0}
 .card h3 a:link,.card h3 a:visited{color:var(--accent)}
 .card h3 a:hover{color:var(--text)}
 a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
