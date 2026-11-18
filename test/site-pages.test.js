@@ -14,9 +14,9 @@ const guidePages = [
 ];
 const troubleshootingUrls = guidePages.map(([url]) => url);
 
-const brandedPages = [...primaryPages, ['/contact', null], ...guidePages.map(([route]) => [route, route]), ['/missing-page', null, 404]];
+const brandedPages = [...primaryPages, ['/contact', null], ['/docs', null], ...guidePages.map(([route]) => [route, route]), ['/missing-page', null, 404]];
 for (const [route, active, status = 200] of brandedPages) {
-  test(`${route} has the shared branding, navigation dropdown, and contact footer`, async () => {
+  test(`${route} has the shared branding, navigation dropdown, and feedback footer`, async () => {
     const response = await request(app).get(route).expect(status);
     assert.match(response.text, /<a class="site-wordmark" href="\/" aria-label="AnotherExample\.com home">/);
     assert.match(response.text, /Another<span class="site-wordmark-accent">Example<\/span><span class="site-wordmark-domain">\.com<\/span>/);
@@ -30,6 +30,7 @@ for (const [route, active, status = 200] of brandedPages) {
     for (const url of troubleshootingUrls) assert.ok(response.text.includes(`href="${url}"`));
     assert.doesNotMatch(response.text.match(/<nav class="site-nav"[\s\S]*?<\/nav><\/details><\/nav>/)[0], /href="\/contact"/);
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
+    assert.match(response.text, /<script src="\/page-feedback\.js"(?: data-feedback-path="\/404")? defer><\/script>/);
   });
 }
 
