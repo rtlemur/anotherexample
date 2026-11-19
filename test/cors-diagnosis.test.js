@@ -7,7 +7,7 @@ const path = require('node:path');
 // Exercise the actual DOM-independent parser without executing page handlers.
 const source = fs.readFileSync(path.join(__dirname, '../public/cors-diagnosis.js'), 'utf8');
 const parser = source;
-const diagnose = vm.runInNewContext(parser + '\nfindBrowserDiagnosis');
+const diagnose = vm.runInNewContext(parser + '\nfindBrowserDiagnosis', {URL});
 
 const families = {
   'missing-origin': [
@@ -164,6 +164,95 @@ test('a port number is not a server error status', () => {
 test('HTTP 200 is retained without asserting JavaScript access', () => {
   assert.equal(diagnose('status: 200').family, 'success');
   assert.match(diagnose('status: 200').explanation, /does not prove/);
+});
+
+test('Firefox identifies a missing allow-origin header even with a successful HTTP status', () => {
+  const message = 'Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://api.example/data. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing).';
+  const reported = diagnose(message + ' Status code: 200.');
+  assert.equal(reported.title, 'Missing Access-Control-Allow-Origin header');
+  assert.match(reported.explanation, /reports HTTP 200/);
+  assert.match(reported.explanation, /JavaScript on your page cannot read it/);
+  assert.equal(reported.mainRequest, 'UNKNOWN');
+
+  const noStatus = diagnose(message.replace('/data', '/status:200') + ' Status code: (null).');
+  assert.equal(noStatus.title, reported.title);
+  assert.doesNotMatch(noStatus.explanation, /HTTP 200/);
+});
+
+test('Chrome and Firefox name the request header the OPTIONS response needs to allow', () => {
+  for (const message of [
+    'Request header field authorization is not allowed by Access-Control-Allow-Headers in preflight response.',
+    'Reason: missing token ‘authorization’ in CORS header ‘Access-Control-Allow-Headers’ from CORS preflight channel',
+  ]) {
+    const result = diagnose(message);
+    assert.match(result.explanation, /the Authorization request header/);
+    assert.match(result.checks[0], /add Authorization to Access-Control-Allow-Headers on the OPTIONS response/);
+    assert.equal(result.preflight, 'YES');
+  }
+
+  const custom = diagnose('Request header field X-Client-Id is not allowed by Access-Control-Allow-Headers in preflight response.');
+  assert.match(custom.checks[0], /add X-Client-Id/);
+  const invalid = diagnose("invalid token 'bad header' in CORS header 'Access-Control-Allow-Headers'");
+  assert.doesNotMatch(invalid.checks.join(' '), /add bad header/);
+});
+
+test('redirect guidance uses an explicitly identified HTTPS page and HTTP API URL', () => {
+  const message = "Access to fetch at 'http://api.example/data' from origin 'https://client.example' has been blocked by CORS policy: Redirect is not allowed for a preflight request.";
+  const result = diagnose(message);
+  assert.equal(result.family, 'redirect');
+  assert.match(result.explanation, /page uses HTTPS and the API URL starts with HTTP/);
+  assert.match(result.checks.join(' '), /Check whether the HTTP URL redirects to HTTPS/);
+  assert.equal(result.preflight, 'YES');
+
+  const loggedRedirect = diagnose(message.replace("'http://api.example/data'", "'https://api.example/data' (redirected from 'http://api.example/data')"));
+  assert.match(loggedRedirect.explanation, /shows an HTTP-to-HTTPS redirect/);
+  assert.match(loggedRedirect.checks.join(' '), /Use the final HTTPS API URL directly/);
+
+  for (const general of [
+    message.replace('http://api.example', 'https://api.example'),
+    message.replace(" from origin 'https://client.example'", '') + ' Other URL https://unrelated.example.',
+  ]) {
+    assert.equal(diagnose(general).family, 'redirect');
+    assert.doesNotMatch(diagnose(general).explanation, /page uses HTTPS|HTTP-to-HTTPS/);
+  }
+});
+
+test('Chrome no-cors suggestion gets a warning alongside the specific diagnosis', () => {
+  const message = "No 'Access-Control-Allow-Origin' header is present on the requested resource.";
+  const result = diagnose(message + " If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.");
+  assert.equal(result.title, 'Missing Access-Control-Allow-Origin header');
+  assert.match(result.explanation, /Avoid no-cors .* opaque to JavaScript/);
+  const withoutSuggestion = diagnose(message + ' URL: https://api.example/no-cors.');
+  assert.doesNotMatch(withoutSuggestion.explanation, /Avoid no-cors/);
+});
+
+test('failed preflight advice uses reported statuses and covers common causes when the status is unknown', () => {
+  const message = "Response to preflight request doesn't pass access control check: It does not have HTTP ok status.";
+  const noStatus = diagnose(message);
+  assert.equal(noStatus.family, 'preflight');
+  assert.match(noStatus.checks.join(' '), /401 or 403.*login middleware/);
+  assert.match(noStatus.checks.join(' '), /404 or 405.*OPTIONS handler/);
+  assert.match(noStatus.checks.join(' '), /If no response arrived/);
+  assert.doesNotMatch(noStatus.explanation, /reports HTTP/);
+
+  for (const status of [401, 403, 404, 405]) {
+    const result = diagnose(message + ' Status code: ' + status + '.');
+    assert.equal(result.family, 'preflight');
+    assert.ok(result.explanation.includes('reports HTTP ' + status));
+    assert.match(result.explanation, /Confirm that status on the OPTIONS request/);
+    assert.equal(result.preflight, 'YES');
+    if (status < 404) {
+      assert.match(result.checks.join(' '), /keep authentication on the actual API request/i);
+      assert.doesNotMatch(result.checks.join(' '), /404 or 405/);
+    } else {
+      assert.match(result.checks.join(' '), /OPTIONS handler/);
+      assert.doesNotMatch(result.checks.join(' '), /401 or 403/);
+    }
+  }
+  const chrome = diagnose(message + '\nOPTIONS https://api.example/data 405 (Method Not Allowed)');
+  assert.match(chrome.explanation, /reports HTTP 405/);
+  const conflicting = diagnose(message + '\nStatus code: 401.\nStatus code: 404.');
+  assert.doesNotMatch(conflicting.explanation, /reports HTTP/);
 });
 
 const extract = vm.runInNewContext(source + '\nextractBrowserContext', {URL});

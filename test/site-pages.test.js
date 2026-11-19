@@ -62,7 +62,7 @@ test('error page keeps compact input, local privacy note, and manual fallback', 
   assert.match(text, /Remove anything private first\. Analysis stays local in your browser\./);
   assert.ok(text.indexOf('id="errorPrivacy"') < text.indexOf('<textarea'));
   assert.match(text, /id="explainBrowserResult"/);
-  for (const script of ['/cors-diagnosis.js?v=2', '/cors-error-interpreter.js?v=2']) {
+  for (const script of ['/cors-diagnosis.js?v=3', '/cors-error-interpreter.js?v=3']) {
     assert.ok(text.includes(`src="${script}"`));
     await request(app).get(script).expect(200);
   }
@@ -228,7 +228,7 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   assert.match(debuggerPage.text, /data-stack="express"/);
   assert.match(debuggerPage.text, /data-stack="nginx"/);
   assert.match(debuggerPage.text, /data-stack="fastapi"/);
-  const diagnosisScript = '/cors-diagnosis.js?v=2';
+  const diagnosisScript = '/cors-diagnosis.js?v=3';
   const debuggerScript = '/cors-debugger.js?v=4';
   const diagnosisIndex = debuggerPage.text.indexOf(`src="${diagnosisScript}"`);
   assert.ok(diagnosisIndex >= 0 && diagnosisIndex < debuggerPage.text.indexOf(`src="${debuggerScript}"`));
@@ -239,6 +239,11 @@ test('debugger integrates the guided comparison and keeps the standalone error e
   assert.match(debuggerPage.text, /class="outcome-worked">worked<\/b>/);
   const outcomes = [...debuggerPage.text.matchAll(/class="outcome-button"/g)];
   assert.equal(outcomes.length, 4);
+  for (const key of ['a-fail-b-work', 'both-work', 'both-fail', 'a-work-b-fail']) {
+    assert.ok(debuggerPage.text.includes('aria-labelledby="' + key + '-title" aria-describedby="' + key + '-detail"'));
+    assert.ok(debuggerPage.text.includes('<strong id="' + key + '-title">'));
+    assert.ok(debuggerPage.text.includes('<span id="' + key + '-detail">'));
+  }
   assert.doesNotMatch(debuggerPage.text, /id="allowOrigin"|id="preflight"|id="delay"/);
   for (const [step, target] of [[1, 'requestPanel'], [2, 'diagnostic'], [3, 'diagnosisPanel'], [4, 'fixPanel']]) {
     assert.ok(debuggerPage.text.includes(`href="#${target}" data-step-link="${step}"`));
@@ -270,7 +275,7 @@ test('shared styles explicitly cover visited links, hover, focus, and wrapping n
 
 test('browser diagnosis distinguishes a missing ACAO header from an ambiguous origin rejection', () => {
   const parser = fs.readFileSync(require.resolve('../public/cors-diagnosis.js'), 'utf8');
-  const diagnosis = message => vm.runInNewContext(parser + '\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')');
+  const diagnosis = message => vm.runInNewContext(parser + '\nfindBrowserDiagnosis(' + JSON.stringify(message) + ')', {URL});
   const explicit = diagnosis("Access to fetch at 'https://example.com/' from origin 'https://preview.example/' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.");
   assert.equal(explicit.title, 'Missing Access-Control-Allow-Origin header');
   assert.match(explicit.explanation, /missing the Access-Control-Allow-Origin header/);

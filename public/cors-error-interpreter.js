@@ -2,33 +2,20 @@ const $ = id => document.getElementById(id);
 
 function renderDiagnosis(diagnosis) {
   const explanationBox = $('browserExplanation');
-  const preflightPanel = $('preflightDiagnosisPanel');
-  const preflightBox = $('preflightDiagnosis');
+  const title = document.createElement('h3');
+  const explanation = document.createElement('p');
+  title.textContent = diagnosis.title;
+  explanation.textContent = diagnosis.explanation;
+  explanationBox.className = 'status';
+  explanationBox.replaceChildren(title, explanation);
 
-  explanationBox.style.display = 'block';
-  explanationBox.innerHTML =
-    '<strong>' + diagnosis.title + '</strong><br>' +
-    diagnosis.explanation;
-
-  const badge = diagnosis.mainRequest === 'YES' ? ['200 OK', 'ok'] : diagnosis.preflight === 'YES' ? ['Preflight failed', 'bad'] : diagnosis.preflight === 'MAYBE' ? ['CORS blocked', 'bad'] : null;
-  if (badge) explanationBox.prepend(resultBadge(...badge));
   $('preflightSummary').textContent = diagnosis.summary;
-
-  preflightPanel.style.display = 'block';
-  preflightBox.className = 'status bad';
-
-  const checks = diagnosis.checks
-    .map(check => '• ' + check + '<br>')
-    .join('');
-
-  preflightBox.innerHTML =
-    '<strong>Preflight likely happened: ' + diagnosis.preflight + '</strong><br>' +
-    '<strong>Main request likely sent: ' + diagnosis.mainRequest + '</strong><br><br>' +
-    '<strong>Likely cause:</strong><br>' +
-    diagnosis.likelyCause +
-    '<br><br>' +
-    '<strong>Check next:</strong><br>' +
-    checks;
+  $('preflightChecks').replaceChildren(...diagnosis.checks.map(check => {
+    const item = document.createElement('li');
+    item.textContent = check;
+    return item;
+  }));
+  $('preflightDiagnosisPanel').hidden = false;
 }
 
 function bindBrowserResultInterpreter() {
@@ -36,10 +23,6 @@ function bindBrowserResultInterpreter() {
   let timer;
   let composing = false;
   let lastDiagnosis = null;
-
-  // Announce the short explanation politely; keep the detailed checks readable
-  // without a second, lengthy live announcement on every edit.
-  $('preflightDiagnosis').setAttribute('aria-live', 'off');
 
   function resizeInput() {
     input.style.height = 'auto';
@@ -60,8 +43,9 @@ function bindBrowserResultInterpreter() {
     $('continueDebugger').disabled = !input.value.trim();
     if (!input.value.trim()) {
       lastDiagnosis = null;
-      $('browserExplanation').style.display = 'none';
-      $('preflightDiagnosisPanel').style.display = 'none';
+      $('browserExplanation').className = '';
+      $('browserExplanation').replaceChildren();
+      $('preflightDiagnosisPanel').hidden = true;
       return;
     }
     const diagnosis = findBrowserDiagnosis(input.value);
