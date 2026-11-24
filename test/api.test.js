@@ -257,3 +257,42 @@ test('delay endpoint rejects invalid delay values',async()=>{
     assert.deepEqual(r.body,{error:'Delay must be an integer from 0 to 10000 milliseconds.'},delay);
   }
 });
+
+test('cookie comparison sets only its scoped demo cookie from the primary page', async () => {
+  const endpoint = '/api/cookie-comparison/setup';
+  for (const origin of [undefined, 'https://cookies.anotherexample.org', 'https://outside.example']) {
+    const response = request(app).post(endpoint);
+    if (origin) response.set('Origin', origin);
+    const rejected = await response.expect(403);
+    assert.equal(rejected.headers['set-cookie'], undefined);
+  }
+
+  const response = await request(app).post(endpoint)
+    .set('Origin', 'https://anotherexample.com').expect(204);
+  assert.equal(response.headers['set-cookie'].length, 1);
+  const [cookie] = response.headers['set-cookie'];
+  assert.match(cookie, /^anotherexample_cookie_comparison=demo;/);
+  for (const attribute of ['Max-Age=600', 'Path=/api/cookie-comparison/check', 'HttpOnly', 'Secure', 'SameSite=Lax']) {
+    assert.ok(cookie.split('; ').includes(attribute));
+  }
+  assert.equal(response.headers['cache-control'], 'no-store');
+});
+
+test('cookie comparison reports only the demo marker to its two configured sites', async () => {
+  const endpoint = '/api/cookie-comparison/check';
+  const cookies = 'session=private-value; anotherexample_cookie_comparison=demo';
+  for (const origin of ['https://anotherexample.com', 'https://cookies.anotherexample.org']) {
+    const response = await request(app).get(endpoint).set('Origin', origin).set('Cookie', cookies).expect(200);
+    assert.deepEqual(response.body, { received: true });
+    assert.equal(response.headers['access-control-allow-origin'], origin);
+    assert.equal(response.headers['access-control-allow-credentials'], 'true');
+    assert.equal(response.headers.vary, 'Origin');
+    assert.equal(response.headers['cache-control'], 'no-store');
+  }
+
+  const missing = await request(app).get(endpoint).set('Cookie', 'anotherexample_cookie_comparison=other').expect(200);
+  assert.deepEqual(missing.body, { received: false });
+  const denied = await request(app).get(endpoint).set('Origin', 'https://outside.example').set('Cookie', cookies).expect(403);
+  assert.equal(denied.headers['access-control-allow-origin'], undefined);
+  assert.equal(denied.body.received, undefined);
+});

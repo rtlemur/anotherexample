@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Cookie Comparison | AnotherExample</title>
+  <link rel="icon" href="/aefavicon.ico" sizes="any">
+  <link rel="stylesheet" href="/cors.css">
+  <link rel="stylesheet" href="/site.css?v=2">
+  <style>
+    .cookie-tool { max-width: 850px; }
+    .cookie-tool h2 { margin-top: 0; }
+    .cookie-results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0; }
+    .cookie-results dt { color: var(--muted); }
+    .cookie-results dd { margin: .25rem 0 1rem; font-weight: 700; }
+    .cookie-results dd:last-child { margin-bottom: 0; }
+    .cookie-tool button { min-height: 44px; }
+    .cookie-tool button:disabled { cursor: default; opacity: .65; }
+    @media (max-width: 600px) { .cookie-results { grid-template-columns: 1fr; } }
+  </style>
+  <script type="module" src="/cors-cookie-comparison.js"></script>
+</head>
+<body>
+<main class="wrap cookie-tool">
+  <div class="site-brand">
+    <a class="site-wordmark" href="https://anotherexample.com/" aria-label="AnotherExample.com home">
+      <span class="site-wordmark-mark" aria-hidden="true">↔</span>
+      <span class="site-wordmark-name">Another<span class="site-wordmark-accent">Example</span><span class="site-wordmark-domain">.com</span></span>
+    </a>
+    <span class="site-brand-tagline">The Second Origin</span>
+  </div>
+  <p><a id="playground-link" href="/cors/playground">CORS Playground</a></p>
+  <h1>Cookie Comparison</h1>
+  <section id="comparison" hidden>
+    <p class="tag">Send the same request from two sites and see when the browser includes a <code>SameSite=Lax</code> cookie.</p>
+    <p>This uses a demo cookie that expires after 10 minutes. The cross-site check opens in a separate tab or window.</p>
+    <button type="button" id="run-comparison">Run comparison</button>
+    <div class="cookie-results">
+      <section class="panel" aria-labelledby="same-title">
+        <h2 id="same-title">Same site</h2>
+        <p id="same-origin"></p>
+        <dl>
+          <dt>Did the API receive the cookie?</dt>
+          <dd id="same-cookie">Waiting to run</dd>
+          <dt>Could JavaScript read the response?</dt>
+          <dd id="same-readable">Waiting to run</dd>
+        </dl>
+      </section>
+      <section class="panel" aria-labelledby="cross-title">
+        <h2 id="cross-title">Cross-site</h2>
+        <p id="cross-origin"></p>
+        <dl>
+          <dt>Did the API receive the cookie?</dt>
+          <dd id="cross-cookie">Waiting to run</dd>
+          <dt>Could JavaScript read the response?</dt>
+          <dd id="cross-readable">Waiting to run</dd>
+        </dl>
+      </section>
+    </div>
+    <p id="explanation" hidden>The browser sent the Lax cookie from the same site and withheld it on the cross-site fetch. JavaScript could read both responses.</p>
+  </section>
+  <section id="cross-site-page" hidden>
+    <h2>Cross-site request</h2>
+    <p id="target"></p>
+    <p>You can return to the comparison tab to see both results together.</p>
+    <dl>
+      <dt>Did the API receive the cookie?</dt>
+      <dd id="companion-cookie">Waiting to run</dd>
+      <dt>Could JavaScript read the response?</dt>
+      <dd id="companion-readable">Waiting to run</dd>
+    </dl>
+    <p><a id="back-to-comparison" href="/cors/cookies">Back to the comparison</a></p>
+  </section>
+  <p id="status" role="status">Loading cookie comparison…</p>
+</main>
+</body>
+</html>
