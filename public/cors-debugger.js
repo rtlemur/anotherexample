@@ -641,7 +641,7 @@ $('startDiagnosis').onclick = () => {
   }
   if (!updateDiagnosticCode()) return;
   $('comparisonResult').value = '';
-  $('comparisonImportStatus').textContent = '';
+  showComparisonImportError(false);
   rememberRequestContext(source.href, target.href);
   rememberSessionPreferences();
   $('diagnosticStatus').textContent = 'Comparison ready.';
@@ -661,17 +661,28 @@ bindCodeToggle('toggleCombined', 'combinedFetch');
 bindCodeToggle('toggleTarget', 'targetFetch', 'Hide code', 'View code');
 bindCodeToggle('toggleControl', 'controlFetch', 'Hide code', 'View code');
 
+function showComparisonImportError(invalid) {
+  const input = $('comparisonResult');
+  if (invalid) input.setAttribute('aria-invalid', 'true');
+  else input.removeAttribute('aria-invalid');
+
+  $('comparisonImportStatus').textContent = invalid
+    ? 'Result not recognized. Copy the full AE-RESULT line from the console and paste it here.'
+    : '';
+}
+
 $('importComparison').addEventListener('submit', event => {
   event.preventDefault();
-  const result = parseComparisonResult($('comparisonResult').value);
-  $('comparisonImportStatus').textContent = result
-    ? ''
-    : 'Copy the line starting with AE-RESULT from the Console, or choose the outcome below.';
+  const input = $('comparisonResult');
+  const result = parseComparisonResult(input.value);
+  showComparisonImportError(!result);
   if (result) renderOutcome(result.outcome, result);
 });
 
-$('comparisonResult').addEventListener('input', () => {
-  $('comparisonImportStatus').textContent = '';
+$('comparisonResult').addEventListener('input', event => {
+  const value = event.target.value.trim();
+  const pasted = event.inputType === 'insertFromPaste';
+  showComparisonImportError(pasted && Boolean(value) && !parseComparisonResult(value));
 });
 
 document.querySelectorAll('.outcome-button').forEach(button => {
