@@ -4,6 +4,7 @@ const path = require('path');
 const { validateHeaderValue } = require('node:http');
 const rateLimit = require('express-rate-limit');
 const { Resend } = require('resend');
+const mountCookieComparison = require('./lib/cookie-comparison');
 
 const contactLimiter = rateLimit({windowMs: 15 * 60 * 1000,limit: 5,standardHeaders: true,legacyHeaders: false});
 
@@ -233,6 +234,10 @@ app.all('/api/echo',(req,res)=>{noStore(res);res.json(requestSnapshot(req));});
 app.all('/api/status/:code',(req,res)=>{const code=Number(req.params.code);if(!Number.isInteger(code)||code<200||code>599)return res.status(400).json({error:'Status code must be an integer from 200 to 599.'});noStore(res);if(code===204||code===304)return res.status(code).end();res.status(code).json({status:code,message:`Intentional test response with HTTP ${code}.`});});
 app.all('/api/delay/:ms',async(req,res)=>{const ms=Number(req.params.ms);if(!Number.isInteger(ms)||ms<0||ms>MAX_DELAY_MS)return res.status(400).json({error:`Delay must be an integer from 0 to ${MAX_DELAY_MS} milliseconds.`});await new Promise(resolve=>setTimeout(resolve,ms));noStore(res);res.json({delayed:ms,unit:'milliseconds'});});
 app.get('/api/redirect',(req,res)=>{const status=Number(req.query.status||302),target=req.query.target||'health';const targets={health:'/api/health',home:'/',example:'https://example.com/'};if(![301,302,303,307,308].includes(status))return res.status(400).json({error:'status must be one of 301, 302, 303, 307, or 308.'});if(!targets[target])return res.status(400).json({error:'target must be health, home, or example.'});noStore(res);res.redirect(status,targets[target]);});
+mountCookieComparison(app, {
+  primary: process.env.COOKIE_COMPARISON_PRIMARY_ORIGIN,
+  secondary: process.env.COOKIE_COMPARISON_SECONDARY_ORIGIN,
+});
 app.get('/api/cookie/set',(req,res)=>{const input=String(req.query.sameSite||'Lax').toLowerCase(),map={lax:'Lax',strict:'Strict',none:'None'},sameSite=map[input];if(!sameSite)return res.status(400).json({error:'sameSite must be Lax, Strict, or None.'});res.cookie('anotherexample_test','present',{httpOnly:false,secure:sameSite==='None',sameSite,maxAge:3600000});noStore(res);res.json({set:true,cookie:'anotherexample_test',sameSite,secure:sameSite==='None'});});
 app.get('/api/cookie/check',(req,res)=>{noStore(res);res.json({cookie:'anotherexample_test',received:hasTestCookie(req)});});
 app.get('/api/cookie/clear',(req,res)=>{res.clearCookie('anotherexample_test');noStore(res);res.json({cleared:true,cookie:'anotherexample_test'});});
@@ -244,6 +249,7 @@ app.get('/cors/works-locally-but-not-in-production',(req,res)=>res.sendFile(path
 app.get('/cors/blocked-by-cors-policy',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-blocked-by-policy.html')));
 app.get('/cors/errors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-errors.html')));
 app.get('/cors/playground',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-playground.html')));
+app.get('/cors/cookies',(req,res)=>res.sendFile(path.join(__dirname,'public','cors-cookies.html')));
 app.get('/cors',(req,res)=>res.sendFile(path.join(__dirname,'public','cors.html')));
 app.get('/contact',(req,res)=>res.sendFile(path.join(__dirname,'public','contact.html')));
 app.get('/docs', (req, res) => res.sendFile(path.join(__dirname, 'public', 'docs.html')));
@@ -251,6 +257,7 @@ app.get('/.well-known/security.txt',(req,res)=>res.type('text/plain').sendFile(p
 app.get('/security.txt',(req,res)=>res.redirect(302,'/.well-known/security.txt'));
 const uncachedToolScripts = new Set([
   'cors-playground.mjs', 'cors-playground-core.mjs', 'cors-diagnosis.js', 'cors-debugger.js', 'cors-error-interpreter.js',
+  'cors-cookie-comparison.js',
 ]);
 app.use(express.static(path.join(__dirname, 'public'), {
   maxAge: '1h',
