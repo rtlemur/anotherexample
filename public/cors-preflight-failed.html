@@ -29,7 +29,7 @@
 <title>Fix CORS Preflight / OPTIONS Request Failed Errors — AnotherExample</title>
 <link rel="icon" href="/aefavicon.ico" sizes="any">
 <link rel="stylesheet" href="/cors.css">
-<link rel="stylesheet" href="/site.css?v=2">
+<link rel="stylesheet" href="/site.css?v=3">
 <style>
 .guide-page .page-intro{font-size:1rem;max-width:850px}
 .guide-page .page-panel h2{font-size:1.1rem}
@@ -37,6 +37,8 @@
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <main class="wrap guide-page">
 <div class="site-brand">
   <a class="site-wordmark" href="/" aria-label="AnotherExample.com home">
@@ -47,7 +49,7 @@
 </div>
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed" aria-current="page">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
 
-<h1 class="page-title">CORS preflight / OPTIONS request failed</h1>
+<h1 id="main-content" class="page-title" tabindex="-1">CORS preflight / OPTIONS request failed</h1>
 <p class="page-intro">If the browser blocks a cross-origin request during preflight, the problem is usually in the <code>OPTIONS</code> response that is supposed to approve the real request before it is sent.</p>
 
 <section class="page-panel page-section">
@@ -71,7 +73,7 @@
 <section class="page-panel page-section">
 <h2>See a failing preflight on a real second origin</h2>
 <p>This request intentionally triggers a preflight and tells AnotherExample’s CORS lab to reject that preflight with HTTP 403. The browser should stop before sending the real <code>PUT</code> request.</p>
-<pre>fetch('https://cors.anotherexample.com/api/cors/lab?preflightStatus=403&amp;allowOrigin=*&amp;methods=PUT,OPTIONS&amp;headers=Content-Type', {
+<pre tabindex="0">fetch('https://cors.anotherexample.com/api/cors/lab?preflightStatus=403&amp;allowOrigin=*&amp;methods=PUT,OPTIONS&amp;headers=Content-Type', {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ test: true })
@@ -98,6 +100,6 @@
 <footer class="site-footer"><a href="/contact">Contact AnotherExample</a></footer>
 </main>
 <script src="/nav-dropdown.js"></script>
-<script src="/page-feedback.js" defer></script>
+<script src="/page-feedback.js?v=2" defer></script>
 </body>
 </html>

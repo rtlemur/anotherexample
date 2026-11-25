@@ -29,10 +29,12 @@
      <link rel="icon" href="/aefavicon.ico" sizes="any">
 <title>CORS Playground — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
-<link rel="stylesheet" href="/site.css?v=2">
+<link rel="stylesheet" href="/site.css?v=3">
 <link rel="stylesheet" href="/cors-playground.css?v=2">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <main class="wrap">
 <div class="site-brand">
   <a class="site-wordmark" href="/" aria-label="AnotherExample.com home">
@@ -42,7 +44,7 @@
   <span class="site-brand-tagline">The Second Origin</span>
 </div>
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
-<h1 class="page-title">CORS Playground</h1>
+<h1 id="main-content" class="page-title" tabindex="-1">CORS Playground</h1>
 <p class="tag">Run the same request shape against a known-good second origin and a target. Compare what you expected with what the browser can read.</p>
 <noscript><p class="small">Enable JavaScript to run a browser comparison.</p></noscript>
 <div class="playground">
@@ -150,5 +152,5 @@
 <script src="/cors-ui.js"></script>
 <script type="module" src="/cors-playground.mjs?v=3"></script>
 <script src="/nav-dropdown.js"></script>
-<script src="/page-feedback.js" defer></script>
+<script src="/page-feedback.js?v=2" defer></script>
 </body></html>

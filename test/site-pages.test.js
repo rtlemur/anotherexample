@@ -30,7 +30,7 @@ for (const [route, active, status = 200] of brandedPages) {
     for (const url of troubleshootingUrls) assert.ok(response.text.includes(`href="${url}"`));
     assert.doesNotMatch(response.text.match(/<nav class="site-nav"[\s\S]*?<\/nav><\/details><\/nav>/)[0], /href="\/contact"/);
     assert.match(response.text, /class="site-footer"><a href="\/contact">Contact AnotherExample/);
-    assert.match(response.text, /<script src="\/page-feedback\.js"(?: data-feedback-path="\/404")? defer><\/script>/);
+    assert.match(response.text, /<script src="\/page-feedback\.js(?:\?v=\d+)?"(?: data-feedback-path="\/404")? defer><\/script>/);
   });
 }
 
@@ -82,7 +82,7 @@ test('troubleshooting dropdown lives in the shared navigation rather than page c
 test('primary pages and guides use the same responsive page title treatment', async () => {
   for (const route of [...primaryPages.map(([route]) => route), ...guidePages.map(([route]) => route)]) {
     const {text} = await request(app).get(route).expect(200);
-    assert.match(text, /<h1 class="page-title">/);
+    assert.match(text, /<h1\b[^>]*\bclass="page-title"[^>]*>/);
   }
   const css = (await request(app).get('/site.css').expect(200)).text;
   assert.match(css, /\.page-title\{max-width:none;font-size:clamp\(1\.65rem,3\.2vw,2\.3rem\);line-height:1\.17/);

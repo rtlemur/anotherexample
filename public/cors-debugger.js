@@ -579,8 +579,7 @@ function renderFix(diagnosis) {
   ]);
   $('codeFixSection').hidden = !supportedFamilies.has(diagnosis.family);
   if (!$('codeFixSection').hidden) {
-    document.querySelectorAll('.framework-tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.stack === 'express')));
-    highlightCode($('fixCode'), fixExamples().express);
+    selectFrameworkTab(frameworkTabs[0]);
   }
   reveal($('fixPanel'), 4);
 }
@@ -699,10 +698,43 @@ $('browserResult').addEventListener('input', () => {
   setProgress(3);
 });
 
-document.querySelectorAll('.framework-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.framework-tab').forEach(other => other.setAttribute('aria-selected', String(other === tab)));
-    highlightCode($('fixCode'), fixExamples()[tab.dataset.stack]);
+const frameworkTabs = Array.from(document.querySelectorAll('.framework-tab'));
+
+function selectFrameworkTab(selectedTab) {
+  for (const tab of frameworkTabs) {
+    const selected = tab === selectedTab;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  }
+  $('framework-example').setAttribute('aria-labelledby', selectedTab.id);
+  highlightCode($('fixCode'), fixExamples()[selectedTab.dataset.stack]);
+}
+
+frameworkTabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectFrameworkTab(tab));
+  tab.addEventListener('keydown', event => {
+    const last = frameworkTabs.length - 1;
+    let next;
+    switch (event.key) {
+      case 'ArrowRight':
+        next = index === last ? 0 : index + 1;
+        break;
+      case 'ArrowLeft':
+        next = index === 0 ? last : index - 1;
+        break;
+      case 'Home':
+        next = 0;
+        break;
+      case 'End':
+        next = last;
+        break;
+      default:
+        return;
+    }
+    event.preventDefault();
+    const nextTab = frameworkTabs[next];
+    selectFrameworkTab(nextTab);
+    nextTab.focus();
   });
 });
 
