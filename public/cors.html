@@ -29,9 +29,11 @@
      <link rel="icon" href="/aefavicon.ico" sizes="any">
 <title>CORS Debugger — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
-<link rel="stylesheet" href="/site.css?v=2">
+<link rel="stylesheet" href="/site.css?v=3">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <main class="wrap">
 <div class="site-brand">
   <a class="site-wordmark" href="/" aria-label="AnotherExample.com home">
@@ -41,7 +43,7 @@
   <span class="site-brand-tagline">The Second Origin</span>
 </div>
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors" aria-current="page">CORS Debugger</a><a href="/cors/playground">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
-<h1 class="page-title">CORS Debugger</h1>
+<h1 id="main-content" class="page-title" tabindex="-1">CORS Debugger</h1>
 <p class="tag debugger-promise">Compare your request with a known-good control. Tell us what happened, and AnotherExample will guide you toward the likely cause, a possible fix, and a retest.</p>
 
 <ol class="diagnostic-progress" aria-label="CORS diagnosis steps">
@@ -246,11 +248,13 @@
       <p class="small">Use this only after confirming the browser evidence. The change belongs on the API or reverse proxy—not in <code>fetch()</code>.</p>
       <p id="fixContextNote" class="small" aria-live="polite"></p>
       <div class="framework-tabs" role="tablist" aria-label="Server framework">
-        <button class="framework-tab" role="tab" data-stack="express" aria-selected="true">Express</button>
-        <button class="framework-tab" role="tab" data-stack="nginx" aria-selected="false">Nginx</button>
-        <button class="framework-tab" role="tab" data-stack="fastapi" aria-selected="false">FastAPI</button>
+        <button type="button" class="framework-tab" id="framework-express" role="tab" data-stack="express" aria-controls="framework-example" aria-selected="true">Express</button>
+        <button type="button" class="framework-tab" id="framework-nginx" role="tab" data-stack="nginx" aria-controls="framework-example" aria-selected="false" tabindex="-1">Nginx</button>
+        <button type="button" class="framework-tab" id="framework-fastapi" role="tab" data-stack="fastapi" aria-controls="framework-example" aria-selected="false" tabindex="-1">FastAPI</button>
       </div>
-      <pre id="fixCode" tabindex="0"></pre>
+      <div id="framework-example" role="tabpanel" aria-labelledby="framework-express">
+        <pre id="fixCode" tabindex="0"></pre>
+      </div>
       <div class="actions"><button id="copyFix">Copy example</button><button class="secondary" id="retest">Copy comparison again</button></div>
       <span id="fixStatus" class="small copy-status" aria-live="polite"></span>
     </section>
@@ -269,5 +273,5 @@
 <script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};</script>
 <script defer src="/_vercel/insights/script.js"></script>
 <script src="/nav-dropdown.js"></script>
-<script src="/page-feedback.js" defer></script>
+<script src="/page-feedback.js?v=2" defer></script>
 </body></html>

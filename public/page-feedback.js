@@ -14,8 +14,8 @@
       <div class="page-feedback-row">
         <p id="page-feedback-question">Did this solve your problem?</p>
         <div class="page-feedback-options">
-          <button class="page-feedback-vote" type="button" data-feedback-vote="yes" aria-pressed="false"><span aria-hidden="true">👍</span> Yes</button>
-          <button class="page-feedback-vote" type="button" data-feedback-vote="no" aria-pressed="false"><span aria-hidden="true">👎</span> No</button>
+          <button class="page-feedback-vote" type="button" data-feedback-vote="yes" aria-pressed="false" aria-describedby="page-feedback-question"><span aria-hidden="true">👍</span> Yes</button>
+          <button class="page-feedback-vote" type="button" data-feedback-vote="no" aria-pressed="false" aria-describedby="page-feedback-question"><span aria-hidden="true">👎</span> No</button>
         </div>
       </div>
       <p class="page-feedback-status" role="status"></p>
