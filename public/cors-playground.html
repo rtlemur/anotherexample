@@ -30,7 +30,7 @@
 <title>CORS Playground — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
 <link rel="stylesheet" href="/site.css?v=2">
-<link rel="stylesheet" href="/cors-playground.css">
+<link rel="stylesheet" href="/cors-playground.css?v=2">
 </head>
 <body>
 <main class="wrap">
@@ -89,9 +89,9 @@
             <input id="expected-status" type="number" min="200" max="599" step="1" placeholder="Any status">
           </label>
         </div>
-        <p class="origin-line">
+        <p class="cookie-comparison-callout">
+          <a href="/cors/cookies"><span aria-hidden="true">*</span><span>Compare same-site and cross-site cookies</span><span aria-hidden="true">*</span></a>
           <span id="cookie-comparison-help"><strong>Request works, but the cookie is missing?</strong> See when the browser sends a <code>SameSite=Lax</code> cookie and when it leaves it out.</span>
-          <a href="/cors/cookies">Compare same-site and cross-site cookies</a>.
         </p>
         <details id="options">
           <summary>Headers, body, and redirects</summary>

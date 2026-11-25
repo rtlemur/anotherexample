@@ -30,6 +30,31 @@
 .playground .extra-grid{grid-template-columns:minmax(0,2fr) minmax(0,1fr);margin-bottom:10px}
 .playground .origin-line{margin-top:6px;color:var(--muted);font-size:.77rem}
 .playground .origin-line code{color:var(--text);margin-left:4px}
+.playground .cookie-comparison-callout {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 8px 18px;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: .92rem;
+}
+.cookie-comparison-callout a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--accent);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+.cookie-comparison-callout a span[aria-hidden] {
+  color: var(--accent);
+}
+.cookie-comparison-callout strong {
+  color: var(--text);
+}
 .playground details{margin-top:13px;border-top:1px solid var(--playground-line);padding-top:10px}
 .playground summary{font-size:.87rem;font-weight:650;width:fit-content;cursor:pointer}
 .playground summary::marker{color:var(--accent)}
@@ -70,6 +95,7 @@
 @media(max-width:650px){
   .playground :is(.section-head,.config,.run-bar){padding-inline:12px}
   .playground .triple{grid-template-columns:1fr 1fr}
+  .playground .cookie-comparison-callout{grid-template-columns:minmax(0,1fr)}
   .playground .triple label:last-child{grid-column:1/-1}
   .playground :is(.extra-grid,.result-grid){grid-template-columns:minmax(0,1fr)}
   .playground .target-row{grid-template-columns:88px minmax(0,1fr)}
