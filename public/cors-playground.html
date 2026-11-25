@@ -30,7 +30,7 @@
 <title>CORS Playground — anotherexample.com</title>
 <link rel="stylesheet" href="/cors.css">
 <link rel="stylesheet" href="/site.css?v=2">
-<link rel="stylesheet" href="/cors-playground.css">
+<link rel="stylesheet" href="/cors-playground.css?v=2">
 </head>
 <body>
 <main class="wrap">
@@ -43,7 +43,6 @@
 </div>
 <nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/cors">CORS Debugger</a><a href="/cors/playground" aria-current="page">Playground</a><a href="/cors/errors">Error Explainer</a><details class="nav-dropdown"><summary>CORS Errors</summary><nav class="nav-dropdown-menu" aria-label="CORS troubleshooting guides"><a href="/cors/no-access-control-allow-origin">No Access-Control-Allow-Origin header</a><a href="/cors/preflight-failed">CORS preflight / OPTIONS request failed</a><a href="/cors/works-locally-but-not-in-production">CORS works locally but fails in production</a><a href="/cors/blocked-by-cors-policy">Blocked by CORS policy</a></nav></details></nav>
 <h1 class="page-title">CORS Playground</h1>
-<p><a href="/cors/cookies">Compare same-site and cross-site cookies</a></p>
 <p class="tag">Run the same request shape against a known-good second origin and a target. Compare what you expected with what the browser can read.</p>
 <noscript><p class="small">Enable JavaScript to run a browser comparison.</p></noscript>
 <div class="playground">
@@ -81,7 +80,7 @@
         </div>
         <div class="triple">
           <label>Credentials
-            <select id="credentials"><option value="omit">Omit (default)</option><option value="same-origin">Same origin only</option><option value="include">Include cross-origin</option></select>
+            <select id="credentials" aria-describedby="cookie-comparison-help"><option value="omit">Omit (default)</option><option value="same-origin">Same origin only</option><option value="include">Include cross-origin</option></select>
           </label>
           <label>Expect the target to
             <select id="expected"><option value="readable">Return a readable response</option><option value="failed">Fail or block browser access</option></select>
@@ -90,6 +89,10 @@
             <input id="expected-status" type="number" min="200" max="599" step="1" placeholder="Any status">
           </label>
         </div>
+        <p class="cookie-comparison-callout">
+          <a href="/cors/cookies"><span aria-hidden="true">*</span><span>Compare same-site and cross-site cookies</span><span aria-hidden="true">*</span></a>
+          <span id="cookie-comparison-help"><strong>Request works, but the cookie is missing?</strong> See when the browser sends a <code>SameSite=Lax</code> cookie and when it leaves it out.</span>
+        </p>
         <details id="options">
           <summary>Headers, body, and redirects</summary>
           <div class="extra-grid">

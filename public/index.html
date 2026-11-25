@@ -206,6 +206,15 @@
    white-space:pre-wrap;
 }
 
+  .api-reference-link {
+    color: var(--accent);
+  }
+
+  .api-reference-link:hover,
+  .api-reference-link:focus-visible {
+    color: var(--text);
+  }
+
   .muted {
     color: var(--muted);
   }
@@ -270,7 +279,7 @@
 
 <section>
 <h2>Endpoints</h2>
-<p><a href="/docs">API reference and copyable examples</a></p>
+<p><a class="api-reference-link" href="/docs">API reference and copyable examples</a></p>
 <p>Both hosts serve the same endpoints. The examples use <code>https://cors.anotherexample.com</code>, which is a different origin from <code>https://anotherexample.com</code>. If your page is already on the <code>cors.</code> host, use <code>https://anotherexample.com</code> as the other origin.</p>
 <p>For a cross-origin browser request that needs CORS response headers, start with an <code>/api/cors/</code> endpoint.</p>
 <div class="grid">
