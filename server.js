@@ -72,6 +72,17 @@ function setOpenCors(req,res) {
   res.set({'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers':req.get('Access-Control-Request-Headers')||'Content-Type, Authorization','Access-Control-Max-Age':'600'});
 }
+const contactCheckUnavailable = 'The contact form security check is unavailable. Please try again later.';
+const contactCheckRequired = 'Please complete the security check and try again.';
+
+app.get('/api/contact/config', (req, res) => {
+  const siteKey = process.env.TURNSTILE_SITE_KEY;
+  if (!siteKey || !process.env.TURNSTILE_SECRET_KEY) {
+    return res.status(503).json({ error: contactCheckUnavailable });
+  }
+  res.json({ siteKey });
+});
+
 app.post('/api/contact', contactLimiter, async (req, res) => {
   const { name = '', email = '', message = '', website = '' } = req.body || {};
 
@@ -110,31 +121,63 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     });
   }
 
+  const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+  if (!process.env.TURNSTILE_SITE_KEY || !turnstileSecret) {
+    return res.status(503).json({ error: contactCheckUnavailable });
+  }
+
+  const token = req.body['cf-turnstile-response'];
+  if (typeof token !== 'string' || !token.trim() || token.length > 2048) {
+    return res.status(403).json({ error: contactCheckRequired });
+  }
+
   try {
-  const resend = new Resend(resendApiKey);
-  await resend.emails.send({
-    from: 'AnotherExample Contact <contact@anotherexample.com>',
-    to: 'hello@anotherexample.com',
-    replyTo: cleanEmail,
-    subject: 'New AnotherExample contact message',
-    text: [
-      `Name: ${cleanName || 'Not provided'}`,
-      `Email: ${cleanEmail}`,
-      '',
-      cleanMessage
-    ].join('\n')
-  });
+    const verification = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: new URLSearchParams({ secret: turnstileSecret, response: token }),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!verification.ok) {
+      return res.status(503).json({ error: contactCheckUnavailable });
+    }
 
-  return res.status(200).json({
-    sent: true
-  });
-} catch (error) {
-  console.error('Contact email failed:', error);
+    const result = await verification.json();
+    const allowedHostnames = [
+      'anotherexample.com',
+      'www.anotherexample.com',
+      'cors.anotherexample.com',
+      process.env.VERCEL_URL,
+      process.env.VERCEL_BRANCH_URL
+    ];
+    if (result.success !== true || result.action !== 'contact' ||
+        !result.hostname || !allowedHostnames.includes(result.hostname)) {
+      return res.status(403).json({ error: contactCheckRequired });
+    }
+  } catch {
+    return res.status(503).json({ error: contactCheckUnavailable });
+  }
 
-  return res.status(500).json({
-    error: 'Unable to send message right now.'
-  });
-}
+  try {
+    const resend = new Resend(resendApiKey);
+    const { error } = await resend.emails.send({
+      from: 'AnotherExample Contact <contact@anotherexample.com>',
+      to: 'hello@anotherexample.com',
+      replyTo: cleanEmail,
+      subject: 'New AnotherExample contact message',
+      text: [
+        `Name: ${cleanName || 'Not provided'}`,
+        `Email: ${cleanEmail}`,
+        '',
+        cleanMessage
+      ].join('\n')
+    });
+    if (error) {
+      return res.status(500).json({ error: 'Unable to send message right now.' });
+    }
+    return res.json({ sent: true });
+  } catch {
+    return res.status(500).json({ error: 'Unable to send message right now.' });
+  }
 });
 
 app.use('/api/cors/open',(req,res,next)=>{

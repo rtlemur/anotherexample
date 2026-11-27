@@ -106,6 +106,20 @@
       cursor:pointer;
     }
 
+    #securityCheck{
+      margin-top:16px;
+    }
+
+    #securityStatus{
+      margin:6px 0 0;
+      color:var(--muted);
+    }
+
+    button:disabled{
+      opacity:.65;
+      cursor:default;
+    }
+
     .hp{
       position:absolute;
       left:-10000px;
@@ -164,7 +178,10 @@
         <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
       </div>
 
-      <button id="submitButton" type="submit">Send message</button>
+      <div id="securityCheck"></div>
+      <p id="securityStatus" role="status">Loading the security check…</p>
+      <noscript><p>Enable JavaScript to complete the security check and send your message.</p></noscript>
+      <button id="submitButton" type="submit" aria-describedby="securityStatus" disabled>Send message</button>
       <p id="formStatus" role="status" aria-live="polite"></p>
 
     </form>
@@ -174,37 +191,94 @@
   const submitButton = document.getElementById('submitButton');
   const form = document.getElementById('contactForm');
   const status = document.getElementById('formStatus');
+  const securityStatus = document.getElementById('securityStatus');
+  const checkUnavailable = 'The security check could not load. Reload the page to try again.';
+  let widgetId;
+  let token = '';
+  let sending = false;
 
-  form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  submitButton.disabled = true;
-  submitButton.textContent = 'Sending…';
-  status.textContent = 'Sending...';
+  function updateSecurity(response, message) {
+    token = response;
+    securityStatus.textContent = message;
+    submitButton.disabled = sending || !token;
+  }
 
+  async function loadSecurityCheck() {
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        body: new URLSearchParams(new FormData(form))
+      const response = await fetch('/api/contact/config', { signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error('Contact form unavailable');
+      const { siteKey } = await response.json();
+
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.append(script);
       });
 
+      updateSecurity('', 'Complete the security check if prompted.');
+      window.turnstile.ready(() => {
+        try {
+          widgetId = window.turnstile.render('#securityCheck', {
+            sitekey: siteKey,
+            action: 'contact',
+            appearance: 'interaction-only',
+            size: 'flexible',
+            theme: 'dark',
+            'response-field': false,
+            callback: response => updateSecurity(response, 'Security check complete.'),
+            'expired-callback': () => updateSecurity('', 'Refreshing the security check…'),
+            'error-callback': () => {
+              updateSecurity('', 'The security check could not finish. If it does not retry, reload the page.');
+              return true;
+            }
+          });
+        } catch {
+          updateSecurity('', checkUnavailable);
+        }
+      });
+    } catch {
+      updateSecurity('', checkUnavailable);
+    }
+  }
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (sending || !token) return;
+
+    sending = true;
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending…';
+    status.className = '';
+    status.textContent = 'Sending…';
+
+    try {
+      const body = new URLSearchParams(new FormData(form));
+      body.set('cf-turnstile-response', token);
+      const response = await fetch('/api/contact', { method: 'POST', body });
       const result = await response.json();
 
-      if (!response.ok || !result.sent) {
-        throw new Error(result.error || 'Unable to send message.');
+      if (response.ok && result.sent) {
+        form.reset();
+        status.className = 'success';
+        status.textContent = 'Message sent. Thanks for contacting AnotherExample.';
+      } else {
+        status.className = 'error';
+        status.textContent = result.error || 'Unable to send message. Please try again.';
       }
-
-      form.reset();
-      submitButton.disabled = false;
-      submitButton.textContent = 'Send message';
-      status.className = 'success';
-      status.textContent = 'Message sent. Thanks for contacting AnotherExample.';
-    } catch (error) {
-      submitButton.disabled = false;
-      submitButton.textContent = 'Send message';
+    } catch {
       status.className = 'error';
       status.textContent = 'Sorry, your message could not be sent. Please try again.';
+    } finally {
+      sending = false;
+      submitButton.textContent = 'Send message';
+      updateSecurity('', 'Refreshing the security check…');
+      window.turnstile.reset(widgetId);
     }
   });
+
+  loadSecurityCheck();
 </script>
 <script src="/nav-dropdown.js"></script>
 <script src="/page-feedback.js?v=2" defer></script>
